@@ -2,9 +2,9 @@ marathon library
 version 0.1
 
 Requirements:
-
-g++ 4.8 or later
-cuda 7.0 or later (optional)
+	g++ 4.8 or later
+	cuda 7.0 or later (optional)
+	boost headers (libboost-dev)
 
 Install:
 
@@ -23,5 +23,3 @@ You will need the following other libraries:
 	arpack
 	superlu
 	cublas	(only when built with cuda support)
-	
-See further information at github.
