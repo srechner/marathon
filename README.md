@@ -1,17 +1,20 @@
-marathon library
+## marathon library
+
 version 0.1
 
-Requirements:
+## Requirements:
 
-g++ 4.8 or later
-cuda 7.0 or later (optional)
+	g++ 4.8 or later
+	cuda 7.0 or later (optional)
+	boost headers (libboost-dev)
+	cblas headers (libblas-dev)
 
-Install:
+## Installation:
 
 It is possible to build the library in cpu native mode without cuda support.
 To do so, just run 'make cpp'. To compile with cuda support, run 'make cuda'.
 
-Link against marathon:
+## Link against marathon:
 
 To use the functionality build in marathon, link against the libmarathon.so file.
 You will need the following other libraries:
@@ -23,5 +26,3 @@ You will need the following other libraries:
 	arpack
 	superlu
 	cublas	(only when built with cuda support)
-	
-See further information at github.
