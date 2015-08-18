@@ -1,6 +1,9 @@
 ## marathon
 
-Version 0.1
+This library is designed to support the analysis of Markov chain based sampling methods. For a description of its functionality, see TODO: add URL to article.
+
+Version 0.1: 
+	initial version
 
 ## Requirements:
 
@@ -12,7 +15,7 @@ Version 0.1
 ## Installation:
 
 It is possible to build the library in cpu native mode without cuda support.
-To do so, just run 'make cpp'. To compile with cuda support, run 'make cuda'.
+To do so, just run `make cpp`. To compile with cuda support, run `make cuda`.
 
 ## Link against marathon:
 
@@ -29,7 +32,7 @@ You will need the following other libraries:
 
 ## Example:
 
-The example directory contains an example program which shows how to use marathon to compute the total mixing time. To install, first compile the library via `make cpp` or `make cuda`. To run the example, do the following:
+The example directory contains an [example](https://github.com/srechner/marathon/blob/master/examples/totalMixingTime.cpp) program which shows how to use marathon to compute the total mixing time. To install, first compile the library via `make cpp` or `make cuda`. To run the example, do the following:
 	
 	cd examples
 	make
