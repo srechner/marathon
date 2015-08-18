@@ -5,6 +5,7 @@ Requirements:
 	g++ 4.8 or later
 	cuda 7.0 or later (optional)
 	boost headers (libboost-dev)
+	cblas headers (libblas-dev)
 
 Install:
 
