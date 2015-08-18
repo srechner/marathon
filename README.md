@@ -1,6 +1,6 @@
-## marathon library
+## marathon
 
-version 0.1
+Version 0.1
 
 ## Requirements:
 
@@ -26,3 +26,12 @@ You will need the following other libraries:
 	arpack
 	superlu
 	cublas	(only when built with cuda support)
+
+## Example:
+
+The example directory contains an example program which shows how to use marathon to compute the total mixing time. To install, first compile the library via `make cpp` or `make cuda`. To run the example, do the following:
+	
+	cd examples
+	make
+	export LD_LIBRARY_PATH=../:$LD_LIBRARY_PATH
+	./totalMixingTime
