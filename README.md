@@ -1,6 +1,6 @@
 ## marathon
 
-This library is designed to support the analysis of Markov chain based sampling methods. For a description of its functionality, see TODO: add URL to article.
+This library is designed to support the analysis of Markov chain based sampling methods. For an introduction into its functionality, see my article at arXiv http://arxiv.org/abs/1508.04740.
 
 Version 0.1: 
 	initial version
