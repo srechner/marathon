@@ -8,8 +8,8 @@ Version 0.1:
 	
 Current ToDo's:
 
-	Documentation
-	Extending functionality to extend broader range of chains
+	Working on Documentation
+	Extending functionality to extend broader range of chains (v0.2)
 
 ## Requirements:
 
