@@ -4,6 +4,10 @@ This library is designed to support the analysis of Markov chain based sampling 
 
 Version 0.1: 
 	initial version
+	
+Current ToDo's:
+	Documentation
+	Extending functionality to extend broader range of chains
 
 ## Requirements:
 
