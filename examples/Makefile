@@ -1,24 +1,31 @@
 
 RM := rm -rf
 
-LIBS := -lmarathon -lgomp -lpthread -lopenblas -larpack++ -larpack -lsuperlu -lcublas
+LIBS := -lmarathon -lgomp -lpthread -lopenblas -larpack++ -larpack -lsuperlu
 
-CPP_SRCS = totalMixingTime.cpp 
+SRCS = totalMixingTime.cpp 
 
 OBJS = totalMixingTime.o 
 
-CPP_DEPS = totalMixingTime.d 
+DEPS = totalMixingTime.d 
 
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: totalMixingTime
+all: cuda
 
 # Tool invocations
-totalMixingTime: $(OBJS)
+cuda: $(OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ -L"../" -L"/usr/local/cuda/lib64/" -o "totalMixingTime" $(OBJS) $(LIBS)
+	g++ -L"../" -L"/usr/local/cuda/lib64/" -o "totalMixingTime" $(OBJS) $(LIBS) -lcublas
+	@echo 'Finished building target: $@'
+	@echo ' '
+
+cpp: $(OBJS)
+	@echo 'Building target: $@'
+	@echo 'Invoking: GCC C++ Linker'
+	g++ -L"../" -o "totalMixingTime" $(OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
