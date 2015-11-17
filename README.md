@@ -2,15 +2,10 @@
 
 This C++ library is designed to support the analysis of Markov chain based sampling methods. It provides functions for the analysis of so-called state graphs. For an introduction into its functionality, see my article at arXiv http://arxiv.org/abs/1508.04740.
 
-Version 0.1: 
-
-	initial version
-	
 Current ToDo's:
 
 	Working on Documentation
-	Extending functionality to extend broader range of chains (v0.2)
-
+	
 ## Requirements:
 
 	g++ 4.8 or later
