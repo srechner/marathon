@@ -53,6 +53,8 @@ int main(int argc, char** argv) {
 	 * 2. if gpu is not sucessfull (e.g. not enough memory) try cpu implementation
 	 */
 	int t = marathon::totalMixingTime<double>(sg, eps, marathon::device_t::GPU_ONLY);
+	if(t == -1)
+		t = marathon::totalMixingTime<double>(sg, eps, marathon::device_t::CPU_ONLY);
 
 	// compute spectral gap
 	double lambda = marathon::secondLargestEigenvalue<double>(sg);
