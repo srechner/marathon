@@ -26,23 +26,29 @@ namespace chain {
 namespace sequence {
 
 DenseBipartiteGraph::DenseBipartiteGraph() :
-		m(0), n(0) {
+		nrows(0), ncols(0) {
 
 }
 
-DenseBipartiteGraph::DenseBipartiteGraph(int m, int n, const bool* bits) :
-		m(m), n(n) {
+DenseBipartiteGraph::DenseBipartiteGraph(int nrows, int ncols, const bool* bits) :
+		nrows(nrows), ncols(ncols) {
 	if (bits == nullptr) {
-		M = boost::dynamic_bitset<>(m * n);
+		M = boost::dynamic_bitset<>(nrows * ncols);
 	} else {
-		for (int i = 0; i < m * n; i++) {
+		for (int i = 0; i < nrows * ncols; i++) {
 			M.push_back(bits[i]);
 		}
 	}
 }
 
+DenseBipartiteGraph::DenseBipartiteGraph(int nrows, int ncols,
+		const std::string& str) :
+		nrows(nrows), ncols(ncols) {
+	M = boost::dynamic_bitset<>(str);
+}
+
 DenseBipartiteGraph::DenseBipartiteGraph(const DenseBipartiteGraph& s) :
-		m(s.m), n(s.n) {
+		nrows(s.nrows), ncols(s.ncols) {
 	M = boost::dynamic_bitset<>(s.M);
 }
 
@@ -50,20 +56,24 @@ DenseBipartiteGraph::~DenseBipartiteGraph() {
 
 }
 
-int DenseBipartiteGraph::get_m() const {
-	return m;
+int DenseBipartiteGraph::get_nrows() const {
+	return nrows;
 }
 
-int DenseBipartiteGraph::get_n() const {
-	return n;
+int DenseBipartiteGraph::get_ncols() const {
+	return ncols;
+}
+
+void DenseBipartiteGraph::set_edge(int u, int v, bool b) {
+	M[COORD_TRANSFORM(u, v, ncols)] = b;
 }
 
 bool DenseBipartiteGraph::has_edge(int u, int v) const {
-	return M[COORD_TRANSFORM(u, v, n)];
+	return M[COORD_TRANSFORM(u, v, ncols)];
 }
 
 void DenseBipartiteGraph::flip_edge(int u, int v) {
-	M[COORD_TRANSFORM(u, v, n)].flip();
+	M[COORD_TRANSFORM(u, v, ncols)].flip();
 }
 
 bool DenseBipartiteGraph::is_switchable(int u1, int v1, int u2, int v2) const {
@@ -78,8 +88,8 @@ bool DenseBipartiteGraph::is_switchable(int u1, int v1, int u2, int v2) const {
 		v2 = tmp;
 	}
 
-	v1 -= m;
-	v2 -= m;
+	v1 -= nrows;
+	v2 -= nrows;
 
 #ifdef DEBUG
 	std::cout << "is switchable " << u1 << " " << v1 << " " << u2 << " " << v2
@@ -115,8 +125,8 @@ void DenseBipartiteGraph::switch_4_cycle(int u1, int v1, int u2, int v2) {
 	}
 
 	// translate node labels
-	v1 -= m;
-	v2 -= m;
+	v1 -= nrows;
+	v2 -= nrows;
 
 #ifdef DEBUG
 	std::cout << "switch cycle [ " << u1 << " " << v1 << " " << u2 << " " << v2
@@ -130,13 +140,13 @@ void DenseBipartiteGraph::switch_4_cycle(int u1, int v1, int u2, int v2) {
 }
 
 void DenseBipartiteGraph::operator=(const DenseBipartiteGraph& s) {
-	m = s.m;
-	n = s.n;
+	nrows = s.nrows;
+	ncols = s.ncols;
 	M = boost::dynamic_bitset<>(s.M);
 }
 
 bool DenseBipartiteGraph::operator==(const DenseBipartiteGraph &s) const {
-	return m == s.m && n == s.n && M == s.M;
+	return nrows == s.nrows && ncols == s.ncols && M == s.M;
 }
 
 std::ostream& operator<<(std::ostream& os, const DenseBipartiteGraph& bip) {
@@ -149,7 +159,14 @@ std::ostream& operator<<(std::ostream& os, const DenseBipartiteGraph& bip) {
 
 size_t hash_value(const DenseBipartiteGraph& s) {
 	return boost::hash_value(s.M.m_bits);
-	//return boost::hash_range(s.M, s.M + s.m * s.n);
+	//return boost::hash_range(s.M, s.M + s.m * s.ncols);
+}
+
+void DenseBipartiteGraph::get_row(int u, boost::dynamic_bitset<>& row) const {
+	row.resize(ncols);
+	for (int v = 0; v < ncols; v++) {
+		row[v] = has_edge(u, v);
+	}
 }
 
 }

@@ -6,13 +6,11 @@
  */
 
 // project includes
-#include "../../../include/marathon/chains/matching/bipartite_matching.h"
-
-// system includes
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include "../../../include/marathon/chains/matching/bipartite_matching.h"
 
 namespace marathon {
 
@@ -93,7 +91,7 @@ bool BipartiteMatching::is_perfect() const {
 }
 
 bool BipartiteMatching::is_near_perfect() const {
-	return 2 * k == n - 2;
+	return 2*k == n - 2;
 }
 
 void BipartiteMatching::addEdge(int u, int v) {

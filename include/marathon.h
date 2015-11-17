@@ -13,4 +13,4 @@
 #include "marathon/hybrid/analyzer.h"
 #include "marathon/markov_chain.hpp"
 
-#endif /* SAMPLING_H_ */
+#endif /* MARATHON_H_ */

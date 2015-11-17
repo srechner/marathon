@@ -45,7 +45,7 @@ class StateGraph {
 	template<typename T>
 	friend class cpu::DenseTransitionMatrix;
 
-protected:
+public:
 
 	/* Variables */
 
@@ -66,15 +66,70 @@ public:
 	virtual ~StateGraph();
 
 	/* Getter Methods */
+
+	/**
+	 * Returns the number of states of the state graph
+	 */
 	size_t getNumStates() const;
-	size_t getNumArcs() const;
+
+	/**
+	 * Returns the number of Transitions/Arcs of the state graph
+	 */
+	size_t getNumTransitions() const;
+
+	/**
+	 * Returns the transition probability P_uv for going from states[u] to states[v]
+	 */
 	Rational getTransitionProbability(int u, int v) const;
+
+	/**
+	 * Set P(u,v) to p
+	 */
+	void setTransitionProbability(int u, int v, Rational p);
+
+	/**
+	 * Returns the stationary probability of state[i].
+	 */
 	Rational getStationary(int i) const;
+
+	/**
+	 * Returns the smallest stationary probability of all states
+	 */
 	Rational getMinimalStationary() const;
+
+	/**
+	 * Returns the index of the first outgoing transition of state[v] or getNumTransition(),
+	 * if v does not have an outgoing arc.
+	 **/
+	int getIndexOfFirstTransition(int v) const;
+
+	/**
+	 * Returns the index of the last outgoing transition of state[v] or getNumTransition(),
+	 * if v does not have an outgoing arc.
+	 */
+	int getIndexOfLastTransition(int v) const;
+
+	/**
+	 * Returns the number of adjacent states of state[v]
+	 */
+	int getNumTransitions(int v) const;
+
+	/**
+	 * Returns the Transition with given index
+	 */
+	Transition getTransition(int index) const;
+
+	/**
+	 * Returns the weight of state[i]
+	 */
 	virtual Rational getWeight(int i) const;
 
+	/**
+	 * Constructs a path between state[u] and state[v]
+	 */
 	virtual void canonicalPath(int u, int v, std::list<int>& path) const;
-	virtual void constructStatespace() = 0;
+
+	virtual void constructStateGraph(bool verbose = false) = 0;
 };
 
 }

@@ -32,6 +32,7 @@ extern "C" void finalizeCublasXt();
 
 }
 
+
 void init();
 
 void finalize();

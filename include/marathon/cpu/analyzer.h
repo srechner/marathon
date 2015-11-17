@@ -80,6 +80,21 @@ T secondLargestEigenvalue(const StateGraph* mc);
 template<typename T>
 int totalMixingTime(const StateGraph* mc, const T epsilon);
 
+
+/**
+ * Computes the diameter of the graph, i.e. the maximal length of a shortest path
+ * between some nodes of the graph. Each arc has a length of 1.
+ */
+int diameter(const StateGraph* G);
+
+/**
+ * Computes a histogram of the length of shortest path in G. Each arc of the graph
+ * contributes one to the length of a path. For each length l for l in 0..diameter(G),
+ * the number of shortest paths of G is stored in the vector count[l].
+ */
+void pathLengthHistogram(std::vector<long>& count, const StateGraph* G);
+
+
 } /* namespace cpu */
 
 } /* namespace marathon */

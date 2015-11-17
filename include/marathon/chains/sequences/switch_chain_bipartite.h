@@ -19,20 +19,24 @@ namespace chain {
 
 namespace sequence {
 
-class SwapChainBipartite: public MarkovChain<DenseBipartiteGraph> {
+/**
+ * Implements the Markov chain defined by Kannan et al.
+ */
+class SwitchBipartite: public MarkovChain<DenseBipartiteGraph> {
 
 public:
 
-	std::vector<int> u;
-	std::vector<int> v;
-
-	SwapChainBipartite(std::string line);
+	SwitchBipartite(const std::string& line);
 	virtual bool computeArbitraryState(DenseBipartiteGraph& s) const;
-	virtual void computeNeighbors(const DenseBipartiteGraph& s,
-			std::vector<DenseBipartiteGraph>& neighbors) const;
+	virtual void computeNeighbours(const DenseBipartiteGraph& s,
+			boost::unordered_map<DenseBipartiteGraph, Rational>& neighbors) const;
 	virtual void canonicalPath(int from, int to, std::list<int>& path) const;
 
 protected:
+
+	std::vector<int> u;
+	std::vector<int> v;
+	int sum;
 
 	// helper functions for canonical path construction
 	int next_red_edge(int col, bool* red_edges, int m, int n) const;

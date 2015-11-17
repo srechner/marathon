@@ -16,13 +16,14 @@ namespace chain {
 
 namespace sequence {
 
-class SwapChainBipartiteFast: public SwapChainBipartite {
+class SwitchBipartiteFast: public SwitchBipartite {
 public:
-	SwapChainBipartiteFast(std::string line);
+	SwitchBipartiteFast(std::string line);
 
 protected:
-	virtual void computeNeighbors(const DenseBipartiteGraph& s,
-			std::vector<DenseBipartiteGraph>& neighbors) const;
+
+	virtual void computeNeighbours(const DenseBipartiteGraph& s,
+			boost::unordered_map<DenseBipartiteGraph, Rational>& neighbors) const;
 };
 
 }

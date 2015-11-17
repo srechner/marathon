@@ -34,7 +34,7 @@ bool HavelHakimiBipartite(const std::vector<int>& u,
 	// sum of node degrees
 	int sum[2] = { 0, 0 };
 
-	// check if node degrees sums up to same number
+	// check if node degrees sum up to same number
 	for (std::vector<int>::const_iterator it = u.begin(); it != u.end(); ++it)
 		sum[0] += *it;
 	for (std::vector<int>::const_iterator it = v.begin(); it != v.end(); ++it)

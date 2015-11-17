@@ -5,7 +5,7 @@
  *      Author: steffen
  */
 
-#include "../../../include/marathon/chains/matching/chain_JS89.h"
+#include "../../../include/marathon/chains/matching/matching_chain_JS89.h"
 
 namespace marathon {
 
@@ -13,14 +13,15 @@ namespace chain {
 
 namespace matching {
 
-MatchingChain89::MatchingChain89(std::string line) :
+Broder86::Broder86(std::string line) :
 		g(SparseBipartiteGraph(line)) {
+
 }
 
-MatchingChain89::~MatchingChain89() {
+Broder86::~Broder86() {
 }
 
-bool MatchingChain89::computeArbitraryState(BipartiteMatching& s) const {
+bool Broder86::computeArbitraryState(BipartiteMatching& s) const {
 
 	int n = g.getNumberOfNodes();
 
@@ -44,8 +45,8 @@ bool MatchingChain89::computeArbitraryState(BipartiteMatching& s) const {
 	return true;
 }
 
-void MatchingChain89::computeNeighbors(const BipartiteMatching& s,
-		std::vector<BipartiteMatching>& neighbors) const {
+void Broder86::computeNeighbours(const BipartiteMatching& s,
+		boost::unordered_map<BipartiteMatching, Rational>& neighbors) const {
 
 	// Variables
 	const int n = g.getNumberOfNodes();
@@ -122,14 +123,13 @@ void MatchingChain89::computeNeighbors(const BipartiteMatching& s,
 			// Verbleibe im aktuellen Zustand
 		}
 
-		neighbors.push_back(s2);
+		neighbors[s2] += Rational(1, edges.size());
 
 		//std::cout << std::endl;
 	}
 }
 
-void MatchingChain89::canonicalPath(int s, int t,
-		std::list<int>& path) const {
+void Broder86::canonicalPath(int s, int t, std::list<int>& path) const {
 
 	path.clear();
 
@@ -144,8 +144,7 @@ void MatchingChain89::canonicalPath(int s, int t,
 	int i, a, sw;
 	BipartiteMatching u, v;
 	std::queue<BipartiteMatching> q;
-	std::vector<BipartiteMatching> neighbors;
-	typename std::vector<BipartiteMatching>::iterator it;
+	boost::unordered_map<BipartiteMatching, Rational> neighbors;
 	boost::unordered_map<BipartiteMatching, BipartiteMatching> prev;
 	BipartiteMatching null;
 
@@ -180,9 +179,9 @@ void MatchingChain89::canonicalPath(int s, int t,
 				break;
 			} else {
 				// for all neighbors of u
-				computeNeighbors(u, neighbors);
-				for (it = neighbors.begin(); it != neighbors.end(); ++it) {
-					v = *it;
+				computeNeighbours(u, neighbors);
+				for (auto it = neighbors.begin(); it != neighbors.end(); ++it) {
+					v = it->first;
 
 					if (prev.find(v) == prev.end()) {	// not visited yet
 						prev[v] = u;

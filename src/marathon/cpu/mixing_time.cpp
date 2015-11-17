@@ -47,7 +47,7 @@ int marathon::cpu::totalMixingTime(const StateGraph* mc, const T epsilon) {
 		pi[i] = mc->getStationary(i).convert_to<T>();
 	}
 
-	// Finger Search for mixing time
+	// Search for mixing time
 	uint l = 0;
 	uint r = 1;
 

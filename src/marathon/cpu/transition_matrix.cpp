@@ -83,7 +83,7 @@ void DenseTransitionMatrix<T>::initFromStateGraph(const StateGraph* mc) {
 	memset(data, 0, ld * n * sizeof(T));
 
 #pragma omp parallel for if(omega>1000)
-	for (size_t i = 0; i<mc->getNumArcs(); i++) {
+	for (size_t i = 0; i<mc->getNumTransitions(); i++) {
 		Transition uv = mc->arcs[i];
 		data[uv.u * ld + uv.v] = uv.p.convert_to<T>();
 	}
