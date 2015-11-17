@@ -10,12 +10,12 @@ Current ToDo's:
 
 	g++ 4.8 or later
 	cuda 7.0 or later (optional)
-	boost headers (libboost-dev)
-	cblas headers (libblas-dev)
+	boost headers (libboost-dev in ubuntu)
+	cblas headers (libblas-dev in ubuntu)
 
 ## Installation:
 
-It is possible to build the library in cpu native mode without cuda support.
+It is possible to build the library in C++ native mode without CUDA support.
 To do so, just run `make cpp`. To compile with cuda support, run `make cuda`.
 
 ## Link against marathon:
