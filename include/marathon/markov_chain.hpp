@@ -1,5 +1,5 @@
 /*
- * MarkovChain.h
+ * @file: MarkovChain.h
  *
  *  Created on: Feb 11, 2015
  *      Author: steffen

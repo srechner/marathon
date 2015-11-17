@@ -24,9 +24,6 @@ int main(int argc, char** argv) {
 	std::string inst(argv[2]);
 	float eps = atof(argv[3]);
 
-	// init library
-	marathon::gpu::init();
-
 	// Declare StateGraph object
 	marathon::StateGraph *sg = nullptr;
 
@@ -48,10 +45,10 @@ int main(int argc, char** argv) {
 	sg->constructStateGraph();
 
 	// compute total mixing time
-	int t = marathon::cpu::totalMixingTime<double>(sg, eps);
+	int t = marathon::totalMixingTime<double>(sg, eps);
 
 	// compute spectral gap
-	double lambda = marathon::cpu::secondLargestEigenvalue<double>(sg);
+	double lambda = marathon::secondLargestEigenvalue<double>(sg);
 
 	// print information
 	std::cout << "number of states:          " << sg->getNumStates()
@@ -62,9 +59,6 @@ int main(int argc, char** argv) {
 	std::cout << "spectral gap:              " << (1-lambda) << std::endl;
 
 	delete sg;
-
-	// finalize library
-	marathon::gpu::finalize();
 
 	return 0;
 }

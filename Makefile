@@ -17,6 +17,7 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 CPP_SRCS = \
+./src/marathon/marathon.cpp \
 ./src/marathon/rational.cpp \
 ./src/marathon/state_graph.cpp \
 ./src/marathon/transition.cpp \
@@ -27,13 +28,11 @@ CPP_SRCS = \
 ./src/marathon/cpu/variation_distance.cpp \
 ./src/marathon/cpu/shortest_paths.cpp \
 ./src/chains/matching/bipartite_matching.cpp \
-./src/chains/matching/broder86.cpp \
-./src/chains/matching/jerrum_sinclair_vigoda04.cpp \
+./src/chains/matching/matching_chain_JS89.cpp \
+./src/chains/matching/matching_chain_JSV04.cpp \
 ./src/chains/matching/sparse_bipartite_graph.cpp \
-./src/chains/sequences/switch_bipartite.cpp \
-./src/chains/sequences/switch_bipartite_fast.cpp \
-./src/chains/sequences/curveball.cpp \
-./src/chains/sequences/curveball2.cpp \
+./src/chains/sequences/switch_chain_bipartite.cpp \
+./src/chains/sequences/switch_chain_bipartite_berger.cpp \
 ./src/chains/sequences/dense_bipartite_graph.cpp \
 ./src/chains/sequences/havel_hakimi.cpp 
 
@@ -48,6 +47,7 @@ CUDA_SRCS = \
 
 
 CPP_OBJS = \
+./src/marathon/marathon.o \
 ./src/marathon/rational.o \
 ./src/marathon/state_graph.o \
 ./src/marathon/transition.o \
@@ -58,13 +58,11 @@ CPP_OBJS = \
 ./src/marathon/cpu/variation_distance.o \
 ./src/marathon/cpu/shortest_paths.o \
 ./src/chains/matching/bipartite_matching.o \
-./src/chains/matching/broder86.o \
-./src/chains/matching/jerrum_sinclair_vigoda04.o \
+./src/chains/matching/matching_chain_JS89.o \
+./src/chains/matching/matching_chain_JSV04.o \
 ./src/chains/matching/sparse_bipartite_graph.o \
-./src/chains/sequences/switch_bipartite.o \
-./src/chains/sequences/switch_bipartite_fast.o \
-./src/chains/sequences/curveball.o \
-./src/chains/sequences/curveball2.o \
+./src/chains/sequences/switch_chain_bipartite.o \
+./src/chains/sequences/switch_chain_bipartite_berger.o \
 ./src/chains/sequences/dense_bipartite_graph.o \
 ./src/chains/sequences/havel_hakimi.o 
 
@@ -79,6 +77,7 @@ CUDA_OBJS = \
 
 
 CPP_DEPS = \
+./src/marathon/marathon.d \
 ./src/marathon/rational.d \
 ./src/marathon/state_graph.d \
 ./src/marathon/transition.d \
@@ -89,13 +88,11 @@ CPP_DEPS = \
 ./src/marathon/cpu/variation_distance.d \
 ./src/marathon/cpu/shortest_paths.d \
 ./src/chains/matching/bipartite_matching.d \
-./src/chains/matching/broder86.d \
-./src/chains/matching/jerrum_sinclair_vigoda04.d \
+./src/chains/matching/matching_chain_JS89.d \
+./src/chains/matching/matching_chain_JSC04.d \
 ./src/chains/matching/sparse_bipartite_graph.d \
-./src/chains/sequences/switch_bipartite.d \
-./src/chains/sequences/switch_bipartite_fast.d \
-./src/chains/sequences/curveball.d \
-./src/chains/sequences/curveball2.d \
+./src/chains/sequences/switch_chain_bipartite.d \
+./src/chains/sequences/switch_chain_bipartite_berger.d \
 ./src/chains/sequences/dense_bipartite_graph.d \
 ./src/chains/sequences/havel_hakimi.d 
 
