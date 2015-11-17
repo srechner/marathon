@@ -1,5 +1,8 @@
 /*
  * marathon.h
+ * 
+ * main header for the marathon library.
+ *
  *
  *  Created on: Jun 15, 2015
  *      Author: rechner
