@@ -60,43 +60,49 @@ int marathon::gpu::totalMixingTime(const StateGraph* mc, const T epsilon) {
 	// First Phase: Square tmp[0] until dist(tmp[0], pi) < eps
 	tmp[0].copy(P);
 
-	T d = totalVariationDistance<T>(tmp[0], pi, dist);
+	try {
+		T d = totalVariationDistance<T>(tmp[0], pi, dist);
 
-	while (d >= epsilon) {
-		tmp[1].mult(tmp[0], tmp[0]);
-		tmp[0].swapContent(tmp[1]);
-		d = totalVariationDistance<T>(tmp[0], pi, dist);
-		l = r;
-		r *= 2;
-	}
-
-	/*
-	 * State of the variables:
-	 *
-	 * tmp[0] = P^r
-	 * tmp[1] = P^l
-	 *
-	 * dist_l = dist(tmp[1], pi) <= eps < dist(tmp[0], pi) = dist_r
-	 */
-
-	// Second Phase: Binary Search
-	// Invariant: tmp[1] = P^l
-	while (l < r - 1) {
-		uint m = (l + r) / 2;
-
-		// tmp[2] =  P^(m-l)
-		tmp[2].pow(P, m - l, tmp[0]);
-
-		// tmp[0] = P^l * P^(m-l) = P^m
-		tmp[0].mult(tmp[1], tmp[2]);
-		T dist_m = totalVariationDistance<T>(tmp[0], pi, dist);
-
-		if (dist_m >= epsilon) {
-			l = m;
+		while (d >= epsilon) {
+			tmp[1].mult(tmp[0], tmp[0]);
 			tmp[0].swapContent(tmp[1]);
-		} else {
-			r = m;
+			d = totalVariationDistance<T>(tmp[0], pi, dist);
+			l = r;
+			r *= 2;
 		}
+
+		/*
+		 * State of the variables:
+		 *
+		 * tmp[0] = P^r
+		 * tmp[1] = P^l
+		 *
+		 * dist_l = dist(tmp[1], pi) <= eps < dist(tmp[0], pi) = dist_r
+		 */
+
+		// Second Phase: Binary Search
+		// Invariant: tmp[1] = P^l
+		while (l < r - 1) {
+			uint m = (l + r) / 2;
+
+			// tmp[2] =  P^(m-l)
+			tmp[2].pow(P, m - l, tmp[0]);
+
+			// tmp[0] = P^l * P^(m-l) = P^m
+			tmp[0].mult(tmp[1], tmp[2]);
+			T dist_m = totalVariationDistance<T>(tmp[0], pi, dist);
+
+			if (dist_m >= epsilon) {
+				l = m;
+				tmp[0].swapContent(tmp[1]);
+			} else {
+				r = m;
+			}
+		}
+	}
+	catch(std::exception& ex) {
+		std::cerr << "Error! An exception occured: " << ex.what() << std::endl;
+		return -1;
 	}
 
 	// free memory

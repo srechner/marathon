@@ -19,6 +19,16 @@ enum device_t {
 	CPU_ONLY, GPU_ONLY, HYBRID
 };
 
+/*!
+ * @brief The marathon library has to be initialized to use it.
+ */
+void init();
+
+/*!
+ * @brief It is better to close the library at the end.
+ */
+void finalize();
+
 /**
  * Total mixing time
  *
@@ -65,12 +75,6 @@ int diameter(const StateGraph* G);
  */
 void pathLengthHistogram(std::vector<long>& count, const StateGraph* G);
 
-
-/** template specialization for export */
-template int totalMixingTime<float>(const StateGraph*, const float, device_t);
-template int totalMixingTime<double>(const StateGraph*, const double, device_t);
-template float secondLargestEigenvalue(const StateGraph*);
-template double secondLargestEigenvalue(const StateGraph*);
 }
 
 #endif /* MARATHON_H_ */

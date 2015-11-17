@@ -44,8 +44,15 @@ int main(int argc, char** argv) {
 	// construct state graph
 	sg->constructStateGraph();
 
-	// compute total mixing time
-	int t = marathon::totalMixingTime<double>(sg, eps);
+	// Init library
+	marathon::init();
+
+	/**
+	 * compute total mixing time:
+	 * 1. try gpu method
+	 * 2. if gpu is not sucessfull (e.g. not enough memory) try cpu implementation
+	 */
+	int t = marathon::totalMixingTime<double>(sg, eps, marathon::device_t::GPU_ONLY);
 
 	// compute spectral gap
 	double lambda = marathon::secondLargestEigenvalue<double>(sg);
@@ -59,6 +66,9 @@ int main(int argc, char** argv) {
 	std::cout << "spectral gap:              " << (1-lambda) << std::endl;
 
 	delete sg;
+
+	// finalize library
+	marathon::finalize();
 
 	return 0;
 }

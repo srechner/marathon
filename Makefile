@@ -17,7 +17,7 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 CPP_SRCS = \
-./src/marathon/marathon.cpp \
+./src/marathon/marathon_cuda_nonavail.cpp \
 ./src/marathon/rational.cpp \
 ./src/marathon/state_graph.cpp \
 ./src/marathon/transition.cpp \
@@ -37,6 +37,24 @@ CPP_SRCS = \
 ./src/chains/sequences/havel_hakimi.cpp 
 
 CUDA_SRCS = \
+./src/marathon/marathon_cuda_avail.cpp \
+./src/marathon/rational.cpp \
+./src/marathon/state_graph.cpp \
+./src/marathon/transition.cpp \
+./src/marathon/cpu/canonical_path.cpp \
+./src/marathon/cpu/eigenvalues.cpp \
+./src/marathon/cpu/mixing_time.cpp \
+./src/marathon/cpu/transition_matrix.cpp \
+./src/marathon/cpu/variation_distance.cpp \
+./src/marathon/cpu/shortest_paths.cpp \
+./src/chains/matching/bipartite_matching.cpp \
+./src/chains/matching/matching_chain_JS89.cpp \
+./src/chains/matching/matching_chain_JSV04.cpp \
+./src/chains/matching/sparse_bipartite_graph.cpp \
+./src/chains/sequences/switch_chain_bipartite.cpp \
+./src/chains/sequences/switch_chain_bipartite_berger.cpp \
+./src/chains/sequences/dense_bipartite_graph.cpp \
+./src/chains/sequences/havel_hakimi.cpp \
 ./src/marathon/gpu/cuda_functions.cu \
 ./src/marathon/gpu/mixing_time.cpp \
 ./src/marathon/gpu/transition_matrix.cpp \
@@ -47,7 +65,7 @@ CUDA_SRCS = \
 
 
 CPP_OBJS = \
-./src/marathon/marathon.o \
+./src/marathon/marathon_cuda_nonavail.o \
 ./src/marathon/rational.o \
 ./src/marathon/state_graph.o \
 ./src/marathon/transition.o \
@@ -67,6 +85,24 @@ CPP_OBJS = \
 ./src/chains/sequences/havel_hakimi.o 
 
 CUDA_OBJS = \
+./src/marathon/marathon_cuda_avail.o \
+./src/marathon/rational.o \
+./src/marathon/state_graph.o \
+./src/marathon/transition.o \
+./src/marathon/cpu/canonical_path.o \
+./src/marathon/cpu/eigenvalues.o \
+./src/marathon/cpu/mixing_time.o \
+./src/marathon/cpu/transition_matrix.o \
+./src/marathon/cpu/variation_distance.o \
+./src/marathon/cpu/shortest_paths.o \
+./src/chains/matching/bipartite_matching.o \
+./src/chains/matching/matching_chain_JS89.o \
+./src/chains/matching/matching_chain_JSV04.o \
+./src/chains/matching/sparse_bipartite_graph.o \
+./src/chains/sequences/switch_chain_bipartite.o \
+./src/chains/sequences/switch_chain_bipartite_berger.o \
+./src/chains/sequences/dense_bipartite_graph.o \
+./src/chains/sequences/havel_hakimi.o \
 ./src/marathon/gpu/cuda_functions.o \
 ./src/marathon/gpu/mixing_time.o \
 ./src/marathon/gpu/transition_matrix.o \
@@ -77,7 +113,7 @@ CUDA_OBJS = \
 
 
 CPP_DEPS = \
-./src/marathon/marathon.d \
+./src/marathon/marathon_cuda_nonavail.d \
 ./src/marathon/rational.d \
 ./src/marathon/state_graph.d \
 ./src/marathon/transition.d \
@@ -97,6 +133,24 @@ CPP_DEPS = \
 ./src/chains/sequences/havel_hakimi.d 
 
 CUDA_DEPS = \
+./src/marathon/marathon_cuda_avail.d \
+./src/marathon/rational.d \
+./src/marathon/state_graph.d \
+./src/marathon/transition.d \
+./src/marathon/cpu/canonical_path.d \
+./src/marathon/cpu/eigenvalues.d \
+./src/marathon/cpu/mixing_time.d \
+./src/marathon/cpu/transition_matrix.d \
+./src/marathon/cpu/variation_distance.d \
+./src/marathon/cpu/shortest_paths.d \
+./src/chains/matching/bipartite_matching.d \
+./src/chains/matching/matching_chain_JS89.d \
+./src/chains/matching/matching_chain_JSC04.d \
+./src/chains/matching/sparse_bipartite_graph.d \
+./src/chains/sequences/switch_chain_bipartite.d \
+./src/chains/sequences/switch_chain_bipartite_berger.d \
+./src/chains/sequences/dense_bipartite_graph.d \
+./src/chains/sequences/havel_hakimi.d \
 ./src/marathon/gpu/cuda_functions.d \
 ./src/marathon/gpu/mixing_time.d \
 ./src/marathon/gpu/transition_matrix.d \
@@ -120,7 +174,7 @@ cpp: $(CPP_OBJS)
 cuda: $(CUDA_OBJS) $(CPP_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: NVCC Linker'
-	$(NVCC) --cudart static -shared -std=c++11 --relocatable-device-code=true $(COMP_CAP) -link -o "libmarathon.so" $(CPP_OBJS) $(CUDA_OBJS)
+	$(NVCC) --cudart static -shared -std=c++11 --relocatable-device-code=true $(COMP_CAP) -link -o "libmarathon.so" $(CUDA_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
