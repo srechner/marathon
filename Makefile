@@ -171,7 +171,7 @@ cpp: $(CPP_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 	
-cuda: $(CUDA_OBJS) $(CPP_OBJS)
+cuda: $(CUDA_OBJS) 
 	@echo 'Building target: $@'
 	@echo 'Invoking: NVCC Linker'
 	$(NVCC) --cudart static -shared -std=c++11 --relocatable-device-code=true $(COMP_CAP) -link -o "libmarathon.so" $(CUDA_OBJS)
