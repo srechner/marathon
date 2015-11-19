@@ -1,7 +1,7 @@
 #ifndef RATIONAL_CPP_
 #define RATIONAL_CPP_
 
-#include "../../include/marathon/common/rational.h"
+#include "../../../include/marathon/common/rational.h"
 
 
 namespace marathon {
@@ -89,4 +89,5 @@ std::ostream& operator<<(std::ostream& out, const Rational& r) {
 }
 
 }
+
 #endif

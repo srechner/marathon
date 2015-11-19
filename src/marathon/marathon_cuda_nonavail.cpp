@@ -5,7 +5,7 @@
  *      Author: steffen
  */
 
-#include "../../include/marathon.h"
+#include "../../include/marathon/marathon.h"
 #include "../../include/marathon/cpu/analyzer.h"
 #include "../../include/marathon/gpu/analyzer.h"
 #include "../../include/marathon/hybrid/analyzer.h"

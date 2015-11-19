@@ -18,9 +18,9 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 CPP_SRCS = \
 ./src/marathon/marathon_cuda_nonavail.cpp \
-./src/marathon/rational.cpp \
-./src/marathon/state_graph.cpp \
-./src/marathon/transition.cpp \
+./src/marathon/common/rational.cpp \
+./src/marathon/common/state_graph.cpp \
+./src/marathon/common/transition.cpp \
 ./src/marathon/cpu/canonical_path.cpp \
 ./src/marathon/cpu/eigenvalues.cpp \
 ./src/marathon/cpu/mixing_time.cpp \
@@ -38,9 +38,9 @@ CPP_SRCS = \
 
 CUDA_SRCS = \
 ./src/marathon/marathon_cuda_avail.cpp \
-./src/marathon/rational.cpp \
-./src/marathon/state_graph.cpp \
-./src/marathon/transition.cpp \
+./src/marathon/common/rational.cpp \
+./src/marathon/common/state_graph.cpp \
+./src/marathon/common/transition.cpp \
 ./src/marathon/cpu/canonical_path.cpp \
 ./src/marathon/cpu/eigenvalues.cpp \
 ./src/marathon/cpu/mixing_time.cpp \
@@ -66,9 +66,9 @@ CUDA_SRCS = \
 
 CPP_OBJS = \
 ./src/marathon/marathon_cuda_nonavail.o \
-./src/marathon/rational.o \
-./src/marathon/state_graph.o \
-./src/marathon/transition.o \
+./src/marathon/common/rational.o \
+./src/marathon/common/state_graph.o \
+./src/marathon/common/transition.o \
 ./src/marathon/cpu/canonical_path.o \
 ./src/marathon/cpu/eigenvalues.o \
 ./src/marathon/cpu/mixing_time.o \
@@ -86,9 +86,9 @@ CPP_OBJS = \
 
 CUDA_OBJS = \
 ./src/marathon/marathon_cuda_avail.o \
-./src/marathon/rational.o \
-./src/marathon/state_graph.o \
-./src/marathon/transition.o \
+./src/marathon/common/rational.o \
+./src/marathon/common/state_graph.o \
+./src/marathon/common/transition.o \
 ./src/marathon/cpu/canonical_path.o \
 ./src/marathon/cpu/eigenvalues.o \
 ./src/marathon/cpu/mixing_time.o \
@@ -114,9 +114,9 @@ CUDA_OBJS = \
 
 CPP_DEPS = \
 ./src/marathon/marathon_cuda_nonavail.d \
-./src/marathon/rational.d \
-./src/marathon/state_graph.d \
-./src/marathon/transition.d \
+./src/marathon/common/rational.d \
+./src/marathon/common/state_graph.d \
+./src/marathon/common/transition.d \
 ./src/marathon/cpu/canonical_path.d \
 ./src/marathon/cpu/eigenvalues.d \
 ./src/marathon/cpu/mixing_time.d \
@@ -134,9 +134,9 @@ CPP_DEPS = \
 
 CUDA_DEPS = \
 ./src/marathon/marathon_cuda_avail.d \
-./src/marathon/rational.d \
-./src/marathon/state_graph.d \
-./src/marathon/transition.d \
+./src/marathon/common/rational.d \
+./src/marathon/common/state_graph.d \
+./src/marathon/common/transition.d \
 ./src/marathon/cpu/canonical_path.d \
 ./src/marathon/cpu/eigenvalues.d \
 ./src/marathon/cpu/mixing_time.d \
