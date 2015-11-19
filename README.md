@@ -33,9 +33,9 @@ You will need the following other libraries:
 
 ## Example:
 
-The example directory contains an [example](https://github.com/srechner/marathon/blob/master/examples/totalMixingTime.cpp) program which shows how to use marathon to compute the total mixing time. To install, first compile the library via `make cpp` or `make cuda`. To run the example, do the following:
+The example directory contains an [example](https://github.com/srechner/marathon/blob/master/examples/totalMixingTime.cpp) program which shows how to use marathon to compute the total mixing time. To install, first compile the library via `make cpp` or `make cuda`. To run the example, do the following. The build target (`cpp` or `cuda`) has to match the target you used when building the library.
 	
 	cd examples
-	make cpp
+	make
 	export LD_LIBRARY_PATH=../:$LD_LIBRARY_PATH
 	./totalMixingTime
