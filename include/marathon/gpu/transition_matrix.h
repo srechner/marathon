@@ -14,8 +14,8 @@
 #include <cblas.h>
 
 // project includes
-#include "../exceptions.h"
-#include "../state_graph.h"
+#include "../common/exceptions.h"
+#include "../common/state_graph.h"
 #include "analyzer.h"
 #include "../cpu/transition_matrix.h"
 

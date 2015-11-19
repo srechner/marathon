@@ -9,7 +9,7 @@
 #include "marathon/chains/sequences/switch_chain_bipartite_berger.h"
 
 // marathon includes
-#include "marathon.h"
+#include "marathon/marathon.h"
 
 int main(int argc, char** argv) {
 

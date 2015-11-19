@@ -1,7 +1,7 @@
 #ifndef RATIONAL_CPP_
 #define RATIONAL_CPP_
 
-#include "../../include/marathon/rational.h"
+#include "../../include/marathon/common/rational.h"
 
 
 namespace marathon {

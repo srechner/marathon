@@ -11,7 +11,7 @@
 #ifndef MARATHON_H_
 #define MARATHON_H_
 
-#include "marathon/state_graph.h"
+#include "common/state_graph.h"
 
 namespace marathon {
 

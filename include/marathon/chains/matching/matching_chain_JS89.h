@@ -12,7 +12,7 @@
 #include <queue>
 
 // project includes
-#include "../../markov_chain.hpp"
+#include "../../common/markov_chain.hpp"
 #include "sparse_bipartite_graph.h"
 #include "bipartite_matching.h"
 

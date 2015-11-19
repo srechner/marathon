@@ -5,7 +5,7 @@
  *      Author: rechner
  */
 
-#include "../../include/marathon/transition.h"
+#include "../../include/marathon/common/transition.h"
 
 namespace marathon {
 

@@ -9,8 +9,8 @@
 #define HOST_ANALYZER_H_
 
 // project includes
-#include "../rational.h"
-#include "../state_graph.h"
+#include "../common/rational.h"
+#include "../common/state_graph.h"
 #include "transition_matrix.h"
 
 // STL includes

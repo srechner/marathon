@@ -1,4 +1,4 @@
-#include "../../../include/marathon/exceptions.h"
+#include "../../../include/marathon/common/exceptions.h"
 
 #include <cublasXt.h>
 #include "stdio.h"

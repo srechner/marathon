@@ -8,7 +8,7 @@
 #ifndef _BIP_DEG_CHAIN_H_
 #define _BIP_DEG_CHAIN_H_
 
-#include "../../markov_chain.hpp"
+#include "../../common/markov_chain.hpp"
 #include "dense_bipartite_graph.h"
 
 #include <vector>

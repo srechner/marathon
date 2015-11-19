@@ -1,4 +1,4 @@
-#include "../../include/marathon/state_graph.h"
+#include "../../include/marathon/common/state_graph.h"
 
 namespace marathon {
 

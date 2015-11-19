@@ -15,7 +15,7 @@
 #include <cmath>
 
 // Project Includes
-#include "../../../include/marathon/exceptions.h"
+#include "../../../include/marathon/common//exceptions.h"
 #include "../../../include/marathon/cpu/analyzer.h"
 #include "../../../include/arpack++/arlssym.h"
 #include "../../../include/arpack++/arlsmat.h"

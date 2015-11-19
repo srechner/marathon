@@ -1,4 +1,4 @@
-#include "../../../include/marathon/exceptions.h"
+#include "../../../include/marathon/common/exceptions.h"
 
 #include <cublas_v2.h>
 #include <thrust/reduce.h>
