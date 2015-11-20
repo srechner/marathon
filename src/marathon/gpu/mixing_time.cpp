@@ -21,6 +21,7 @@ int marathon::gpu::totalMixingTime(const StateGraph* mc, const T epsilon) {
 		return 0;
 
 	pi_host = new T[omega];
+
 	// try to allocate memory
 	try {
 		cuda::allocMemory((void**) &pi, omega * sizeof(T));
@@ -31,7 +32,7 @@ int marathon::gpu::totalMixingTime(const StateGraph* mc, const T epsilon) {
 		P.initFromStateGraph(mc);
 
 	} catch (int n) {
-		std::cerr << "bad memory access (Device)" << std::endl;
+		std::cerr << "Error! bad device memory allocation" << std::endl;
 
 		// try to free memory
 		delete[] pi_host;

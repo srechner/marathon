@@ -33,11 +33,10 @@ int marathon::cpu::totalMixingTime(const StateGraph* mc, const T epsilon) {
 		tmp[1].init(omega);
 		tmp[2].init(omega);
 		P.initFromStateGraph(mc);
-
-	} catch (int n) {
+	} catch (std::exception& e) {
 		delete[] pi;
 		delete[] dist;
-		std::cerr << "bad malloc" << std::endl;
+		std::cerr << "Error! bad host memory allocation" << std::endl;
 		return -1;
 	}
 

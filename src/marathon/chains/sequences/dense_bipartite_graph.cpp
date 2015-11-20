@@ -6,7 +6,7 @@
  */
 
 // project includes
-#include "../../../include/marathon/chains/sequences/dense_bipartite_graph.h"
+#include "../../../../include/marathon/chains/sequences/dense_bipartite_graph.h"
 
 // system includes
 #include <cstdlib>

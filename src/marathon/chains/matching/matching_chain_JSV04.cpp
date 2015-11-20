@@ -5,7 +5,7 @@
  *      Author: rechner
  */
 
-#include "../../../include/marathon/chains/matching/matching_chain_JSV04.h"
+#include "../../../../include/marathon/chains/matching/matching_chain_JSV04.h"
 
 namespace marathon {
 

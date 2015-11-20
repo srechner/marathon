@@ -6,7 +6,7 @@
  */
 
 #include <iostream>
-#include "../../../include/marathon/chains/sequences/switch_chain_bipartite_berger.h"
+#include "../../../../include/marathon/chains/sequences/switch_chain_bipartite_berger.h"
 
 namespace marathon {
 

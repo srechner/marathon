@@ -12,7 +12,7 @@ DEPS = totalMixingTime.d
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: cuda
+all: cpp
 
 # Tool invocations
 cuda: $(OBJS)

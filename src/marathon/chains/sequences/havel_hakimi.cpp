@@ -1,4 +1,4 @@
-#include "../../../include/marathon/chains/sequences/havel_hakimi.h"
+#include "../../../../include/marathon/chains/sequences/havel_hakimi.h"
 
 #include <iostream>
 #include <algorithm>

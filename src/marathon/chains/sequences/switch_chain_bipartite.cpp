@@ -1,6 +1,6 @@
 // project includes
-#include "../../../include/marathon/chains/sequences/switch_chain_bipartite.h"
-#include "../../../include/marathon/chains/sequences/havel_hakimi.h"
+#include "../../../../include/marathon/chains/sequences/switch_chain_bipartite.h"
+#include "../../../../include/marathon/chains/sequences/havel_hakimi.h"
 
 //#define DEBUG
 

@@ -27,14 +27,14 @@ CPP_SRCS = \
 ./src/marathon/cpu/transition_matrix.cpp \
 ./src/marathon/cpu/variation_distance.cpp \
 ./src/marathon/cpu/shortest_paths.cpp \
-./src/chains/matching/bipartite_matching.cpp \
-./src/chains/matching/matching_chain_JS89.cpp \
-./src/chains/matching/matching_chain_JSV04.cpp \
-./src/chains/matching/sparse_bipartite_graph.cpp \
-./src/chains/sequences/switch_chain_bipartite.cpp \
-./src/chains/sequences/switch_chain_bipartite_berger.cpp \
-./src/chains/sequences/dense_bipartite_graph.cpp \
-./src/chains/sequences/havel_hakimi.cpp 
+./src/marathon/chains/matching/bipartite_matching.cpp \
+./src/marathon/chains/matching/matching_chain_JS89.cpp \
+./src/marathon/chains/matching/matching_chain_JSV04.cpp \
+./src/marathon/chains/matching/sparse_bipartite_graph.cpp \
+./src/marathon/chains/sequences/switch_chain_bipartite.cpp \
+./src/marathon/chains/sequences/switch_chain_bipartite_berger.cpp \
+./src/marathon/chains/sequences/dense_bipartite_graph.cpp \
+./src/marathon/chains/sequences/havel_hakimi.cpp 
 
 CUDA_SRCS = \
 ./src/marathon/marathon_cuda.cpp \
@@ -47,14 +47,14 @@ CUDA_SRCS = \
 ./src/marathon/cpu/transition_matrix.cpp \
 ./src/marathon/cpu/variation_distance.cpp \
 ./src/marathon/cpu/shortest_paths.cpp \
-./src/chains/matching/bipartite_matching.cpp \
-./src/chains/matching/matching_chain_JS89.cpp \
-./src/chains/matching/matching_chain_JSV04.cpp \
-./src/chains/matching/sparse_bipartite_graph.cpp \
-./src/chains/sequences/switch_chain_bipartite.cpp \
-./src/chains/sequences/switch_chain_bipartite_berger.cpp \
-./src/chains/sequences/dense_bipartite_graph.cpp \
-./src/chains/sequences/havel_hakimi.cpp \
+./src/marathon/chains/matching/bipartite_matching.cpp \
+./src/marathon/chains/matching/matching_chain_JS89.cpp \
+./src/marathon/chains/matching/matching_chain_JSV04.cpp \
+./src/marathon/chains/matching/sparse_bipartite_graph.cpp \
+./src/marathon/chains/sequences/switch_chain_bipartite.cpp \
+./src/marathon/chains/sequences/switch_chain_bipartite_berger.cpp \
+./src/marathon/chains/sequences/dense_bipartite_graph.cpp \
+./src/marathon/chains/sequences/havel_hakimi.cpp \
 ./src/marathon/gpu/cuda_functions.cu \
 ./src/marathon/gpu/init_finalize.cpp \
 ./src/marathon/gpu/mixing_time.cpp \
@@ -77,14 +77,14 @@ CPP_OBJS = \
 ./src/marathon/cpu/transition_matrix.o \
 ./src/marathon/cpu/variation_distance.o \
 ./src/marathon/cpu/shortest_paths.o \
-./src/chains/matching/bipartite_matching.o \
-./src/chains/matching/matching_chain_JS89.o \
-./src/chains/matching/matching_chain_JSV04.o \
-./src/chains/matching/sparse_bipartite_graph.o \
-./src/chains/sequences/switch_chain_bipartite.o \
-./src/chains/sequences/switch_chain_bipartite_berger.o \
-./src/chains/sequences/dense_bipartite_graph.o \
-./src/chains/sequences/havel_hakimi.o 
+./src/marathon/chains/matching/bipartite_matching.o \
+./src/marathon/chains/matching/matching_chain_JS89.o \
+./src/marathon/chains/matching/matching_chain_JSV04.o \
+./src/marathon/chains/matching/sparse_bipartite_graph.o \
+./src/marathon/chains/sequences/switch_chain_bipartite.o \
+./src/marathon/chains/sequences/switch_chain_bipartite_berger.o \
+./src/marathon/chains/sequences/dense_bipartite_graph.o \
+./src/marathon/chains/sequences/havel_hakimi.o 
 
 CUDA_OBJS = \
 ./src/marathon/marathon_cuda.o \
@@ -97,14 +97,14 @@ CUDA_OBJS = \
 ./src/marathon/cpu/transition_matrix.o \
 ./src/marathon/cpu/variation_distance.o \
 ./src/marathon/cpu/shortest_paths.o \
-./src/chains/matching/bipartite_matching.o \
-./src/chains/matching/matching_chain_JS89.o \
-./src/chains/matching/matching_chain_JSV04.o \
-./src/chains/matching/sparse_bipartite_graph.o \
-./src/chains/sequences/switch_chain_bipartite.o \
-./src/chains/sequences/switch_chain_bipartite_berger.o \
-./src/chains/sequences/dense_bipartite_graph.o \
-./src/chains/sequences/havel_hakimi.o \
+./src/marathon/chains/matching/bipartite_matching.o \
+./src/marathon/chains/matching/matching_chain_JS89.o \
+./src/marathon/chains/matching/matching_chain_JSV04.o \
+./src/marathon/chains/matching/sparse_bipartite_graph.o \
+./src/marathon/chains/sequences/switch_chain_bipartite.o \
+./src/marathon/chains/sequences/switch_chain_bipartite_berger.o \
+./src/marathon/chains/sequences/dense_bipartite_graph.o \
+./src/marathon/chains/sequences/havel_hakimi.o \
 ./src/marathon/gpu/cuda_functions.o \
 ./src/marathon/gpu/init_finalize.o \
 ./src/marathon/gpu/mixing_time.o \
@@ -127,14 +127,14 @@ CPP_DEPS = \
 ./src/marathon/cpu/transition_matrix.d \
 ./src/marathon/cpu/variation_distance.d \
 ./src/marathon/cpu/shortest_paths.d \
-./src/chains/matching/bipartite_matching.d \
-./src/chains/matching/matching_chain_JS89.d \
-./src/chains/matching/matching_chain_JSC04.d \
-./src/chains/matching/sparse_bipartite_graph.d \
-./src/chains/sequences/switch_chain_bipartite.d \
-./src/chains/sequences/switch_chain_bipartite_berger.d \
-./src/chains/sequences/dense_bipartite_graph.d \
-./src/chains/sequences/havel_hakimi.d 
+./src/marathon/chains/matching/bipartite_matching.d \
+./src/marathon/chains/matching/matching_chain_JS89.d \
+./src/marathon/chains/matching/matching_chain_JSC04.d \
+./src/marathon/chains/matching/sparse_bipartite_graph.d \
+./src/marathon/chains/sequences/switch_chain_bipartite.d \
+./src/marathon/chains/sequences/switch_chain_bipartite_berger.d \
+./src/marathon/chains/sequences/dense_bipartite_graph.d \
+./src/marathon/chains/sequences/havel_hakimi.d 
 
 CUDA_DEPS = \
 ./src/marathon/marathon_cuda.d \
@@ -147,14 +147,14 @@ CUDA_DEPS = \
 ./src/marathon/cpu/transition_matrix.d \
 ./src/marathon/cpu/variation_distance.d \
 ./src/marathon/cpu/shortest_paths.d \
-./src/chains/matching/bipartite_matching.d \
-./src/chains/matching/matching_chain_JS89.d \
-./src/chains/matching/matching_chain_JSC04.d \
-./src/chains/matching/sparse_bipartite_graph.d \
-./src/chains/sequences/switch_chain_bipartite.d \
-./src/chains/sequences/switch_chain_bipartite_berger.d \
-./src/chains/sequences/dense_bipartite_graph.d \
-./src/chains/sequences/havel_hakimi.d \
+./src/marathon/chains/matching/bipartite_matching.d \
+./src/marathon/chains/matching/matching_chain_JS89.d \
+./src/marathon/chains/matching/matching_chain_JSC04.d \
+./src/marathon/chains/matching/sparse_bipartite_graph.d \
+./src/marathon/chains/sequences/switch_chain_bipartite.d \
+./src/marathon/chains/sequences/switch_chain_bipartite_berger.d \
+./src/marathon/chains/sequences/dense_bipartite_graph.d \
+./src/marathon/chains/sequences/havel_hakimi.d \
 ./src/marathon/gpu/cuda_functions.d \
 ./src/marathon/gpu/init_finalize.d \
 ./src/marathon/gpu/mixing_time.d \

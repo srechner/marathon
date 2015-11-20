@@ -5,7 +5,7 @@
  *      Author: steffen
  */
 
-#include "../../../include/marathon/chains/matching/matching_chain_JS89.h"
+#include "../../../../include/marathon/chains/matching/matching_chain_JS89.h"
 
 namespace marathon {
 
