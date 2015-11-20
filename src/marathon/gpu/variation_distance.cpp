@@ -3,19 +3,9 @@
 
 #include "../../../include/marathon/gpu/analyzer.h"
 
-#include <iostream>
-
 namespace marathon {
 
 namespace gpu {
-
-void init() {
-	cuda::initCublas();
-}
-
-void finalize() {
-	cuda::finalizeCublas();
-}
 
 template<>
 void variationDistance<float>(const DenseTransitionMatrix<float>& P,

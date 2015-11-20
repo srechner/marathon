@@ -7,14 +7,6 @@ namespace marathon {
 
 namespace hybrid {
 
-void init() {
-	cuda::initCublasXt();
-}
-
-void finalize() {
-	cuda::finalizeCublasXt();
-}
-
 template<>
 void DenseTransitionMatrix<float>::mult(const DenseTransitionMatrix<float>& A,
 		const DenseTransitionMatrix<float>& B) {

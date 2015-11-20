@@ -27,14 +27,22 @@ namespace hybrid {
 
 namespace cuda {
 
-extern "C" void initCublasXt();
+extern "C" bool initCublasXt();
 extern "C" void finalizeCublasXt();
 
 }
 
 
-void init();
+/**
+ * Initialize the cublasXt library for matrix multiplication
+ * Returns true, if cublasXt could be initialized successfully and a CUDA capable
+ * device could be detected, else returns false.
+ */
+bool init();
 
+/**
+ * finalize the cublasXt library for matrix multiplication
+ */
 void finalize();
 
 /**

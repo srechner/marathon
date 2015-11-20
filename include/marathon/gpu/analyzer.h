@@ -52,7 +52,7 @@ extern "C" float minVariationDistanceFloat(const float* ptr, const float * pi,
 		float* dist, const size_t n, const size_t ld);
 extern "C" double minVariationDistanceDouble(const double* ptr,
 		const double * pi, double* dist, const size_t n, const size_t ld);
-extern "C" void initCublas();
+extern "C" bool initCublas();
 extern "C" void finalizeCublas();
 extern "C" void multFloat(const float* A, const size_t ldA, const float* B,
 		const size_t ldB, float* C, const size_t ldC, const size_t n);
@@ -69,7 +69,16 @@ extern "C" void multDouble(const double* A, const size_t ldA, const double* B,
  *
  ***********************************************************************/
 
-void init();
+/**
+ * Initializes the cublas library for matrix multiplication.
+ * Returns true, if cublas could be initialized successfully and a CUDA capable
+ * device could be detected, else returns false.
+ */
+bool init();
+
+/**
+ * Finalizes the cublas library.
+ */
 void finalize();
 
 template<typename T>

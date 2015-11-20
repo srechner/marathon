@@ -23,15 +23,22 @@ int totalMixingTime(const StateGraph* mc, const T epsilon, device_t device) {
 		break;
 	case GPU_ONLY:
 		// library needs to be initialized
-		if (!isInit)
-			init();
+		if (!isInit) {
+			std::cerr
+					<< "Error! marathon not initialized! Please call marathon::init() first!"
+					<< std::endl;
+			return -1;
+		}
 		return gpu::totalMixingTime(mc, epsilon);
 		break;
 	case HYBRID:
 		// library needs to be initialized
-		if (!isInit)
-			init();
-
+		if (!isInit) {
+			std::cerr
+					<< "Error! marathon not initialized! Please call marathon::init() first!"
+					<< std::endl;
+			return -1;
+		}
 		return hybrid::totalMixingTime(mc, epsilon);
 		break;
 	}
@@ -55,15 +62,22 @@ void pathLengthHistogram(std::vector<long>& count, const StateGraph* G) {
 }
 
 void init() {
-	marathon::gpu::init();
-	marathon::hybrid::init();
-	isInit = true;
+	bool gpuInit = marathon::gpu::init();
+	bool hybridInit = marathon::hybrid::init();
+	if (gpuInit && hybridInit)
+		isInit = true;
+	else
+		std::cerr
+				<< "Error! marathon (cuda mode) could not be initialized. Is a CUDA capable GPU present?"
+				<< std::endl;
 }
 
 void finalize() {
-	marathon::gpu::finalize();
-	marathon::hybrid::init();
-	isInit = true;
+	if (isInit) {
+		marathon::gpu::finalize();
+		marathon::hybrid::finalize();
+		isInit = false;
+	}
 }
 
 /** template specialization for export */

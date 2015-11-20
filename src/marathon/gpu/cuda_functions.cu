@@ -12,8 +12,18 @@ namespace cuda {
 
 cublasHandle_t cublasHandle;
 
-extern "C" void initCublas() {
+extern "C" bool initCublas() {
+
+	// check of cuda capable gpu is available
+	int deviceCount = 0;
+	cudaError_t error_id = cudaGetDeviceCount(&deviceCount);
+
+	if (error_id != cudaSuccess || deviceCount == 0)
+		return false;
+
 	cublasCreate_v2(&cublasHandle);
+
+	return true;
 }
 
 extern "C" void finalizeCublas() {

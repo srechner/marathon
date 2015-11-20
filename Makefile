@@ -17,7 +17,7 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 CPP_SRCS = \
-./src/marathon/marathon_cuda_nonavail.cpp \
+./src/marathon/marathon_nocuda.cpp \
 ./src/marathon/common/rational.cpp \
 ./src/marathon/common/state_graph.cpp \
 ./src/marathon/common/transition.cpp \
@@ -37,7 +37,7 @@ CPP_SRCS = \
 ./src/chains/sequences/havel_hakimi.cpp 
 
 CUDA_SRCS = \
-./src/marathon/marathon_cuda_avail.cpp \
+./src/marathon/marathon_cuda.cpp \
 ./src/marathon/common/rational.cpp \
 ./src/marathon/common/state_graph.cpp \
 ./src/marathon/common/transition.cpp \
@@ -56,16 +56,18 @@ CUDA_SRCS = \
 ./src/chains/sequences/dense_bipartite_graph.cpp \
 ./src/chains/sequences/havel_hakimi.cpp \
 ./src/marathon/gpu/cuda_functions.cu \
+./src/marathon/gpu/init_finalize.cpp \
 ./src/marathon/gpu/mixing_time.cpp \
 ./src/marathon/gpu/transition_matrix.cpp \
 ./src/marathon/gpu/variation_distance.cpp \
 ./src/marathon/hybrid/cuda_functions.cu \
+./src/marathon/hybrid/init_finalize.cpp \
 ./src/marathon/hybrid/mixing_time.cpp \
 ./src/marathon/hybrid/transition_matrix.cpp
 
 
 CPP_OBJS = \
-./src/marathon/marathon_cuda_nonavail.o \
+./src/marathon/marathon_nocuda.o \
 ./src/marathon/common/rational.o \
 ./src/marathon/common/state_graph.o \
 ./src/marathon/common/transition.o \
@@ -85,7 +87,7 @@ CPP_OBJS = \
 ./src/chains/sequences/havel_hakimi.o 
 
 CUDA_OBJS = \
-./src/marathon/marathon_cuda_avail.o \
+./src/marathon/marathon_cuda.o \
 ./src/marathon/common/rational.o \
 ./src/marathon/common/state_graph.o \
 ./src/marathon/common/transition.o \
@@ -104,16 +106,18 @@ CUDA_OBJS = \
 ./src/chains/sequences/dense_bipartite_graph.o \
 ./src/chains/sequences/havel_hakimi.o \
 ./src/marathon/gpu/cuda_functions.o \
+./src/marathon/gpu/init_finalize.o \
 ./src/marathon/gpu/mixing_time.o \
 ./src/marathon/gpu/transition_matrix.o \
 ./src/marathon/gpu/variation_distance.o \
 ./src/marathon/hybrid/cuda_functions.o \
+./src/marathon/hybrid/init_finalize.o \
 ./src/marathon/hybrid/mixing_time.o \
 ./src/marathon/hybrid/transition_matrix.o
 
 
 CPP_DEPS = \
-./src/marathon/marathon_cuda_nonavail.d \
+./src/marathon/marathon_nocuda.d \
 ./src/marathon/common/rational.d \
 ./src/marathon/common/state_graph.d \
 ./src/marathon/common/transition.d \
@@ -133,7 +137,7 @@ CPP_DEPS = \
 ./src/chains/sequences/havel_hakimi.d 
 
 CUDA_DEPS = \
-./src/marathon/marathon_cuda_avail.d \
+./src/marathon/marathon_cuda.d \
 ./src/marathon/common/rational.d \
 ./src/marathon/common/state_graph.d \
 ./src/marathon/common/transition.d \
@@ -152,10 +156,12 @@ CUDA_DEPS = \
 ./src/chains/sequences/dense_bipartite_graph.d \
 ./src/chains/sequences/havel_hakimi.d \
 ./src/marathon/gpu/cuda_functions.d \
+./src/marathon/gpu/init_finalize.d \
 ./src/marathon/gpu/mixing_time.d \
 ./src/marathon/gpu/transition_matrix.d \
 ./src/marathon/gpu/variation_distance.d \
 ./src/marathon/hybrid/cuda_functions.d \
+./src/marathon/hybrid/init_finalize.d \
 ./src/marathon/hybrid/mixing_time.d \
 ./src/marathon/hybrid/transition_matrix.d
 

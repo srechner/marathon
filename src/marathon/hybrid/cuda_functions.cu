@@ -11,7 +11,15 @@ namespace cuda {
 
 cublasXtHandle_t cublasXtHandle;
 
-extern "C" void initCublasXt() {
+extern "C" bool initCublasXt() {
+
+	// check of cuda capable gpu is available
+	int deviceCount = 0;
+	cudaError_t error_id = cudaGetDeviceCount(&deviceCount);
+
+	if (error_id != cudaSuccess || deviceCount == 0)
+		return false;
+
 	cublasXtCreate(&cublasXtHandle);
 
 	// use first gpu
@@ -24,6 +32,8 @@ extern "C" void initCublasXt() {
 	// set block dimension
 	// TODO: add logic to choose optimal value
 	//cublasXtSetBlockDim(cublasXtHandle, 6000);
+
+	return true;
 }
 
 extern "C" void finalizeCublasXt() {
