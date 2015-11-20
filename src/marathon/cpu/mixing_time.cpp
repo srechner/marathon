@@ -38,6 +38,11 @@ int marathon::cpu::totalMixingTime(const StateGraph* mc, const T epsilon) {
 		delete[] dist;
 		std::cerr << "Error! bad host memory allocation" << std::endl;
 		return -1;
+	} catch (int i) {
+		delete[] pi;
+		delete[] dist;
+		std::cerr << "Error! bad host memory allocation" << std::endl;
+		return -1;
 	}
 
 	// convert stationary distribution into floating point number array
