@@ -33,7 +33,7 @@ You will need the following other libraries:
 
 ## Example:
 
-The example directory contains several [example](https://github.com/srechner/marathon/blob/master/examples/) programs which show how to use marathon. To install, first compile the library via `make cpp` or `make cuda`. To run the example, do the following. The build target (`cpp` or `cuda`) has to match the target you used when building the library.
+The [example](https://github.com/srechner/marathon/blob/master/examples/) directory contains several example programs which show how to use marathon. To install, first compile the library via `make cpp` or `make cuda`. To run the example, do the following. The build target (`cpp` or `cuda`) has to match the target you used when building the library.
 	
 	cd examples
 	make
