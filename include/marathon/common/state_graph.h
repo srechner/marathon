@@ -130,6 +130,8 @@ public:
 	virtual void canonicalPath(int u, int v, std::list<int>& path) const;
 
 	virtual void constructStateGraph(bool verbose = false) = 0;
+
+	virtual void printStates() const = 0;
 };
 
 }

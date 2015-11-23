@@ -41,7 +41,7 @@ public:
 template<class State>
 class MarkovChain: public StateGraph {
 
-protected:
+public:
 
 	std::vector<State> states;					// vector of states
 	boost::unordered_map<State, int> indices;	// State -> Index
@@ -283,6 +283,11 @@ public:
 
 	}
 
+	void printStates() const {
+		for(State s : states) {
+			std::cout << s << std::endl;
+		}
+	}
 };
 
 } /* end namespace marathon */
