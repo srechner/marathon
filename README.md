@@ -5,6 +5,7 @@ This C++ library is designed to support the analysis of Markov chain based sampl
 Current ToDo's:
 
 	Working on Documentation
+	Major Refactoring and Redesign due to integration plans of network analysis algorithms
 	
 ## Requirements:
 
