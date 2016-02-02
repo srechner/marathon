@@ -24,7 +24,7 @@ To do so, just run `make`. To compile with cuda support, run `make GPU=true`.
 ## Link against marathon:
 
 To use the functionality build in marathon, link against the libmarathon.so file.
-You will need the following other libraries:
+You will need the following other libraries installed:
 
 	gomp
 	pthread
@@ -41,4 +41,4 @@ The [example directory](https://github.com/srechner/marathon/blob/master/example
 	cd examples/MixingBounds/
 	make
 	export LD_LIBRARY_PATH=../:$LD_LIBRARY_PATH
-	./MixingBounds
+	./MixingBounds swapBip "2,1,1;1,2,1" 1e-3
