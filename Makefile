@@ -1,10 +1,16 @@
 # Makefile for building marathon library
 #
-# Just run 'make cpp' to compile cpp only library (without cuda support).
+# Just run 'make' to compile cpp only library (without cuda support).
 #
-# Run 'make cuda' to build library with cuda support.
+# Run 'make make GPU=true' to build library with cuda support.
 # You may change $(COMP_CAP) to your own cuda compate capability
 #
+
+COMP_CAP = \
+-gencode arch=compute_52,code=sm_52 \
+-gencode arch=compute_30,code=sm_30 \
+-gencode arch=compute_35,code=sm_35 \
+-gencode arch=compute_20,code=sm_20
 
 # All of the sources participating in the build are defined here
 CPP_SRCS = \
@@ -57,7 +63,7 @@ CU_SRCS = \
 ./src/marathon/hybrid/transition_matrix.cpp
 
 CPP_OBJECTS := $(CPP_SRCS:.cpp=.o) 
-CU_OBJECTS := $(CU_SRCS:.cu=.o)
+CU_OBJECTS := $(addsuffix .o,$(basename $(CU_SRCS)))
 
 GPU = false
 
@@ -69,11 +75,6 @@ OBJECTS = $(CPP_OBJECTS)
 CFLAGS = -c -std=c++11 -O3 -fPIC -fopenmp 
 LDFLAGS = -L/usr/local/lib/
 LIBS = -lgomp -lpthread -lopenblas -larpack++ -larpack -lsuperlu 
-
-COMP_CAP = \
--gencode arch=compute_52,code=sm_52 \
--gencode arch=compute_30,code=sm_30 \
--gencode arch=compute_35,code=sm_35
 
 ifeq ($(GPU),true)
 	CC = $(NVCC)
@@ -88,7 +89,7 @@ RM := rm -rf
 
 # Add inputs and outputs from these tool invocations to the build variables 
 
-all: static
+all: shared
 
 static: $(OBJECTS)
 	ar rcs libmarathon.a $(OBJECTS)
