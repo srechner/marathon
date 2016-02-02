@@ -41,4 +41,4 @@ The [example directory](https://github.com/srechner/marathon/blob/master/example
 	cd examples/MixingBounds/
 	make
 	export LD_LIBRARY_PATH=../:$LD_LIBRARY_PATH
-	./totalMixingTime
+	./MixingBounds
