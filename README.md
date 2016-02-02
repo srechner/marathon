@@ -19,7 +19,7 @@ Current ToDo's:
 ## Installation:
 
 It is possible to build the library in C++ native mode without CUDA support.
-To do so, just run `make cpp`. To compile with cuda support, run `make cuda`.
+To do so, just run `make`. To compile with cuda support, run `make GPU=true`.
 
 ## Link against marathon:
 
@@ -36,9 +36,9 @@ You will need the following other libraries:
 
 ## Example:
 
-The [example directory](https://github.com/srechner/marathon/blob/master/examples/) contains several example programs which show how to use marathon. To install, first compile the library via `make cpp` or `make cuda`. To run the example, do the following. The build target (`cpp` or `cuda`) has to match the target you used when building the library.
+The [example directory](https://github.com/srechner/marathon/blob/master/examples/) contains several example programs which show how to use marathon. To install, first compile the library via `make` or `make GPU=true`. To run the example, do the following.
 	
-	cd examples
+	cd examples/MixingBounds/
 	make
 	export LD_LIBRARY_PATH=../:$LD_LIBRARY_PATH
 	./totalMixingTime
