@@ -36,7 +36,7 @@ You will need the following other libraries:
 
 ## Example:
 
-The [example directory](https://github.com/srechner/marathon/blob/master/examples/) contains several example programs which show how to use marathon. To install, first compile the library via `make` or `make GPU=true`. To run the example, do the following.
+The [example directory](https://github.com/srechner/marathon/blob/master/examples/) contains several example programs which show how to use marathon. To install, first compile the library via `make` or `make GPU=true`. To run the example, do the following. (The make option has to match the option when building the library.)
 	
 	cd examples/MixingBounds/
 	make
