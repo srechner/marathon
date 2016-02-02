@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	sg->constructStateGraph();
+	sg->constructStateGraph(true);
 	sg->printStates();
 
 	delete sg;

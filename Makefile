@@ -6,15 +6,6 @@
 # You may change $(COMP_CAP) to your own cuda compate capability
 #
 
-NVCC := /usr/local/cuda/bin/nvcc
-
-COMP_CAP = \
--gencode arch=compute_52,code=sm_52 \
--gencode arch=compute_30,code=sm_30 \
--gencode arch=compute_35,code=sm_35
-
-RM := rm -rf
-
 # All of the sources participating in the build are defined here
 CPP_SRCS = \
 ./src/marathon/marathon_nocuda.cpp \
@@ -36,7 +27,7 @@ CPP_SRCS = \
 ./src/marathon/chains/sequences/dense_bipartite_graph.cpp \
 ./src/marathon/chains/sequences/havel_hakimi.cpp 
 
-CUDA_SRCS = \
+CU_SRCS = \
 ./src/marathon/marathon_cuda.cpp \
 ./src/marathon/common/rational.cpp \
 ./src/marathon/common/state_graph.cpp \
@@ -65,144 +56,55 @@ CUDA_SRCS = \
 ./src/marathon/hybrid/mixing_time.cpp \
 ./src/marathon/hybrid/transition_matrix.cpp
 
+CPP_OBJECTS := $(CPP_SRCS:.cpp=.o) 
+CU_OBJECTS := $(CU_SRCS:.cu=.o)
 
-CPP_OBJS = \
-./src/marathon/marathon_nocuda.o \
-./src/marathon/common/rational.o \
-./src/marathon/common/state_graph.o \
-./src/marathon/common/transition.o \
-./src/marathon/cpu/canonical_path.o \
-./src/marathon/cpu/eigenvalues.o \
-./src/marathon/cpu/mixing_time.o \
-./src/marathon/cpu/transition_matrix.o \
-./src/marathon/cpu/variation_distance.o \
-./src/marathon/cpu/shortest_paths.o \
-./src/marathon/chains/matching/bipartite_matching.o \
-./src/marathon/chains/matching/matching_chain_JS89.o \
-./src/marathon/chains/matching/matching_chain_JSV04.o \
-./src/marathon/chains/matching/sparse_bipartite_graph.o \
-./src/marathon/chains/sequences/switch_chain_bipartite.o \
-./src/marathon/chains/sequences/switch_chain_bipartite_berger.o \
-./src/marathon/chains/sequences/dense_bipartite_graph.o \
-./src/marathon/chains/sequences/havel_hakimi.o 
+GPU = false
 
-CUDA_OBJS = \
-./src/marathon/marathon_cuda.o \
-./src/marathon/common/rational.o \
-./src/marathon/common/state_graph.o \
-./src/marathon/common/transition.o \
-./src/marathon/cpu/canonical_path.o \
-./src/marathon/cpu/eigenvalues.o \
-./src/marathon/cpu/mixing_time.o \
-./src/marathon/cpu/transition_matrix.o \
-./src/marathon/cpu/variation_distance.o \
-./src/marathon/cpu/shortest_paths.o \
-./src/marathon/chains/matching/bipartite_matching.o \
-./src/marathon/chains/matching/matching_chain_JS89.o \
-./src/marathon/chains/matching/matching_chain_JSV04.o \
-./src/marathon/chains/matching/sparse_bipartite_graph.o \
-./src/marathon/chains/sequences/switch_chain_bipartite.o \
-./src/marathon/chains/sequences/switch_chain_bipartite_berger.o \
-./src/marathon/chains/sequences/dense_bipartite_graph.o \
-./src/marathon/chains/sequences/havel_hakimi.o \
-./src/marathon/gpu/cuda_functions.o \
-./src/marathon/gpu/init_finalize.o \
-./src/marathon/gpu/mixing_time.o \
-./src/marathon/gpu/transition_matrix.o \
-./src/marathon/gpu/variation_distance.o \
-./src/marathon/hybrid/cuda_functions.o \
-./src/marathon/hybrid/init_finalize.o \
-./src/marathon/hybrid/mixing_time.o \
-./src/marathon/hybrid/transition_matrix.o
+CC = g++
+NVCC = /usr/local/cuda/bin/nvcc
+SRCS = $(CPP_SRCS)
+OBJECTS = $(CPP_OBJECTS)
 
+CFLAGS = -c -std=c++11 -O3 -fPIC -fopenmp 
+LDFLAGS = -L/usr/local/lib/
+LIBS = -lgomp -lpthread -lopenblas -larpack++ -larpack -lsuperlu 
 
-CPP_DEPS = \
-./src/marathon/marathon_nocuda.d \
-./src/marathon/common/rational.d \
-./src/marathon/common/state_graph.d \
-./src/marathon/common/transition.d \
-./src/marathon/cpu/canonical_path.d \
-./src/marathon/cpu/eigenvalues.d \
-./src/marathon/cpu/mixing_time.d \
-./src/marathon/cpu/transition_matrix.d \
-./src/marathon/cpu/variation_distance.d \
-./src/marathon/cpu/shortest_paths.d \
-./src/marathon/chains/matching/bipartite_matching.d \
-./src/marathon/chains/matching/matching_chain_JS89.d \
-./src/marathon/chains/matching/matching_chain_JSC04.d \
-./src/marathon/chains/matching/sparse_bipartite_graph.d \
-./src/marathon/chains/sequences/switch_chain_bipartite.d \
-./src/marathon/chains/sequences/switch_chain_bipartite_berger.d \
-./src/marathon/chains/sequences/dense_bipartite_graph.d \
-./src/marathon/chains/sequences/havel_hakimi.d 
+COMP_CAP = \
+-gencode arch=compute_52,code=sm_52 \
+-gencode arch=compute_30,code=sm_30 \
+-gencode arch=compute_35,code=sm_35
 
-CUDA_DEPS = \
-./src/marathon/marathon_cuda.d \
-./src/marathon/common/rational.d \
-./src/marathon/common/state_graph.d \
-./src/marathon/common/transition.d \
-./src/marathon/cpu/canonical_path.d \
-./src/marathon/cpu/eigenvalues.d \
-./src/marathon/cpu/mixing_time.d \
-./src/marathon/cpu/transition_matrix.d \
-./src/marathon/cpu/variation_distance.d \
-./src/marathon/cpu/shortest_paths.d \
-./src/marathon/chains/matching/bipartite_matching.d \
-./src/marathon/chains/matching/matching_chain_JS89.d \
-./src/marathon/chains/matching/matching_chain_JSC04.d \
-./src/marathon/chains/matching/sparse_bipartite_graph.d \
-./src/marathon/chains/sequences/switch_chain_bipartite.d \
-./src/marathon/chains/sequences/switch_chain_bipartite_berger.d \
-./src/marathon/chains/sequences/dense_bipartite_graph.d \
-./src/marathon/chains/sequences/havel_hakimi.d \
-./src/marathon/gpu/cuda_functions.d \
-./src/marathon/gpu/init_finalize.d \
-./src/marathon/gpu/mixing_time.d \
-./src/marathon/gpu/transition_matrix.d \
-./src/marathon/gpu/variation_distance.d \
-./src/marathon/hybrid/cuda_functions.d \
-./src/marathon/hybrid/init_finalize.d \
-./src/marathon/hybrid/mixing_time.d \
-./src/marathon/hybrid/transition_matrix.d
+ifeq ($(GPU),true)
+	CC = $(NVCC)
+	CFLAGS = -O3 -Xcompiler -fPIC -Xcompiler -fopenmp \
+	         -std=c++11 --compile --relocatable-device-code=true $(COMP_CAP)
+	SRCS = $(CU_SRCS)
+	OBJECTS = $(CU_OBJECTS) 
+	LIBS += -lcublas
+endif
+
+RM := rm -rf
 
 # Add inputs and outputs from these tool invocations to the build variables 
 
-all: cpp
+all: static
 
-# Compile CPU Code only (No CUDA)
-cpp: $(CPP_OBJS)
-	@echo 'Building target: $@'
-	@echo 'Invoking: GCC C++ Linker'
-	g++ -shared -o "libmarathon.so" $(CPP_OBJS) 
-	@echo 'Finished building target: $@'
-	@echo ' '
-	
-cuda: $(CUDA_OBJS) 
-	@echo 'Building target: $@'
-	@echo 'Invoking: NVCC Linker'
-	$(NVCC) --cudart static -shared -std=c++11 --relocatable-device-code=true $(COMP_CAP) -link -o "libmarathon.so" $(CUDA_OBJS)
-	@echo 'Finished building target: $@'
-	@echo ' '
+static: $(OBJECTS)
+	ar rcs libmarathon.a $(OBJECTS)
+
+shared: $(OBJECTS)
+	$(CC) -shared -o "libmarathon.so" $(OBJECTS) 
 
 %.o: %.cu
-	@echo 'Building file: $<'
-	@echo 'Invoking: NVCC Compiler'
-	$(NVCC) -O2 -Xcompiler -fPIC -Xcompiler -fopenmp -std=c++11 $(COMP_CAP) -M -o "$(@:%.o=%.d)" "$<"
-	$(NVCC) -O2 -Xcompiler -fPIC -Xcompiler -fopenmp -std=c++11 --compile --relocatable-device-code=true $(COMP_CAP) -x cu -o  "$@" "$<"
-	@echo 'Finished building: $<'
-	@echo ' '
+	$(CC) $(CFLAGS) -o "$@" "$<"
 
-# Each subdirectory must supply rules for building sources it contributes
 %.o: %.cpp
-	@echo 'Building file: $<'
-	@echo 'Invoking: GCC C++ Compiler'
-	g++ -std=c++11 -O2 -c -fmessage-length=0 -fPIC -fopenmp -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
-	@echo 'Finished building: $<'
-	@echo ' '
+	$(CC) $(CFLAGS) -o "$@" "$<"
 
 # Other Targets
 clean:
-	-$(RM) $(LIBRARIES) $(CC_DEPS) $(CPP_DEPS) $(C_UPPER_DEPS) $(CXX_DEPS) $(CPP_OBJS) $(CPP_DEPS) $(C_DEPS) $(CUDA_OBJS) $(CUDA_DEPS) libmarathon.so
+	-$(RM) $(CPP_OBJECTS) $(CU_OBJECTS) libmarathon.a libmarathon.so
 	-@echo ' '
 
 .PHONY: all clean dependents

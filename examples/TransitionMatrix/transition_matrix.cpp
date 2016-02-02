@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 	}
 
 	// construct state graph
-	sg->constructStateGraph();
+	sg->constructStateGraph(true);
 
 	// print transition matrix
 	marathon::cpu::DenseTransitionMatrix<double> P;
