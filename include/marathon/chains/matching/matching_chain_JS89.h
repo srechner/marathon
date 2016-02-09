@@ -27,17 +27,22 @@ namespace matching {
 class Broder86: public MarkovChain<BipartiteMatching> {
 
 protected:
-	SparseBipartiteGraph g;
+
+	SparseBipartiteGraph *g = nullptr;
+
+	void parseInstance(const std::string& inst);
 
 public:
-	Broder86(std::string line);
-	virtual ~Broder86();
 
-	virtual bool computeArbitraryState(BipartiteMatching& s) const;
+	Broder86(const std::string& instance);
+	~Broder86();
+
+	virtual bool computeArbitraryState(BipartiteMatching& s);
 	virtual void computeNeighbours(const BipartiteMatching& s,
-			boost::unordered_map<BipartiteMatching, Rational>& neighbors) const;
+			std::unordered_map<BipartiteMatching, rational>& neighbors) const;
 
-	void canonicalPath(int s, int t, std::list<int>& path) const;
+	void constructPath(const StateGraph* sg, int s, int t,
+			std::list<int>& path) const;
 
 };
 

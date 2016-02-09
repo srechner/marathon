@@ -27,25 +27,25 @@ int main(int argc, char** argv) {
 	// Init library
 	marathon::init();
 
-	// Declare StateGraph object
-	marathon::StateGraph *sg = nullptr;
+	// Abstract Markov Chain Object
+	marathon::SamplingChain *mc;
 
-	// check which chain is selected
+	// check which chain is selected and instanciate with proper implementation
 	if (strcmp(argv[1], "js89") == 0)
-		sg = new marathon::chain::matching::Broder86(inst);
+		mc = new marathon::chain::matching::Broder86();
 	else if (strcmp(argv[1], "jsv04") == 0)
-		sg = new marathon::chain::matching::JerrumSinclairVigoda04(inst);
+		mc = new marathon::chain::matching::JerrumSinclairVigoda04();
 	else if (strcmp(argv[1], "swapBip") == 0)
-		sg = new marathon::chain::sequence::SwitchBipartite(inst);
+		mc = new marathon::chain::sequence::SwitchBipartite();
 	else if (strcmp(argv[1], "swapBipFast") == 0)
-		sg = new marathon::chain::sequence::SwitchBipartiteFast(inst);
+		mc = new marathon::chain::sequence::SwitchBipartiteFast();
 	else {
 		std::cerr << "unknown chain specifier: " << argv[1] << std::endl;
 		return 1;
 	}
 
-	// construct state graph
-	sg->constructStateGraph(true);
+	// State Graph Instance
+	marathon::StateGraph* sg = mc->constructStateGraph(inst);
 
 	// print transition matrix
 	marathon::cpu::DenseTransitionMatrix<double> P;
@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
 	std::cout << P << std::endl;
 
 	delete sg;
+	delete mc;
 
 	// finalize library
 	marathon::finalize();

@@ -13,9 +13,7 @@
 #include <ostream>
 
 namespace marathon {
-
 namespace chain {
-
 namespace matching {
 
 class BipartiteMatching {
@@ -37,7 +35,8 @@ public:
 	void removeEdge(int u, int v);
 
 	void operator=(BipartiteMatching const& s);
-	bool operator==(BipartiteMatching const&rhs) const;
+	bool operator==(const BipartiteMatching &rhs) const;
+	size_t hash_value() const;
 
 	bool is_perfect() const;
 	bool is_near_perfect() const;
@@ -45,12 +44,26 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, BipartiteMatching& bip);
 };
 
-size_t hash_value(const BipartiteMatching& s);
-
+}
+}
 }
 
+// overload hash function for this class
+namespace std {
+template<>
+struct hash<::marathon::chain::matching::BipartiteMatching> {
+
+	typedef ::marathon::chain::matching::BipartiteMatching argument_type;
+	typedef size_t result_type;
+
+	result_type operator ()(const argument_type& x) const {
+		return x.hash_value();
+	}
+};
 }
 
-}
+
+
+
 #endif /* STATE_H_ */
 

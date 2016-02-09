@@ -12,23 +12,29 @@ namespace cpu {
 
 /**
  * Computes the congestion bound of state graph with given path construction scheme.
+ * @param mc A state graph which defines the structure of
+ * @param constructPath A function pointer to a function that is used to
+ * construct paths between pairs of states.
  */
-Rational pathCongestion(const StateGraph* mc) {
+rational pathCongestion(const StateGraph* sg,
+		const SamplingChain* mc) {
 
-	int omega = mc->getNumStates();
+	int omega = sg->getNumStates();
 
-	Rational max_congestion(0);
-	boost::unordered_map<std::pair<int, int>, Rational> congestion;
+	rational max_congestion(0);
+	//boost::unordered_map<std::pair<int, int>, rational> congestion;
+	// todo: use unordered map
+	std::map<std::pair<int, int>, rational> congestion;
 
 	if (omega <= 1)
-		return Rational();
+		return rational();
 
 #ifndef DEBUG
 #pragma omp parallel
 #endif
 	{
-		boost::unordered_map<std::pair<int, int>, Rational> local_congestion;
-		boost::unordered_map<std::pair<int, int>, Rational>::iterator c_it;
+		boost::unordered_map<std::pair<int, int>, rational> local_congestion;
+		boost::unordered_map<std::pair<int, int>, rational>::iterator c_it;
 		std::list<int> path;
 		typename std::list<int>::const_iterator p_it;
 		int u, v;
@@ -43,18 +49,18 @@ Rational pathCongestion(const StateGraph* mc) {
 
 					// compute path from i to j
 					path.clear();
-					mc->canonicalPath(i, j, path);
+					mc->constructPath(sg, i, j, path);
 
 #ifdef DEBUG
 					std::cout << "path from state " << i << " to state " << j
-							<< ":" << std::endl;
+					<< ":" << std::endl;
 					for (p_it = path.begin(); p_it != path.end(); ++p_it) {
 						std::cout << *p_it << " ";
 					}
 					std::cout << std::endl;
 #endif
 
-					Rational x = mc->getStationary(i) * mc->getStationary(j)
+					rational x = sg->getStationary(i) * sg->getStationary(j)
 							* (path.size() - 1);
 
 					assert(path.front() == i);
@@ -71,8 +77,8 @@ Rational pathCongestion(const StateGraph* mc) {
 							std::pair<uint, uint> uv(u, v);
 #ifdef DEBUG
 							std::cout << "augment congestion of transition ("
-									<< u << "," << v << ") by " << x
-									<< std::endl;
+							<< u << "," << v << ") by " << x
+							<< std::endl;
 #endif
 							local_congestion[uv] += x;
 							u = v;
@@ -83,8 +89,8 @@ Rational pathCongestion(const StateGraph* mc) {
 					for (auto it = local_congestion.begin();
 							it != local_congestion.end(); ++it) {
 						std::cout << "(" << it->first.first << ","
-								<< it->first.second << "): " << it->second
-								<< std::endl;
+						<< it->first.second << "): " << it->second
+						<< std::endl;
 					}
 #endif
 				}
@@ -98,7 +104,7 @@ Rational pathCongestion(const StateGraph* mc) {
 			for (c_it = local_congestion.begin();
 					c_it != local_congestion.end(); ++c_it) {
 				std::pair<int, int> uv = c_it->first;
-				Rational c_uv = c_it->second;
+				rational c_uv = c_it->second;
 				congestion[uv] += c_uv;
 			}
 		}
@@ -109,10 +115,10 @@ Rational pathCongestion(const StateGraph* mc) {
 	for (auto c_it = congestion.begin(); c_it != congestion.end(); ++c_it) {
 		std::pair<int, int> uv = c_it->first;
 		int u = uv.first;
-		Rational c = c_it->second;
-		Rational P_uv = mc->getTransitionProbability(uv.first, uv.second);
-		Rational Q_uv = mc->getStationary(u) * P_uv;
-		assert(P_uv != Rational(-1));
+		rational c = c_it->second;
+		rational P_uv = sg->getTransitionProbability(uv.first, uv.second);
+		rational Q_uv = sg->getStationary(u) * P_uv;
+		assert(P_uv != rational(-1));
 		c /= Q_uv;
 		if (c > max_congestion) {
 			max_congestion = c;
@@ -123,8 +129,8 @@ Rational pathCongestion(const StateGraph* mc) {
 
 #ifdef DEBUG
 	std::cout << "max congestion is on edge (" << max_u << "," << max_v
-			<< ") with congestion " << congestion[std::make_pair(max_u, max_v)]
-			<< " and normalized congestion " << max_congestion << std::endl;
+	<< ") with congestion " << congestion[std::make_pair(max_u, max_v)]
+	<< " and normalized congestion " << max_congestion << std::endl;
 #endif
 
 	return max_congestion;

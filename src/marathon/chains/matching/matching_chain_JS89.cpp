@@ -13,20 +13,28 @@ namespace chain {
 
 namespace matching {
 
-Broder86::Broder86(std::string line) :
-		g(SparseBipartiteGraph(line)) {
-
+Broder86::Broder86(const std::string& inst) {
+	// construct input object from input instance
+	parseInstance(inst);
 }
 
 Broder86::~Broder86() {
+	if (g != nullptr)
+		delete g;
 }
 
-bool Broder86::computeArbitraryState(BipartiteMatching& s) const {
+void Broder86::parseInstance(const std::string& inst) {
+	if (g != nullptr)
+		delete g;
+	g = new SparseBipartiteGraph(inst);
+}
 
-	int n = g.getNumberOfNodes();
+bool Broder86::computeArbitraryState(BipartiteMatching& s) {
+
+	int n = g->getNumberOfNodes();
 
 	std::vector<int> mate;
-	g.cardmax_matching(mate);
+	g->cardmax_matching(mate);
 
 	// Count Number of Matching Edges
 	int k = 0;
@@ -34,22 +42,22 @@ bool Broder86::computeArbitraryState(BipartiteMatching& s) const {
 		if (mate[i] != n)
 			k++;
 
-	if (k != g.getNumberOfNodes()) {
+	if (k != g->getNumberOfNodes()) {
 		std::cerr << "Graph doesn't have a perfect matching!" << std::endl;
 		return false;
 	}
 
 	int unmatched[2] = { n, n };
-	s = BipartiteMatching(g.getNumberOfNodes(), k / 2, unmatched, &mate[0]);
+	s = BipartiteMatching(g->getNumberOfNodes(), k / 2, unmatched, &mate[0]);
 
 	return true;
 }
 
 void Broder86::computeNeighbours(const BipartiteMatching& s,
-		boost::unordered_map<BipartiteMatching, Rational>& neighbors) const {
+		std::unordered_map<BipartiteMatching, rational>& neighbors) const {
 
 	// Variables
-	const int n = g.getNumberOfNodes();
+	const int n = g->getNumberOfNodes();
 	const int k = s.k;
 	int u, v;
 	BipartiteMatching s2;
@@ -60,7 +68,7 @@ void Broder86::computeNeighbours(const BipartiteMatching& s,
 	// Implementierung der Transitionen nach Vorlage JS89
 
 	// Gehe über jede Kante
-	g.getEdges(edges);
+	g->getEdges(edges);
 
 	//std::cout << "compute neighbors for s=" << s << std::endl;
 
@@ -123,35 +131,45 @@ void Broder86::computeNeighbours(const BipartiteMatching& s,
 			// Verbleibe im aktuellen Zustand
 		}
 
-		neighbors[s2] += Rational(1, edges.size());
+		neighbors[s2] += rational(1, edges.size());
 
 		//std::cout << std::endl;
 	}
 }
 
-void Broder86::canonicalPath(int s, int t, std::list<int>& path) const {
+void Broder86::constructPath(const StateGraph* sg,
+		int s, int t, std::list<int>& path) const {
 
 	path.clear();
 
-	// TODO: use indices instead of states
+	// reinterpret state graph object
+	const _StateGraph<BipartiteMatching>* _sg = (const _StateGraph<
+			BipartiteMatching>*) sg;
+
+	if (s == t)
+		return;
 
 	// Implementation after JS89
 	std::list<int> init_seqment;
 	std::list<int> main_seqment;
 	std::list<int> final_seqment;
 
-	const int n = g.getNumberOfNodes();
-	int i, a, sw;
+	const int n = _sg->getState(0).n;
+	const int omega = sg->getNumStates();
+
+	// working variables
+	int i, c, a, sw;
 	BipartiteMatching u, v;
-	std::queue<BipartiteMatching> q;
-	boost::unordered_map<BipartiteMatching, Rational> neighbors;
-	boost::unordered_map<BipartiteMatching, BipartiteMatching> prev;
-	BipartiteMatching null;
+	std::queue<int> q;
 
-	if (s == t)
-		return;
+	// arrays to store the labels for BFS
+	int* prev = new int[omega];
+	bool* visited = new bool[omega];
 
-	BipartiteMatching start_states[2] = { states[s], states[t] };
+	//std::unordered_map<BipartiteMatching, BipartiteMatching> prev;
+	//BipartiteMatching null;
+
+	int start_states[2] = { s, t };
 
 	std::list<int>* segments[2] = { &init_seqment, &final_seqment };
 
@@ -161,25 +179,35 @@ void Broder86::canonicalPath(int s, int t, std::list<int>& path) const {
 		// clear queue and prevs
 		while (!q.empty())
 			q.pop();
-		prev.clear();
 
 		// start BFS with s respective t
+		memset(visited, 0, omega*sizeof(bool));
 		q.push(start_states[i]);
-		prev[start_states[i]] = null;
+		visited[start_states[i]] = 1;
+		prev[start_states[i]] = -1;
 		while (!q.empty()) {
-			u = q.front();
+			c = q.front();
 			q.pop();
+			u = _sg->getState(c);
 
 			if (2 * u.k == n) {	// Path to Perfect Matching
 				// Reconstruct Path and return
 				do {
-					segments[i]->push_front(indices.find(u)->second);
-					u = prev[u];
-				} while (!(u == null));
+					segments[i]->push_front(c);
+					c = prev[c];
+				} while (c != -1);
 				break;
 			} else {
 				// for all neighbors of u
-				computeNeighbours(u, neighbors);
+				for(Transition* t : sg->getOutArcs(c)) {
+					// if not visited yet
+					if(!visited[t->v]) {
+						q.push(t->v);
+						prev[t->v] = c;
+						visited[t->v] = 1;
+					}
+				}
+				/*computeNeighbours(u, neighbors);
 				for (auto it = neighbors.begin(); it != neighbors.end(); ++it) {
 					v = it->first;
 
@@ -187,18 +215,16 @@ void Broder86::canonicalPath(int s, int t, std::list<int>& path) const {
 						prev[v] = u;
 						q.push(v);
 					}
-				}
+				}*/
 			}
 		}
 	}
 
-	// clean up
-
 	final_seqment.reverse();
 
 	// Main Segment
-	BipartiteMatching I = states[init_seqment.back()];
-	BipartiteMatching F = states[final_seqment.front()];
+	BipartiteMatching I = _sg->getState(init_seqment.back());
+	BipartiteMatching F = _sg->getState(final_seqment.front());
 	BipartiteMatching s2 = I;
 
 	BipartiteMatching x[2] = { I, F };
@@ -234,7 +260,7 @@ void Broder86::canonicalPath(int s, int t, std::list<int>& path) const {
 			int u0 = cycle[0];
 			int v0 = cycle[1];
 			s2.removeEdge(u0, v0);
-			main_seqment.push_back(indices.find(s2)->second);
+			main_seqment.push_back(_sg->findState(s2));
 
 			// replace each edge (u_j, v_j) by (u_j, v_j-1)
 			for (int j = 1; j < cycle.size() / 2; j++) {
@@ -245,12 +271,12 @@ void Broder86::canonicalPath(int s, int t, std::list<int>& path) const {
 				s2.mates[v_jj] = u_j;
 				s2.mates[v_j] = n;
 				s2.unmatched[1] = v_j;
-				main_seqment.push_back(indices.find(s2)->second);
+				main_seqment.push_back(_sg->findState(s2));
 			}
 
 			// last step: add (u0, v_last)
 			s2.addEdge(u0, cycle.back());
-			main_seqment.push_back(indices.find(s2)->second);
+			main_seqment.push_back(_sg->findState(s2));
 		}
 	}
 
@@ -277,6 +303,9 @@ void Broder86::canonicalPath(int s, int t, std::list<int>& path) const {
 	path.insert(path.end(), init_seqment.begin(), init_seqment.end());
 	path.insert(path.end(), main_seqment.begin(), main_seqment.end());
 	path.insert(path.end(), ++final_seqment.begin(), final_seqment.end());
+
+	delete[] prev;
+	delete[] visited;
 }
 
 }

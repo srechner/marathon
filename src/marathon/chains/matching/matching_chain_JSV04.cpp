@@ -13,8 +13,7 @@ namespace chain {
 
 namespace matching {
 
-JerrumSinclairVigoda04::JerrumSinclairVigoda04(std::string line) :
-		Broder86(line), num_perfect_matching(0) {
+JerrumSinclairVigoda04::JerrumSinclairVigoda04(const std::string& input) : Broder86(input), num_perfect_matching(0) {
 	num_near_perfect_matching = (uint*) malloc(0);
 }
 
@@ -23,10 +22,10 @@ JerrumSinclairVigoda04::~JerrumSinclairVigoda04() {
 }
 
 void JerrumSinclairVigoda04::computeNeighbours(const BipartiteMatching& s,
-		boost::unordered_map<BipartiteMatching, Rational>& neighbors) const {
+		std::unordered_map<BipartiteMatching, rational>& neighbors) const {
 
 	// Variables
-	const uint n = Broder86::g.getNumberOfNodes();
+	const uint n = Broder86::g->getNumberOfNodes();
 	const uint k = s.k;
 	uint u, v, z, x, y;
 	BipartiteMatching s2;
@@ -43,7 +42,7 @@ void JerrumSinclairVigoda04::computeNeighbours(const BipartiteMatching& s,
 			v = s.mates[u];
 			s2 = BipartiteMatching(s);
 			s2.removeEdge(u, v);
-			neighbors[s2] += Rational(2, n);
+			neighbors[s2] += rational(2, n);
 		}
 
 	} else if (s.is_near_perfect()) {	// is a near-perfect matching
@@ -58,38 +57,38 @@ void JerrumSinclairVigoda04::computeNeighbours(const BipartiteMatching& s,
 
 			// Three Cases to rule them all
 
-			if ((z == u || z == v) && Broder86::g.hasEdge(u, v)) {
+			if ((z == u || z == v) && Broder86::g->hasEdge(u, v)) {
 				// Case 2i
 				s2.addEdge(u, v);
-				neighbors[s2] += Rational(1, n);
-			} else if (z >= n / 2 && Broder86::g.hasEdge(u, z)
+				neighbors[s2] += rational(1, n);
+			} else if (z >= n / 2 && Broder86::g->hasEdge(u, z)
 					&& s.mates[z] != n) {	// Case 2ii
 				x = s.mates[z];
 				s2.removeEdge(x, z);
 				s2.addEdge(u, z);
 				s2.unmatched[0] = x;
 				s2.unmatched[1] = v;
-				neighbors[s2] += Rational(1, n);
-			} else if (z < n / 2 && Broder86::g.hasEdge(z, v)
+				neighbors[s2] += rational(1, n);
+			} else if (z < n / 2 && Broder86::g->hasEdge(z, v)
 					&& s.mates[z] != n) {	// Case 2iii
 				y = s.mates[z];
 				s2.removeEdge(z, y);
 				s2.addEdge(z, v);
 				s2.unmatched[0] = u;
 				s2.unmatched[1] = y;
-				neighbors[s2] += Rational(1, n);
+				neighbors[s2] += rational(1, n);
 			} else {
 				// loop
-				neighbors[s2] += Rational(1, n);
+				neighbors[s2] += rational(1, n);
 			}
 		}
 	}
 }
 
 void JerrumSinclairVigoda04::computeWeights(
-		std::vector<BipartiteMatching>& states) {
+		std::vector<BipartiteMatching>& states, std::vector<rational>& weights) {
 
-	const uint n = Broder86::g.getNumberOfNodes();
+	const uint n = Broder86::g->getNumberOfNodes();
 	uint u, v;
 	typename std::vector<BipartiteMatching>::iterator it;
 
@@ -111,18 +110,19 @@ void JerrumSinclairVigoda04::computeWeights(
 			num_near_perfect_matching[u * (n / 2) + v]++;
 	}
 
+	weights.reserve(states.size());
+	for(int i=0; i<states.size(); i++)
+		weights[i] = getWeight(states[i]);
 }
 
-Rational JerrumSinclairVigoda04::getWeight(int i) const {
-
-	BipartiteMatching s = states[i];
+rational JerrumSinclairVigoda04::getWeight(const BipartiteMatching& s) const {
 
 	if (s.is_perfect()) {
 		return 1;
 	} else if (s.is_near_perfect()) {
 		uint u = s.unmatched[0];
 		uint v = s.unmatched[1] - s.n / 2;
-		Rational r(num_perfect_matching,
+		rational r(num_perfect_matching,
 		num_near_perfect_matching[u * s.n / 2 + v]);
 		return r;
 	} else {

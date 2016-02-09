@@ -10,9 +10,11 @@ namespace chain {
 
 namespace sequence {
 
-SwitchBipartite::SwitchBipartite(const std::string& line) :
-		sum(0) {
+SwitchBipartite::SwitchBipartite(const std::string& line) {
+	parseInstance(line);
+}
 
+void SwitchBipartite::parseInstance(const std::string& line) {
 	std::string copy(line);
 
 	// split string at ";"
@@ -71,7 +73,7 @@ SwitchBipartite::SwitchBipartite(const std::string& line) :
 
 }
 
-bool SwitchBipartite::computeArbitraryState(DenseBipartiteGraph& s) const {
+bool SwitchBipartite::computeArbitraryState(DenseBipartiteGraph& s) {
 
 	// not a valid instance
 	if (u.size() < 2 || v.size() < 2) {
@@ -87,7 +89,7 @@ bool SwitchBipartite::computeArbitraryState(DenseBipartiteGraph& s) const {
 }
 
 void SwitchBipartite::computeNeighbours(const DenseBipartiteGraph& s,
-		boost::unordered_map<DenseBipartiteGraph, Rational>& neighbours) const {
+		std::unordered_map<DenseBipartiteGraph, rational>& neighbours) const {
 	int i, j, k, l, m, n;
 	DenseBipartiteGraph s2;
 
@@ -122,15 +124,14 @@ void SwitchBipartite::computeNeighbours(const DenseBipartiteGraph& s,
 					}
 
 					// each state has proposal prob. of 4 / (m*(m+1)*n*(n+1))
-					neighbours[s2] += Rational(4, m * (m + 1) * n * (n + 1));
+					neighbours[s2] += rational(4, m * (m + 1) * n * (n + 1));
 				}
 			}
 		}
 	}
 }
 
-int SwitchBipartite::next_red_edge(int col, bool* red_edges, int m,
-		int n) const {
+int SwitchBipartite::next_red_edge(int col, bool* red_edges, int m, int n) const {
 	for (int i = 0; i < m; i++) {
 		if (red_edges[i * n + col])
 			return i;
@@ -139,8 +140,7 @@ int SwitchBipartite::next_red_edge(int col, bool* red_edges, int m,
 	return -1;
 }
 
-int SwitchBipartite::next_blue_edge(int row, bool* blue_edges, int m,
-		int n) const {
+int SwitchBipartite::next_blue_edge(int row, bool* blue_edges, int m, int n) const {
 	for (int j = 0; j < n; j++) {
 		if (blue_edges[row * n + j])
 			return j;
@@ -150,7 +150,7 @@ int SwitchBipartite::next_blue_edge(int row, bool* blue_edges, int m,
 }
 
 void SwitchBipartite::trace_cycle(bool* blue_edges, bool* red_edges, int m,
-		int n, int i, int j, std::vector<int>& cycle) const {
+		int n, int i, int j, std::vector<int>& cycle)  const {
 
 	while (j != -1) {
 
@@ -171,7 +171,7 @@ void SwitchBipartite::trace_cycle(bool* blue_edges, bool* red_edges, int m,
 }
 
 void SwitchBipartite::splice_cycle(std::vector<int> cycle,
-		std::list<std::vector<int> >& cycles) const {
+		std::list<std::vector<int> >& cycles)  const {
 
 #ifdef DEBUG
 	std::cout << "splice cycle [ ";
@@ -232,8 +232,7 @@ void SwitchBipartite::splice_cycle(std::vector<int> cycle,
 }
 
 void SwitchBipartite::cycle_decomposition(const DenseBipartiteGraph& x,
-		const DenseBipartiteGraph& y,
-		std::list<std::vector<int> >& cycles) const {
+		const DenseBipartiteGraph& y, std::list<std::vector<int> >& cycles) const {
 
 	int m = x.get_nrows();
 	int n = x.get_ncols();
@@ -277,7 +276,7 @@ struct SwitchBipartite::cycle_comparator {
 	}
 };
 
-void SwitchBipartite::canonicalPath(int from, int to,
+void SwitchBipartite::constructPath(const StateGraph* sg, int from, int to,
 		std::list<int>& path) const {
 
 #ifdef DEBUG
@@ -285,12 +284,16 @@ void SwitchBipartite::canonicalPath(int from, int to,
 	std::cout << "to  =" << states[to] << std::endl;
 #endif
 
+	// reinterpret state graph object
+	const _StateGraph<DenseBipartiteGraph>* _sg = (const _StateGraph<
+			DenseBipartiteGraph>*) sg;
+
 	// start with from
 	path.push_back(from);
 
 	// continously modify u
-	DenseBipartiteGraph u = states[from];
-	DenseBipartiteGraph v = states[to];
+	DenseBipartiteGraph u = _sg->getState(from);
+	DenseBipartiteGraph v = _sg->getState(to);
 
 	std::list<std::vector<int> > cycles;
 	std::list<std::vector<int> >::iterator it;
@@ -301,6 +304,7 @@ void SwitchBipartite::canonicalPath(int from, int to,
 
 	// decompose symmetric difference of u and v into cycles
 	cycle_decomposition(u, v, cycles);
+
 #ifdef DEBUG
 	std::cout << "found " << cycles.size() << " cycles" << std::endl;
 #endif
@@ -346,7 +350,7 @@ void SwitchBipartite::canonicalPath(int from, int to,
 		 *    switch it!
 		 */
 		u.switch_4_cycle(w[i], w[i + 1], w[l - i - 2], w[l - i - 1]);
-		int x = indices.find(u)->second;
+		int x = _sg->findState(u);
 		path.push_back(x);
 
 		/**
@@ -359,7 +363,7 @@ void SwitchBipartite::canonicalPath(int from, int to,
 
 		for (int j = i; j > 0; j--) {
 			u.switch_4_cycle(w[j - 1], w[j], w[l - j - 1], w[l - j]);
-			int x = indices.find(u)->second;
+			int x = _sg->findState(u);
 			path.push_back(x);
 		}
 

@@ -13,7 +13,7 @@ Transition::Transition() :
 		u((uint) -1), v((uint) -1), p(-1) {
 }
 
-Transition::Transition(uint u, uint v, Rational p) :
+Transition::Transition(uint u, uint v, rational p) :
 		u(u), v(v), p(p) {
 }
 

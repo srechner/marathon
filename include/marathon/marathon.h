@@ -12,6 +12,7 @@
 #define MARATHON_H_
 
 #include "common/state_graph.h"
+#include "common/markov_chain.hpp"
 
 namespace marathon {
 
@@ -47,13 +48,16 @@ void finalize();
  * to P^l. By this, we need three temporary matrices.
  */
 template<typename T>
-int totalMixingTime(const StateGraph* mc, const T epsilon, device_t device = GPU_ONLY);
+int totalMixingTime(const StateGraph* mc, const T epsilon, device_t device =
+		GPU_ONLY);
 
 /**
  *  Computes upper congestion bound by canonical path method.
  *  Path construction scheme can be given by function pointer.
+ *  @param mc A pointer to a state graph object.
+ *  @param constructPath A function pointer to a method that defines a path between two states.
  */
-Rational pathCongestion(const StateGraph* mc);
+rational pathCongestion(const StateGraph* sg, const SamplingChain* mc);
 
 /**
  * Computes the eigenvalue with second largest magnitute of the

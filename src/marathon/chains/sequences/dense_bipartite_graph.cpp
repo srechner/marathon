@@ -157,11 +157,6 @@ std::ostream& operator<<(std::ostream& os, const DenseBipartiteGraph& bip) {
 	return os;
 }
 
-size_t hash_value(const DenseBipartiteGraph& s) {
-	return boost::hash_value(s.M.m_bits);
-	//return boost::hash_range(s.M, s.M + s.m * s.ncols);
-}
-
 void DenseBipartiteGraph::get_row(int u, boost::dynamic_bitset<>& row) const {
 	row.resize(ncols);
 	for (int v = 0; v < ncols; v++) {
@@ -169,8 +164,11 @@ void DenseBipartiteGraph::get_row(int u, boost::dynamic_bitset<>& row) const {
 	}
 }
 
+size_t DenseBipartiteGraph::hash_value() const {
+	return boost::hash_value(M.m_bits);;
 }
 
 }
-
 }
+}
+

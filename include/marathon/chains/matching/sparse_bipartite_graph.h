@@ -10,14 +10,20 @@
 
 #include <vector>
 #include <iostream>
-
-#include "undirected_graph.h"
+#include <boost/dynamic_bitset.hpp>
+#include <boost/unordered_set.hpp>
+#include <boost/graph/adjacency_list.hpp>
 
 namespace marathon {
 
 namespace chain {
 
 namespace matching {
+
+// undirected graph
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS> undirected_graph;
+typedef std::pair<uint, uint> edge;
+typedef std::vector<edge> edgelist;
 
 class SparseBipartiteGraph {
 

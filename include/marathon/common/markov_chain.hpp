@@ -12,9 +12,8 @@
 #include <vector>
 #include <list>
 #include <queue>
-
-// boost includes
-#include "boost/unordered_map.hpp"
+#include <unordered_map>
+#include <map>
 
 #include "state_graph.h"
 
@@ -38,18 +37,36 @@ public:
 	}
 };
 
-template<class State>
-class MarkovChain: public StateGraph {
+/**
+ * Parent-Class of Markov-Chain. This class just represents a abstraction
+ * of a Markov Chain that does not need a template parameter.
+ */
+class SamplingChain {
 
 public:
 
-	std::vector<State> states;					// vector of states
-	boost::unordered_map<State, int> indices;	// State -> Index
+	virtual ~SamplingChain() {
 
-public:
+	}
+
+	/**
+	 * The only method of this class is to construct a state graph out
+	 * of the input instance.
+	 */
+	virtual StateGraph* constructStateGraph(bool verbose = false) = 0;
+
+	virtual void constructPath(const StateGraph* sg, int i, int j, std::list<int>& path) const {
+
+	}
+
+};
+
+template<typename State>
+class MarkovChain: public SamplingChain {
+
+protected:
 
 	MarkovChain() {
-
 	}
 
 	virtual ~MarkovChain() {
@@ -61,44 +78,49 @@ public:
 	/**
 	 * computes arbitrary (start) state
 	 */
-	virtual bool computeArbitraryState(State& s) const = 0;
+	virtual bool computeArbitraryState(State& s) = 0;
 
 	/**
-	 *  compute vector of adjacent states of s with corresponding proposal prob.
+	 *  Compute the set of adjacent states of s with corresponding proposal propability.
 	 */
 	virtual void computeNeighbours(const State& s,
-			boost::unordered_map<State, Rational>& neighbors) const = 0;
+			std::unordered_map<State, rational>& neighbors) const = 0;
 
 	/**
-	 *  How to compute weights for each state.
+	 *  Computes weights for each state.
 	 */
-	virtual void computeWeights(std::vector<State>& states) {
-
+	virtual void computeWeights(std::vector<State>& states, std::vector<rational>& weights) {
+		weights.clear();
+		for(int i=0; i<states.size(); i++)
+			weights.push_back(1);
 	}
 
 public:
 
 	/**
-	 * Construct State Graph
+	 * Construct a State Graph for the given input instance.
 	 */
-	void constructStateGraph(bool verbose) {
+	StateGraph* constructStateGraph(bool verbose = false) {
 
 		// Declare Variables
 		State s1, s2;
 		int i, j;
-		std::queue<int> q;
-		boost::unordered_map<State, Rational> neighbours;
-		typename boost::unordered_map<State, int>::iterator it2;
+		std::unordered_map<State, rational> neighbours;
+		typename std::unordered_map<State, int>::iterator it2;
 
-		// Transition Matrix as temporary storage(sparse)
-		//boost::unordered_map<std::pair<int, int>, Rational, PairHasher, PairEqual> transition_matrix;
-		std::map<std::pair<int, int>, Rational> transition_matrix;
+		// Temporary variables for construction of a state graph
+		// TODO: Replace map by unordered map
+		//boost::unordered_map<std::pair<int, int>, rational, PairHasher, PairEqual> transition_matrix;
+		std::map<std::pair<int, int>, rational> transition_matrix;
+		std::queue<int> q;
+
+		std::vector<State> states;					// vector of states
+		std::unordered_map<State, int> indices;	// State -> Index
 
 		// Start with arbitrary State
 		if (!computeArbitraryState(s1)) {
-			if (verbose)
-				std::cout << "Empty Statespace!" << std::endl;
-			return;
+			// exception if statespace is empty
+			throw std::runtime_error("empty statespace!");
 		}
 
 		if (verbose)
@@ -121,12 +143,12 @@ public:
 			computeNeighbours(s1, neighbours);
 
 			// check for valid transition rules: proposal probability must sum to 1
-			Rational sum = 0;
+			rational sum = 0;
 			for (auto v : neighbours) {
 
 				// neighbour state s2 with proposal prob. kappa(s1,s2)
 				s2 = v.first;
-				Rational kappa = v.second;
+				rational kappa = v.second;
 				sum += kappa;
 
 				// Look if s2 already known
@@ -155,28 +177,35 @@ public:
 				transition_matrix[std::make_pair(i, j)] = kappa;
 
 			}
-			assert(sum == Rational(1));
+			assert(sum == rational(1));
 		}
 
-		numStates = states.size();
+		// create new state graph
+		int n = states.size();
+		_StateGraph<State>* sg = new _StateGraph<State>(n);
+
+		// add the states to the state graph
+		for (int i = 0; i < n; i++)
+			sg->addState(states[i]);
+
+		// tell the state graph how the input instance looks like
+		//sg->setInstance();
 
 		/***********************************************************
 		 * Compute weights for metropolis rule
 		 **********************************************************/
-		computeWeights(states);
+		std::vector<rational> weights;
+		computeWeights(states, weights);
 
 		/*********************************************************************
 		 * Print Information about states
 		 ********************************************************************/
 
 		if (verbose) {
-			int ii = 0;
 			std::cout << "state size: " << states.size() << std::endl;
-			for (typename std::vector<State>::iterator it = states.begin();
-					it != states.end(); ++it) {
-				std::cout << ii << ": " << *it << " " << getWeight(ii)
+			for (int ii=0; ii<states.size(); ii++) {
+				std::cout << ii << ": " << states[ii] << " " << weights[ii]
 						<< std::endl;
-				ii++;
 			}
 
 			std::cout << "transition size: " << transition_matrix.size()
@@ -186,14 +215,12 @@ public:
 		/*******************************************************
 		 * Compile Stationary Distrubtion
 		 ******************************************************/
-		stationary_distribution.resize(numStates);
+		rational Z = 0;
+		for (i = 0; i < n; i++)
+			Z += weights[i];
 
-		Rational Z = 0;
-		for (i = 0; i < numStates; i++)
-			Z += getWeight(i);
-
-		for (i = 0; i < numStates; i++) {
-			stationary_distribution[i] = getWeight(i) / Z;
+		for (i = 0; i < n; i++) {
+			sg->setStationary(i, weights[i] / Z);
 		}
 
 		/***********************************************************
@@ -207,12 +234,12 @@ public:
 
 			i = it->first.first;
 			j = it->first.second;
-			Rational kappa = it->second;
-			Rational w_i = getWeight(i);
-			Rational w_j = getWeight(j);
+			rational kappa = it->second;
+			rational w_i = weights[i];
+			rational w_j = weights[j];
 
 			// metr = min(w_j / w_i, 1)
-			Rational metr(1);
+			rational metr(1);
 			if (w_j < w_i)
 				metr = w_j / w_i;
 
@@ -222,9 +249,9 @@ public:
 						<< " = " << (kappa * metr) << std::endl;
 
 			// add remaining probability as loop probability
-			if (kappa != Rational(1)) {
+			if (kappa != rational(1)) {
 				std::pair<int, int> ii = std::make_pair(i, i);
-				transition_matrix[ii] += (Rational(1) - metr) * kappa;
+				transition_matrix[ii] += (rational(1) - metr) * kappa;
 			}
 
 			// P(i,j) = kappa(i,j) * metr
@@ -232,16 +259,16 @@ public:
 		}
 
 		/***********************************************************
-		 * Check that chain is reversible
+		 * Self-Check: Verifiy that chain is reversible
 		 ***********************************************************/
 		for (auto it = transition_matrix.begin(); it != transition_matrix.end();
 				++it) {
 			int i = it->first.first;
 			int j = it->first.second;
-			Rational pij = it->second;
-			Rational pji = transition_matrix[std::make_pair(j, i)];
-			Rational stat_i = getStationary(i);
-			Rational stat_j = getStationary(j);
+			rational pij = it->second;
+			rational pji = transition_matrix[std::make_pair(j, i)];
+			rational stat_i = sg->getStationary(i);
+			rational stat_j = sg->getStationary(j);
 
 			if (stat_i * pij != stat_j * pji) {
 				std::cerr << "Error! Chain is not reversible!" << std::endl;
@@ -259,34 +286,17 @@ public:
 		}
 
 		/********************************************************
-		 * Transform unordered_map into edge array
+		 * Update state graph.
 		 *******************************************************/
 		for (auto it = transition_matrix.begin(); it != transition_matrix.end();
 				++it) {
 			int u = it->first.first;
 			int v = it->first.second;
-			Rational p_uv = it->second;
-			arcs.push_back(Transition(u, v, p_uv));
+			rational p_uv = it->second;
+			sg->addArc(u, v, p_uv);
 		}
 
-		// sort edge array by start node
-		sort(arcs.begin(), arcs.end(), TransitionComparator());
-
-		// collect for each state the first of its arcs
-		outgoing_arcs.resize(numStates + 1);
-		for (i = 0; i <= numStates; i++)
-			outgoing_arcs[i] = arcs.size();
-		for (int i = arcs.size() - 1; i >= 0; i--) {
-			int u = arcs[i].u;
-			outgoing_arcs[u] = i;
-		}
-
-	}
-
-	void printStates() const {
-		for(State s : states) {
-			std::cout << s << std::endl;
-		}
+		return (StateGraph*) sg;
 	}
 };
 

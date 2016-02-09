@@ -22,10 +22,10 @@ class Transition {
 public:
 
 	uint u, v;		// from, to
-	Rational p;		// P(u,v)
+	rational p;		// P(u,v)
 
 	Transition();
-	Transition(uint u, uint v, Rational p);
+	Transition(uint u, uint v, rational p);
 
 	virtual ~Transition();
 

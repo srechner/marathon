@@ -14,12 +14,12 @@ namespace chain {
 
 namespace sequence {
 
-SwitchBipartiteFast::SwitchBipartiteFast(std::string line) :
-		SwitchBipartite(line) {
+SwitchBipartiteFast::SwitchBipartiteFast(const std::string& input) :
+		SwitchBipartite(input) {
 }
 
 void SwitchBipartiteFast::computeNeighbours(const DenseBipartiteGraph& s,
-		boost::unordered_map<DenseBipartiteGraph, Rational>& neighbors) const {
+		std::unordered_map<DenseBipartiteGraph, rational>& neighbors) const {
 	uint i, j, k, l, m, n;
 	DenseBipartiteGraph s2;
 	int numNonAdjacentEdgePairs = 0;
@@ -100,7 +100,7 @@ void SwitchBipartiteFast::computeNeighbours(const DenseBipartiteGraph& s,
 								//std::cout << "a -> " << s2 << " (" << s << ")" << std::endl;
 							}
 
-							neighbors[s2] += Rational(1, numNonAdjacentEdgePairs);
+							neighbors[s2] += rational(1, numNonAdjacentEdgePairs);
 						}
 					}
 				}
@@ -109,11 +109,9 @@ void SwitchBipartiteFast::computeNeighbours(const DenseBipartiteGraph& s,
 	}
 
 	// choose second edge as artificial edge
-	neighbors[s] += Rational(sum, numNonAdjacentEdgePairs);
+	neighbors[s] += rational(sum, numNonAdjacentEdgePairs);
 }
 
 }
-
 }
-
 }

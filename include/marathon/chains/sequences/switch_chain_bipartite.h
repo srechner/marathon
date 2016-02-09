@@ -24,31 +24,36 @@ namespace sequence {
  */
 class SwitchBipartite: public MarkovChain<DenseBipartiteGraph> {
 
-public:
-
-	SwitchBipartite(const std::string& line);
-	virtual bool computeArbitraryState(DenseBipartiteGraph& s) const;
-	virtual void computeNeighbours(const DenseBipartiteGraph& s,
-			boost::unordered_map<DenseBipartiteGraph, Rational>& neighbors) const;
-	virtual void canonicalPath(int from, int to, std::list<int>& path) const;
-
 protected:
-
 	std::vector<int> u;
 	std::vector<int> v;
 	int sum;
+
+public:
+
+	SwitchBipartite(const std::string& inst);
+	virtual bool computeArbitraryState(DenseBipartiteGraph& s);
+	virtual void computeNeighbours(const DenseBipartiteGraph& s,
+			std::unordered_map<DenseBipartiteGraph, rational>& neighbors) const;
+
+	virtual void constructPath(const StateGraph* sg, int from, int to,
+			std::list<int>& path) const;
+
+	virtual void parseInstance(const std::string& line);
+
+protected:
+
+	struct cycle_comparator;
 
 	// helper functions for canonical path construction
 	int next_red_edge(int col, bool* red_edges, int m, int n) const;
 	int next_blue_edge(int row, bool* blue_edges, int m, int n) const;
 	void splice_cycle(std::vector<int> cycle,
 			std::list<std::vector<int> >& cycles) const;
-	void trace_cycle(bool* blue_edges, bool* red_edges, int m, int n, int i,
-			int j, std::vector<int>& cycle) const;
+	void trace_cycle(bool* blue_edges, bool* red_edges, int m, int n,
+			int i, int j, std::vector<int>& cycle) const;
 	void cycle_decomposition(const DenseBipartiteGraph& x,
-			const DenseBipartiteGraph& y,
-			std::list<std::vector<int> >& cycles) const;
-	struct cycle_comparator;
+			const DenseBipartiteGraph& y, std::list<std::vector<int> >& cycles) const;
 
 };
 

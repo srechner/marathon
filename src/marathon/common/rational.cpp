@@ -7,83 +7,83 @@
 namespace marathon {
 
 // Rational: just a wrapper around boost Rational data type
-Rational::Rational() :
+rational::rational() :
 		_r(0) {
 
 }
 
-Rational::Rational(const Rational& o) :
+rational::rational(const rational& o) :
 		_r(o._r) {
 }
 
-Rational::Rational(boost::multiprecision::cpp_rational r) :
+rational::rational(boost::multiprecision::cpp_rational r) :
 		_r(r) {
 }
 
-Rational::Rational(int n) {
+rational::rational(int n) {
 	_r = boost::multiprecision::cpp_rational(n);
 }
 
-Rational::Rational(int num, int denom) {
+rational::rational(int num, int denom) {
 	_r = boost::multiprecision::cpp_rational(num, denom);
 }
 
-bool Rational::operator==(const Rational& o) {
+bool rational::operator==(const rational& o) {
 	return _r == o._r;
 }
 
-bool Rational::operator!=(const Rational& o) {
+bool rational::operator!=(const rational& o) {
 	return _r != o._r;
 }
 
-void Rational::operator+=(const Rational& o) {
+void rational::operator+=(const rational& o) {
 	_r += o._r;
 }
 
-void Rational::operator-=(const Rational& o) {
+void rational::operator-=(const rational& o) {
 	_r -= o._r;
 }
 
-void Rational::operator*=(const Rational& o) {
+void rational::operator*=(const rational& o) {
 	_r *= o._r;
 }
 
-Rational Rational::operator*(const Rational& o) const {
+rational rational::operator*(const rational& o) const {
 	boost::multiprecision::cpp_rational res = _r * o._r;
-	return Rational(res);
+	return rational(res);
 }
 
-Rational Rational::operator-(const Rational& o) const {
+rational rational::operator-(const rational& o) const {
 	boost::multiprecision::cpp_rational res = _r - o._r;
-	return Rational(res);
+	return rational(res);
 }
 
-Rational Rational::operator/(const Rational& o) const {
+rational rational::operator/(const rational& o) const {
 	boost::multiprecision::cpp_rational res = _r / o._r;
-	return Rational(res);
+	return rational(res);
 }
 
-void Rational::operator/=(const Rational& o) {
+void rational::operator/=(const rational& o) {
 	_r /= o._r;
 }
 
-void Rational::stream_to(std::ostream& os) const {
+void rational::stream_to(std::ostream& os) const {
 	os << _r;
 }
 
-bool Rational::operator<(const Rational& o) const {
+bool rational::operator<(const rational& o) const {
 	return _r < o._r;
 }
 
-bool Rational::operator>(const Rational& o) const {
+bool rational::operator>(const rational& o) const {
 	return _r > o._r;
 }
 
-void Rational::operator=(const Rational& o) {
+void rational::operator=(const rational& o) {
 	_r = o._r;
 }
 
-std::ostream& operator<<(std::ostream& out, const Rational& r) {
+std::ostream& operator<<(std::ostream& out, const rational& r) {
 	r.stream_to(out);
 	return out;
 }

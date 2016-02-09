@@ -53,15 +53,11 @@ void BipartiteMatching::operator=(BipartiteMatching const& s) {
 	memcpy(mates, s.mates, n * sizeof(int));
 }
 
-bool BipartiteMatching::operator==(BipartiteMatching const &s) const {
+bool BipartiteMatching::operator==(const BipartiteMatching &s) const {
 	if (n != s.n)
 		return false;
 	int ret = memcmp(mates, s.mates, n * sizeof(int));
 	return (ret == 0);
-}
-
-size_t hash_value(const BipartiteMatching& s) {
-	return s.unmatched[0] * s.n + s.unmatched[1];
 }
 
 std::ostream& operator<<(std::ostream& out, BipartiteMatching& s) {
@@ -91,7 +87,7 @@ bool BipartiteMatching::is_perfect() const {
 }
 
 bool BipartiteMatching::is_near_perfect() const {
-	return 2*k == n - 2;
+	return 2 * k == n - 2;
 }
 
 void BipartiteMatching::addEdge(int u, int v) {
@@ -110,8 +106,11 @@ void BipartiteMatching::removeEdge(int u, int v) {
 	unmatched[1] = v;
 }
 
+size_t BipartiteMatching::hash_value() const {
+	return unmatched[0] * n + unmatched[1];
 }
 
 }
-
 }
+}
+

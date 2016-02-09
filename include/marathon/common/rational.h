@@ -11,37 +11,38 @@
 #include <ostream>
 #include "boost/multiprecision/cpp_int.hpp"
 
-//  just a wrapper around boost rational data type
-
 namespace marathon {
 
-class Rational {
+/**
+ * just a wrapper around boost rational data type
+ */
+class rational {
 
 private:
 	boost::multiprecision::cpp_rational _r;
 
 public:
-	Rational();
-	Rational(const Rational& o);
-	Rational(boost::multiprecision::cpp_rational r);
-	Rational(int n);
-	Rational(int num, int denom);
+	rational();
+	rational(const rational& o);
+	rational(boost::multiprecision::cpp_rational r);
+	rational(int n);
+	rational(int num, int denom);
 
-	void operator=(const Rational& o);
+	void operator=(const rational& o);
 
-	bool operator==(const Rational& o);
-	bool operator!=(const Rational& o);
-	void operator+=(const Rational& o);
-	void operator-=(const Rational& o);
-	void operator*=(const Rational& o);
-	void operator/=(const Rational& o);
+	bool operator==(const rational& o);
+	bool operator!=(const rational& o);
+	void operator+=(const rational& o);
+	void operator-=(const rational& o);
+	void operator*=(const rational& o);
+	void operator/=(const rational& o);
 
-	Rational operator*(const Rational& o) const;
-	Rational operator-(const Rational& o) const;
-	Rational operator/(const Rational& o) const;
+	rational operator*(const rational& o) const;
+	rational operator-(const rational& o) const;
+	rational operator/(const rational& o) const;
 
-	bool operator<(const Rational& o) const;
-	bool operator>(const Rational& o) const;
+	bool operator<(const rational& o) const;
+	bool operator>(const rational& o) const;
 
 	void stream_to(std::ostream& os) const;
 
@@ -51,7 +52,7 @@ public:
 	}
 };
 
-std::ostream& operator<<(std::ostream& out, const Rational& r);
+std::ostream& operator<<(std::ostream& out, const rational& r);
 
 }
 

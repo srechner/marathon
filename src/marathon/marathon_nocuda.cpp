@@ -26,8 +26,8 @@ int totalMixingTime(const StateGraph* mc, const T epsilon, device_t device) {
 	}
 }
 
-Rational pathCongestion(const StateGraph* mc) {
-	return cpu::pathCongestion(mc);
+rational pathCongestion(const StateGraph* sg, const SamplingChain* mc) {
+	return cpu::pathCongestion(sg, mc);
 }
 
 template<typename T>

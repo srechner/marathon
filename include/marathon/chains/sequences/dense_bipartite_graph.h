@@ -44,13 +44,13 @@ public:
 	void switch_4_cycle(int u1, int u2, int v1, int v2);
 
 	void get_row(int u, boost::dynamic_bitset<>& row) const;
+	size_t hash_value() const;
 
 	void operator=(const DenseBipartiteGraph& s);
 	bool operator==(const DenseBipartiteGraph &rhs) const;
 
 	friend std::ostream& operator<<(std::ostream& os,
 			const DenseBipartiteGraph& bip);
-	friend size_t hash_value(const DenseBipartiteGraph& s);
 };
 
 inline int COORD_TRANSFORM(int x, int y, int ld) {
@@ -58,9 +58,18 @@ inline int COORD_TRANSFORM(int x, int y, int ld) {
 }
 
 }
-
+}
 }
 
+// overload hash function for this class
+namespace std {
+template<>
+struct hash<::marathon::chain::sequence::DenseBipartiteGraph> {
+	std::size_t operator()(
+			const marathon::chain::sequence::DenseBipartiteGraph& s) const {
+		return s.hash_value();
+	}
+};
 }
 
 #endif /* STATE_H_ */

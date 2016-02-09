@@ -19,22 +19,23 @@ namespace matching {
 
 class JerrumSinclairVigoda04: public Broder86 {
 
-private:
+protected:
+
 	uint num_perfect_matching;
 	uint *num_near_perfect_matching;
 
+	rational getWeight(const BipartiteMatching& s) const;
+
 public:
 
-	JerrumSinclairVigoda04(std::string line);
+	JerrumSinclairVigoda04(const std::string& input);
 
 	~JerrumSinclairVigoda04();
 
 	void computeNeighbours(const BipartiteMatching& s,
-			boost::unordered_map<BipartiteMatching, Rational>& neighbors) const;
+			std::unordered_map<BipartiteMatching, rational>& neighbors) const;
 
-	void computeWeights(std::vector<BipartiteMatching>& states);
-
-	Rational getWeight(int i) const;
+	void computeWeights(std::vector<BipartiteMatching>& states, std::vector<rational>& weights);
 };
 
 }

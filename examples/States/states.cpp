@@ -19,25 +19,52 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	// command line arguments
+	// command line argument
 	std::string inst(argv[2]);
-
-	marathon::StateGraph *sg;
 
 	// check which chain is selected
 	if (strcmp(argv[1], "matching") == 0) {
-		sg = new marathon::chain::matching::Broder86(inst);
+
+		// declare markov chain
+		typedef marathon::chain::matching::Broder86 Chain;
+		typedef marathon::chain::matching::BipartiteMatching State;
+		Chain mc;
+
+		// construct state graph
+		marathon::StateGraph* sg = mc.constructStateGraph(inst);
+
+		// reinterpret state graph
+		marathon::_StateGraph<State>* _sg = (marathon::_StateGraph<State>*) sg;
+
+		// output all states
+		for (auto s : _sg->getStates())
+			std::cout << s << std::endl;
+
+		delete sg;
+
 	} else if (strcmp(argv[1], "bipgraph") == 0) {
-		sg = new marathon::chain::sequence::SwitchBipartite(inst);
+
+		// declare markov chain
+		typedef marathon::chain::sequence::SwitchBipartite Chain;
+		typedef marathon::chain::sequence::DenseBipartiteGraph State;
+		Chain mc;
+
+		// construct state graph
+		marathon::StateGraph* sg = mc.constructStateGraph(inst);
+
+		// reinterpret state graph
+		marathon::_StateGraph<State>* _sg = (marathon::_StateGraph<State>*) sg;
+
+		// output all states
+		for (auto s : _sg->getStates())
+			std::cout << s << std::endl;
+
+		delete sg;
+
 	} else {
 		std::cerr << "unknown mode: " << argv[1] << std::endl;
 		return 1;
 	}
-
-	sg->constructStateGraph(true);
-	sg->printStates();
-
-	delete sg;
 
 	return 0;
 }

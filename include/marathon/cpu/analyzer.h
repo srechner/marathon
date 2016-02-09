@@ -12,6 +12,7 @@
 #include "../common/rational.h"
 #include "../common/state_graph.h"
 #include "transition_matrix.h"
+#include "../common/markov_chain.hpp"
 
 // STL includes
 #include <list>
@@ -49,9 +50,11 @@ T totalVariationDistance(const DenseTransitionMatrix<T>& P, const T* pi,
 
 /**
  *  Computes upper congestion bound by canonical path method.
- *  Path construction scheme can be given by function pointer.
+ *  Path construction scheme is hardcoded in the sampling chain.
+ *  @param sg Pointer to a State Graph Object.
+ *  @param mc Pointer to a sampling chain object.
  */
-Rational pathCongestion(const StateGraph* mc);
+rational pathCongestion(const StateGraph* sg, const SamplingChain* mc);
 
 /**
  * Computes the eigenvalue with second largest magnitute of the
@@ -80,7 +83,6 @@ T secondLargestEigenvalue(const StateGraph* mc);
 template<typename T>
 int totalMixingTime(const StateGraph* mc, const T epsilon);
 
-
 /**
  * Computes the diameter of the graph, i.e. the maximal length of a shortest path
  * between some nodes of the graph. Each arc has a length of 1.
@@ -93,7 +95,6 @@ int diameter(const StateGraph* G);
  * the number of shortest paths of G is stored in the vector count[l].
  */
 void pathLengthHistogram(std::vector<long>& count, const StateGraph* G);
-
 
 } /* namespace cpu */
 

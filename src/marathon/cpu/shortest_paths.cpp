@@ -46,16 +46,13 @@ void marathon::cpu::pathLengthHistogram(std::vector<long>& count,
 				int v = q.front();
 
 				// iterate over neighbours of v
-				for (int i = G->getIndexOfFirstTransition(v);
-						i <= G->getIndexOfLastTransition(v); i++) {
-
-					Transition t = G->getTransition(i);
+				for (Transition* t : G->getOutArcs(v)) {
 
 					int l = len[v] + 1;
 
-					if (l < len[t.v]) {
-						len[t.v] = l;
-						q.push(t.v);
+					if (l < len[t->v]) {
+						len[t->v] = l;
+						q.push(t->v);
 					}
 				}
 

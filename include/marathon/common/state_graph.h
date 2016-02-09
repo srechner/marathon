@@ -10,6 +10,8 @@
 
 #include "transition.h"
 #include <list>
+#include <string>
+#include <unordered_map>
 
 namespace marathon {
 
@@ -30,8 +32,9 @@ class DenseTransitionMatrix;
 }
 
 /**
- * Adjacency Array Representation of a State Graph.
- *
+ * A State Graph is a directed, weighted graph that represents a instance
+ * of a Markov Chain for a certain input instance. A state graph
+ * is implemented as a adjacency list.
  */
 class StateGraph {
 
@@ -45,27 +48,47 @@ class StateGraph {
 	template<typename T>
 	friend class cpu::DenseTransitionMatrix;
 
-public:
+protected:
 
-	/* Variables */
+	int numStates;
+	std::string instance;
 
-	// number of states
-	size_t numStates;
-
-	// edge array representation of state graph
-	std::vector<Transition> arcs;
-	std::vector<uint> outgoing_arcs;
+	// The transition set and views on it.
+	std::vector<Transition*> arcs;
+	std::vector<Transition*>* outArcs;
+	std::vector<Transition*>* inArcs;
 
 	// stationary distribution
-	std::vector<Rational> stationary_distribution;
+	std::vector<rational> stationary_distribution;
 
 public:
 
-	/* Constructor and Destructor */
-	StateGraph();
+	/**
+	 * Standard Constructor.
+	 */
+	StateGraph(int n);
+
+	/**
+	 * Standard Destructor. Remove everything.
+	 */
 	virtual ~StateGraph();
 
-	/* Getter Methods */
+	/*
+	 * Returns a void pointer to the input instance that lies behind the state graph.
+	 *
+	 */
+	const std::string& getInstance() const;
+
+	/**
+	 * Set the instance.
+	 */
+	void setInstance(const std::string& instance);
+
+	/**
+	 * Adds a transition arc to the graph.
+	 * Precondition: The state graph does not already contain an arc between state u and state v.
+	 */
+	void addArc(int u, int v, rational p);
 
 	/**
 	 * Returns the number of states of the state graph
@@ -75,64 +98,139 @@ public:
 	/**
 	 * Returns the number of Transitions/Arcs of the state graph
 	 */
-	size_t getNumTransitions() const;
+	size_t getNumTransitions() const ;
 
 	/**
 	 * Returns the transition probability P_uv for going from states[u] to states[v]
 	 */
-	Rational getTransitionProbability(int u, int v) const;
+	rational getTransitionProbability(int u, int v) const;
 
 	/**
 	 * Set P(u,v) to p
 	 */
-	void setTransitionProbability(int u, int v, Rational p);
+	void setTransitionProbability(int u, int v, rational p);
 
 	/**
 	 * Returns the stationary probability of state[i].
 	 */
-	Rational getStationary(int i) const;
+	rational getStationary(const int i) const;
+
+	/**
+	 * Sets the stationary probability of state[i] to p.
+	 */
+	void setStationary(const int i, const rational p) ;
 
 	/**
 	 * Returns the smallest stationary probability of all states
 	 */
-	Rational getMinimalStationary() const;
+	rational getMinimalStationary() const ;
 
 	/**
-	 * Returns the index of the first outgoing transition of state[v] or getNumTransition(),
-	 * if v does not have an outgoing arc.
-	 **/
-	int getIndexOfFirstTransition(int v) const;
-
-	/**
-	 * Returns the index of the last outgoing transition of state[v] or getNumTransition(),
-	 * if v does not have an outgoing arc.
+	 * Returns a reference to the outgoing arcs of state v.
 	 */
-	int getIndexOfLastTransition(int v) const;
+	const std::vector<Transition*>& getOutArcs(int v) const ;
+
+	/**
+	 * Returns a reference to the ingoing arcs of state v.
+	 */
+	const std::vector<Transition*>& getInArcs(int v) const;
+
+	/**
+	 * Returns a reference to the vector of all arcs in the state graph.
+	 */
+	const std::vector<Transition*>& getArcs() const;
 
 	/**
 	 * Returns the number of adjacent states of state[v]
 	 */
-	int getNumTransitions(int v) const;
+	int getNumOutArcs(int v) const;
 
 	/**
-	 * Returns the Transition with given index
+	 * Removes all States and Transitions and re-initializes the state graph.
 	 */
-	Transition getTransition(int index) const;
-
-	/**
-	 * Returns the weight of state[i]
-	 */
-	virtual Rational getWeight(int i) const;
-
-	/**
-	 * Constructs a path between state[u] and state[v]
-	 */
-	virtual void canonicalPath(int u, int v, std::list<int>& path) const;
-
-	virtual void constructStateGraph(bool verbose = false) = 0;
-
-	virtual void printStates() const = 0;
+	virtual void clear();
 };
+
+/**
+ * This is the implementation of the abstract StateGraph class.
+ */
+template<typename State>
+class _StateGraph: public StateGraph {
+
+private:
+
+	/* Variables */
+
+	std::vector<State> states;					// The set of states.
+	std::unordered_map<State, int> indices;		// State -> Index
+
+public:
+
+	/**
+	 * Create Empty state graph with n states.
+	 */
+	_StateGraph(int n) : StateGraph(n) {
+		states.reserve(n);
+	}
+
+	/**
+	 * Standard Destructor. Remove everything.
+	 */
+	~_StateGraph() {
+
+	}
+
+	/**
+	 * Removes all States and Transitions and re-initializes the state graph.
+	 */
+	void clear() {
+		StateGraph::clear();
+		states.clear();
+	}
+
+	/* Non-inherited methods */
+
+	/**
+	 * Add a new State to the state graph.
+	 * @param s The State to insert.
+	 * @return The index of the state after insertion.
+	 */
+	int addState(const State& s) {
+		// add state to the vector of states
+		states.push_back(s);
+		indices[s] = states.size() - 1;
+		numStates++;
+		return states.size() - 1;
+	}
+
+	/**
+	 * Returns the State with index i.
+	 */
+	const State& getState(int i) const {
+		return states[i];
+	}
+
+	/**
+	 * Returns a reference to a vector of States.
+	 */
+	const std::vector<State>& getStates() const {
+		return states;
+	}
+
+	/**
+	 * Returns the index of a state or -1 if the state graph does not contain this state.
+	 */
+	int findState(const State& s) const {
+		auto it = indices.find(s);
+		if (it != indices.end())
+			return it->second;
+		else
+			return -1;
+	}
+
+};
+
+std::ostream& operator<<(std::ostream& out, const StateGraph& sg);
 
 }
 
