@@ -28,10 +28,10 @@ int main(int argc, char** argv) {
 		// declare markov chain
 		typedef marathon::chain::matching::Broder86 Chain;
 		typedef marathon::chain::matching::BipartiteMatching State;
-		Chain mc;
+		Chain* mc = new Chain(inst);
 
 		// construct state graph
-		marathon::StateGraph* sg = mc.constructStateGraph(inst);
+		marathon::StateGraph* sg = mc->constructStateGraph();
 
 		// reinterpret state graph
 		marathon::_StateGraph<State>* _sg = (marathon::_StateGraph<State>*) sg;
@@ -40,6 +40,7 @@ int main(int argc, char** argv) {
 		for (auto s : _sg->getStates())
 			std::cout << s << std::endl;
 
+		delete mc;
 		delete sg;
 
 	} else if (strcmp(argv[1], "bipgraph") == 0) {
@@ -47,10 +48,10 @@ int main(int argc, char** argv) {
 		// declare markov chain
 		typedef marathon::chain::sequence::SwitchBipartite Chain;
 		typedef marathon::chain::sequence::DenseBipartiteGraph State;
-		Chain mc;
+		Chain* mc = new Chain(inst);
 
 		// construct state graph
-		marathon::StateGraph* sg = mc.constructStateGraph(inst);
+		marathon::StateGraph* sg = mc->constructStateGraph();
 
 		// reinterpret state graph
 		marathon::_StateGraph<State>* _sg = (marathon::_StateGraph<State>*) sg;
@@ -59,6 +60,7 @@ int main(int argc, char** argv) {
 		for (auto s : _sg->getStates())
 			std::cout << s << std::endl;
 
+		delete mc;
 		delete sg;
 
 	} else {

@@ -55,7 +55,8 @@ public:
 	 */
 	virtual StateGraph* constructStateGraph(bool verbose = false) = 0;
 
-	virtual void constructPath(const StateGraph* sg, int i, int j, std::list<int>& path) const {
+	virtual void constructPath(const StateGraph* sg, int i, int j,
+			std::list<int>& path) const {
 
 	}
 
@@ -89,9 +90,10 @@ protected:
 	/**
 	 *  Computes weights for each state.
 	 */
-	virtual void computeWeights(std::vector<State>& states, std::vector<rational>& weights) {
+	virtual void computeWeights(std::vector<State>& states,
+			std::vector<rational>& weights) {
 		weights.clear();
-		for(int i=0; i<states.size(); i++)
+		for (int i = 0; i < states.size(); i++)
 			weights.push_back(1);
 	}
 
@@ -180,48 +182,13 @@ public:
 			assert(sum == rational(1));
 		}
 
-		// create new state graph
-		int n = states.size();
-		_StateGraph<State>* sg = new _StateGraph<State>(n);
-
-		// add the states to the state graph
-		for (int i = 0; i < n; i++)
-			sg->addState(states[i]);
-
-		// tell the state graph how the input instance looks like
-		//sg->setInstance();
-
 		/***********************************************************
 		 * Compute weights for metropolis rule
 		 **********************************************************/
 		std::vector<rational> weights;
 		computeWeights(states, weights);
-
-		/*********************************************************************
-		 * Print Information about states
-		 ********************************************************************/
-
-		if (verbose) {
-			std::cout << "state size: " << states.size() << std::endl;
-			for (int ii=0; ii<states.size(); ii++) {
-				std::cout << ii << ": " << states[ii] << " " << weights[ii]
-						<< std::endl;
-			}
-
-			std::cout << "transition size: " << transition_matrix.size()
-					<< std::endl;
-		}
-
-		/*******************************************************
-		 * Compile Stationary Distrubtion
-		 ******************************************************/
-		rational Z = 0;
-		for (i = 0; i < n; i++)
-			Z += weights[i];
-
-		for (i = 0; i < n; i++) {
-			sg->setStationary(i, weights[i] / Z);
-		}
+		if (verbose)
+			std::cout << "computed weights" << std::endl;
 
 		/***********************************************************
 		 * Apply Metropolis Rule:
@@ -258,6 +225,49 @@ public:
 			it->second *= metr;
 		}
 
+		if (verbose)
+			std::cout << "applied metropolis rule" << std::endl;
+
+		/******************************************************
+		 * Update State Graph
+		 *****************************************************/
+
+		const int n = states.size();
+		const int m = transition_matrix.size();
+		if (verbose)
+			std::cout << "create state graph with " << n << " states and " << m
+					<< " transititions." << std::endl;
+		_StateGraph<State>* sg = new _StateGraph<State>();
+		sg->resize(n, m);
+
+		// add states
+		for (int i = 0; i < n; i++)
+			sg->addState(states[i]);
+
+		// Compile Stationary Distrubtion
+		rational Z = 0;
+		for (i = 0; i < n; i++)
+			Z += weights[i];
+
+		for (i = 0; i < n; i++) {
+			sg->setStationary(i, weights[i] / Z);
+		}
+
+		if (verbose)
+			std::cout << "set stationary" << std::endl;
+
+		// add transitions
+		for (auto it = transition_matrix.begin(); it != transition_matrix.end();
+				++it) {
+			int u = it->first.first;
+			int v = it->first.second;
+			rational p_uv = it->second;
+			sg->addArc(u, v, p_uv);
+		}
+
+		if (verbose)
+			std::cout << "updated state graph" << std::endl;
+
 		/***********************************************************
 		 * Self-Check: Verifiy that chain is reversible
 		 ***********************************************************/
@@ -285,15 +295,19 @@ public:
 			assert(stat_i * pij == stat_j * pji);
 		}
 
-		/********************************************************
-		 * Update state graph.
-		 *******************************************************/
-		for (auto it = transition_matrix.begin(); it != transition_matrix.end();
-				++it) {
-			int u = it->first.first;
-			int v = it->first.second;
-			rational p_uv = it->second;
-			sg->addArc(u, v, p_uv);
+		/*********************************************************************
+		 * Print Information about states
+		 ********************************************************************/
+
+		if (verbose) {
+			std::cout << "state size: " << states.size() << std::endl;
+			for (int ii = 0; ii < states.size(); ii++) {
+				std::cout << ii << ": " << states[ii] << " " << weights[ii]
+						<< std::endl;
+			}
+
+			std::cout << "transition size: " << transition_matrix.size()
+					<< std::endl;
 		}
 
 		return (StateGraph*) sg;

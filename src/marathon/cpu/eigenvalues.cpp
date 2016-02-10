@@ -43,8 +43,8 @@ T marathon::cpu::secondLargestEigenvalue(const StateGraph* mc) {
 
 	// count number of non-zero elements in left upper part of transition matrix
 	numArcs = 0;
-	for (Transition* t : mc->getArcs()) {
-		if (t->u <= t->v)
+	for (const Transition& t : mc->getArcs()) {
+		if (t.u <= t.v)
 			numArcs++;
 	}
 
@@ -71,16 +71,16 @@ T marathon::cpu::secondLargestEigenvalue(const StateGraph* mc) {
 		row[i] = numArcs;
 
 	i = 0;
-	for (Transition* t : mc->getArcs()) {
-		if (t->u <= t->v) {
+	for (const Transition& t : mc->getArcs()) {
+		if (t.u <= t.v) {
 			// symmetrize (see theory paper)
-			T x = t->p.convert_to<T>();
-			rational y = mc->getStationary(t->u) / mc->getStationary(t->v);
+			T x = t.p.convert_to<T>();
+			rational y = mc->getStationary(t.u) / mc->getStationary(t.v);
 			x *= sqrt(y.convert_to<T>());
 			p[i] = x;
-			col[i] = t->v;
-			if (i < row[t->u])
-				row[t->u] = i;
+			col[i] = t.v;
+			if (i < row[t.u])
+				row[t.u] = i;
 			i++;
 		}
 	}

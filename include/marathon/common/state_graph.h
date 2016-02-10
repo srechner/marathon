@@ -51,12 +51,13 @@ class StateGraph {
 protected:
 
 	int numStates;
+	int numArcs;
 	std::string instance;
 
 	// The transition set and views on it.
-	std::vector<Transition*> arcs;
-	std::vector<Transition*>* outArcs;
-	std::vector<Transition*>* inArcs;
+	std::vector<Transition> arcs;
+	std::vector<std::vector<Transition*>> outArcs;
+	std::vector<std::vector<Transition*>> inArcs;
 
 	// stationary distribution
 	std::vector<rational> stationary_distribution;
@@ -64,14 +65,19 @@ protected:
 public:
 
 	/**
-	 * Standard Constructor.
+	 * Standard Constructor. Creates an empty State Graph.
 	 */
-	StateGraph(int n);
+	StateGraph();
 
 	/**
 	 * Standard Destructor. Remove everything.
 	 */
 	virtual ~StateGraph();
+
+	/**
+	 * Rerserve memory for n states and m arcs.
+	 */
+	virtual void resize(int n, int m);
 
 	/*
 	 * Returns a void pointer to the input instance that lies behind the state graph.
@@ -98,7 +104,7 @@ public:
 	/**
 	 * Returns the number of Transitions/Arcs of the state graph
 	 */
-	size_t getNumTransitions() const ;
+	size_t getNumTransitions() const;
 
 	/**
 	 * Returns the transition probability P_uv for going from states[u] to states[v]
@@ -118,17 +124,17 @@ public:
 	/**
 	 * Sets the stationary probability of state[i] to p.
 	 */
-	void setStationary(const int i, const rational p) ;
+	void setStationary(const int i, const rational p);
 
 	/**
 	 * Returns the smallest stationary probability of all states
 	 */
-	rational getMinimalStationary() const ;
+	rational getMinimalStationary() const;
 
 	/**
 	 * Returns a reference to the outgoing arcs of state v.
 	 */
-	const std::vector<Transition*>& getOutArcs(int v) const ;
+	const std::vector<Transition*>& getOutArcs(int v) const;
 
 	/**
 	 * Returns a reference to the ingoing arcs of state v.
@@ -138,7 +144,7 @@ public:
 	/**
 	 * Returns a reference to the vector of all arcs in the state graph.
 	 */
-	const std::vector<Transition*>& getArcs() const;
+	const std::vector<Transition>& getArcs() const;
 
 	/**
 	 * Returns the number of adjacent states of state[v]
@@ -167,10 +173,10 @@ private:
 public:
 
 	/**
-	 * Create Empty state graph with n states.
+	 * Create Empty state graph.
 	 */
-	_StateGraph(int n) : StateGraph(n) {
-		states.reserve(n);
+	_StateGraph() :
+			StateGraph() {
 	}
 
 	/**
@@ -178,6 +184,14 @@ public:
 	 */
 	~_StateGraph() {
 
+	}
+
+	/**
+	 * Rerserve memory for n states and m arcs.
+	 */
+	virtual void resize(int n, int m) {
+		StateGraph::resize(n, m);
+		states.resize(n);
 	}
 
 	/**
@@ -197,10 +211,10 @@ public:
 	 */
 	int addState(const State& s) {
 		// add state to the vector of states
-		states.push_back(s);
-		indices[s] = states.size() - 1;
+		states[numStates] = s;
+		indices[s] = numStates;
 		numStates++;
-		return states.size() - 1;
+		return numStates - 1;
 	}
 
 	/**

@@ -13,7 +13,8 @@ namespace chain {
 
 namespace matching {
 
-JerrumSinclairVigoda04::JerrumSinclairVigoda04(const std::string& input) : Broder86(input), num_perfect_matching(0) {
+JerrumSinclairVigoda04::JerrumSinclairVigoda04(const std::string& input) :
+		Broder86(input), num_perfect_matching(0) {
 	num_near_perfect_matching = (uint*) malloc(0);
 }
 
@@ -86,7 +87,8 @@ void JerrumSinclairVigoda04::computeNeighbours(const BipartiteMatching& s,
 }
 
 void JerrumSinclairVigoda04::computeWeights(
-		std::vector<BipartiteMatching>& states, std::vector<rational>& weights) {
+		std::vector<BipartiteMatching>& states,
+		std::vector<rational>& weights) {
 
 	const uint n = Broder86::g->getNumberOfNodes();
 	uint u, v;
@@ -110,8 +112,8 @@ void JerrumSinclairVigoda04::computeWeights(
 			num_near_perfect_matching[u * (n / 2) + v]++;
 	}
 
-	weights.reserve(states.size());
-	for(int i=0; i<states.size(); i++)
+	weights.resize(states.size());
+	for (int i = 0; i < states.size(); i++)
 		weights[i] = getWeight(states[i]);
 }
 
@@ -123,7 +125,7 @@ rational JerrumSinclairVigoda04::getWeight(const BipartiteMatching& s) const {
 		uint u = s.unmatched[0];
 		uint v = s.unmatched[1] - s.n / 2;
 		rational r(num_perfect_matching,
-		num_near_perfect_matching[u * s.n / 2 + v]);
+				num_near_perfect_matching[u * s.n / 2 + v]);
 		return r;
 	} else {
 		// cannot happen

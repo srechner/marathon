@@ -4,33 +4,32 @@
 
 namespace marathon {
 
-StateGraph::StateGraph(int n) : numStates(0),
+StateGraph::StateGraph() : numStates(0), numArcs(0),
 		instance("") {
-
-	inArcs = new std::vector<Transition*>[n];
-	outArcs = new std::vector<Transition*>[n];
-	stationary_distribution.reserve(n);
 
 }
 
 StateGraph::~StateGraph() {
 
-	if (inArcs != nullptr)
-		delete[] inArcs;
-
-	if (outArcs != nullptr)
-		delete[] outArcs;
 }
+
+void StateGraph::resize(int n, int m) {
+	arcs.resize(m);
+	outArcs.resize(n);
+	inArcs.resize(n);
+	stationary_distribution.resize(n);
+}
+
 
 size_t StateGraph::getNumStates() const {
 		return numStates;
 }
 
 void StateGraph::addArc(int u, int v, rational p) {
-	Transition* t = new Transition(u, v, p);
-	arcs.push_back(t);
-	outArcs[u].push_back(t);
-	inArcs[v].push_back(t);
+	arcs[numArcs] = Transition(u,v,p);
+	outArcs[u].push_back(&arcs[numArcs]);
+	inArcs[v].push_back(&arcs[numArcs]);
+	numArcs++;
 }
 
 const std::string& StateGraph::getInstance() const {
@@ -88,7 +87,7 @@ const std::vector<Transition*>& StateGraph::getInArcs(int v) const {
 	return inArcs[v];
 }
 
-const std::vector<Transition*>& StateGraph::getArcs() const {
+const std::vector<Transition>& StateGraph::getArcs() const {
 	return arcs;
 }
 
@@ -98,14 +97,8 @@ int StateGraph::getNumOutArcs(int v) const {
 void StateGraph::clear() {
 
 	arcs.clear();
-
-	for (size_t i = 0; i < arcs.size(); i++)
-		delete arcs[i];
-
-	if (inArcs != nullptr)
-		delete[] inArcs;
-	if (outArcs != nullptr)
-		delete[] outArcs;
+	inArcs.clear();
+	outArcs.clear();
 	stationary_distribution.clear();
 }
 

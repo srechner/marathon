@@ -118,8 +118,8 @@ public:
 		memset(data, 0, ld * n * sizeof(T));
 
 		//#pragma omp parallel for if(omega>1000)
-		for (Transition* t : mc->getArcs()) {
-			data[t->u * ld + t->v] = t->p.convert_to<T>();
+		for (const Transition& t : mc->getArcs()) {
+			data[t.u * ld + t.v] = t.p.convert_to<T>();
 		}
 	}
 

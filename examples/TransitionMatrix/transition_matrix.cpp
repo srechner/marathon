@@ -32,20 +32,20 @@ int main(int argc, char** argv) {
 
 	// check which chain is selected and instanciate with proper implementation
 	if (strcmp(argv[1], "js89") == 0)
-		mc = new marathon::chain::matching::Broder86();
+		mc = new marathon::chain::matching::Broder86(inst);
 	else if (strcmp(argv[1], "jsv04") == 0)
-		mc = new marathon::chain::matching::JerrumSinclairVigoda04();
+		mc = new marathon::chain::matching::JerrumSinclairVigoda04(inst);
 	else if (strcmp(argv[1], "swapBip") == 0)
-		mc = new marathon::chain::sequence::SwitchBipartite();
+		mc = new marathon::chain::sequence::SwitchBipartite(inst);
 	else if (strcmp(argv[1], "swapBipFast") == 0)
-		mc = new marathon::chain::sequence::SwitchBipartiteFast();
+		mc = new marathon::chain::sequence::SwitchBipartiteFast(inst);
 	else {
 		std::cerr << "unknown chain specifier: " << argv[1] << std::endl;
 		return 1;
 	}
 
 	// State Graph Instance
-	marathon::StateGraph* sg = mc->constructStateGraph(inst);
+	marathon::StateGraph* sg = mc->constructStateGraph();
 
 	// print transition matrix
 	marathon::cpu::DenseTransitionMatrix<double> P;

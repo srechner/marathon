@@ -10,7 +10,7 @@ namespace chain {
 
 namespace sequence {
 
-SwitchBipartite::SwitchBipartite(const std::string& line) {
+SwitchBipartite::SwitchBipartite(const std::string& line) : sum(0) {
 	parseInstance(line);
 }
 
