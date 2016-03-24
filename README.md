@@ -15,7 +15,7 @@ Compiling the library requires the following software packages:
  * `g++` in version 4.8 or later
  * `boost` headers 
  * `cblas` headers
- * `cuda` in version 7.0 or later (optional)
+ * `cuda` headers in version 7.0 or later (optional)
 
 ### Installation:
 
