@@ -18,6 +18,15 @@ Compiling the library requires the following software packages:
  * `cblas` headers
  * `cuda` headers in version 7.0 or later (optional)
 
+Linking an application to `marathon` requires several third-party libraries, which have to exist at your system. (Names are those of Ubuntu packages.)
+ * `gomp`
+ * `pthread`
+ * `openblas` (or an equivalent `CBLAS` implementation)
+ * `arpack++`
+ * `arpack`
+ * `superlu`
+ * `cublas`	(only when built with CUDA support)
+
 ### Installation:
 
 First Step: Build the `marathon` library.
@@ -35,17 +44,6 @@ The [example directory](https://github.com/srechner/marathon/blob/master/example
 2. Run `make` or `make CUDA=true`. The command has to match the mode you have used to build the library. Please see next section if something goes wrong.
 3. Tell your system where to find the `marathon` library: `export LD_LIBRARY_PATH=../:$LD_LIBRARY_PATH`
 4. Run the application.
-
-#### Link Options:
-
-Linking your application requires several third-party libraries, which have to exist at your system. (Names are those of Ubuntu packages.)
- * `gomp`
- * `pthread`
- * `openblas` (or an equivalent `CBLAS` implementation)
- * `arpack++`
- * `arpack`
- * `superlu`
- * `cublas`	(only when built with CUDA support)
 
 ### Example:
 
