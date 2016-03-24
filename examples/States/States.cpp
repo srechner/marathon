@@ -7,8 +7,8 @@
 
 int main(int argc, char** argv) {
 
-	if (argc != 3 && argc != 4) {
-		std::cout << "usage: states <matching|bipgraph> <instance> [max-states]"
+	if (argc != 3) {
+		std::cout << "usage: states <matching|bipgraph> <instance>"
 				<< std::endl;
 		return 1;
 	}
@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 	}
 
 	// declare state graph object
-	marathon::StateGraph* sg = new marathon::StateGraph(mc, limit);
+	marathon::StateGraph* sg = new marathon::StateGraph(mc);
 
 	// output all states
 	for (const marathon::State* s : sg->getStates())

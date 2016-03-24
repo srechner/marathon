@@ -32,6 +32,10 @@ protected:
 	std::vector<int> v;
 	int sum;
 
+	/**
+	 * Instances have the form "2,2,2;1,2,1,2".
+	 * The semicolon separates two degree sequences of both bipartition sets.
+	 */
 	virtual void parseInstance(const std::string& line);
 
 public:

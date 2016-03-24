@@ -109,7 +109,6 @@ void pathLengthHistogram(std::vector<long>& count, const StateGraph* G);
 #include "chain/matching/JSV04.h"
 #include "chain/bipgraph/SwitchChain.h"
 #include "chain/bipgraph/SwitchChainBerger.h"
-#include "chain/bipgraph/Curveball.h"
 
 // include Path Construction Schemes
 #include "chain/matching/JS89CanPath.h"

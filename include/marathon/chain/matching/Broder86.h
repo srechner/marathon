@@ -26,6 +26,24 @@ protected:
 
 	SparseBipartiteGraph *g = nullptr;
 
+	/**
+	 * Instances have the form "110101011".
+	 * Such a 0-1-String is interpreted as a biadjacency matrix of a bipartite graph, flattened to a single line.
+	 * Thus, the input string above corresponds to the biadjacency  matrix
+	 *
+	 *  1 1 0
+	 *  1 0 1
+	 *  0 1 1
+	 *
+	 *  which is the graph
+	 *
+	 *  u1  u2  u3
+	 *  |\ / \ /|
+	 *  | X   X |
+	 *  |/ \ / \|
+	 *  v1  v2  v3
+	 * .
+	 */
 	void parseInstance(const std::string& inst);
 
 public:

@@ -6,19 +6,15 @@
 
 int main(int argc, char** argv) {
 
-	if (argc < 3 || argc > 4) {
+	if (argc != 3) {
 		std::cout
-				<< "usage: transition_matrix <js89|jsv04|swapBip|swapBipFast|curveball> <instance> [max-states]"
+				<< "usage: transition_matrix <js89|jsv04|swapBip|swapBipFast> <instance>"
 				<< std::endl;
 		return 1;
 	}
 
 	// parse command line arguments
 	std::string inst(argv[2]);
-
-	int limit = INT_MAX;
-	if (argc == 4)
-		limit = atoi(argv[3]);
 
 	// Init library
 	marathon::init();
@@ -35,15 +31,13 @@ int main(int argc, char** argv) {
 		mc = new marathon::chain::bipgraph::SwitchChain(inst);
 	else if (strcmp(argv[1], "swapBipFast") == 0)
 		mc = new marathon::chain::bipgraph::SwitchChainBerger(inst);
-	else if (strcmp(argv[1], "curveball") == 0)
-		mc = new marathon::chain::bipgraph::Curveball(inst);
 	else {
 		std::cerr << "unknown chain specifier: " << argv[1] << std::endl;
 		return 1;
 	}
 
 	// declare State Graph object
-	marathon::StateGraph* sg = new marathon::StateGraph(mc, limit);
+	marathon::StateGraph* sg = new marathon::StateGraph(mc);
 
 	// print transition matrix
 	marathon::TransitionMatrix<double>* P = new marathon::TransitionMatrixCBLAS<double>(sg);
