@@ -3,7 +3,7 @@
 This C++ library is designed to support the analysis of Markov chain based sampling methods. It provides functions for the analysis of so-called state graphs. For an introduction into its functionality, see the article at http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0147935.
 
 ### Current Development Status: Active
-* Working on Documentation
+* Working on Documentation / API Description
 * Integrating of network analysis
 * Integrating additional chains
 * Setting up new experiments
