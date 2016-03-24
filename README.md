@@ -51,29 +51,32 @@ Linking your application requires several third-party libraries, which have to e
 
 This instruction shows how to build the [MixingBounds](https://github.com/srechner/marathon/blob/master/examples/MixingBounds/) example at a fresh Ubuntu 14.04 system.
 
-Preperation: Install all packages.
+1. Install packages.
 
-	sudo apt-get install git g++ libboost-all-dev libopenblas-dev libarpack++2-dev libsuperlu3-dev
+        sudo apt-get install git g++ libboost-all-dev libopenblas-dev libarpack++2-dev libsuperlu3-dev
 
-First Step: Build the library.
+2. Build the library.
 
-	git clone https://github.com/srechner/marathon.git
-	cd marathon
-	make
+        git clone https://github.com/srechner/marathon.git
+        cd marathon
+        make
 
-Second Step: Compile the application.
+3. Build the application.
 
-	cd examples/MixingBounds/
-	make
-	export LD_LIBRARY_PATH=../../:$LD_LIBRARY_PATH
-	./MixingBounds swapBip "2,1,1;1,2,1" 1e-3
+        cd examples/MixingBounds/
+        make
 
-The output should look like:
+4. Run the application.
 
-	number of states:          5
-	number of transition arcs: 21
-	total mixing time:         72
-	lower spectral bound:      34.1803
-	upper spectral bound:      102.206
-	upper congestion bound:    183.971
+        export LD_LIBRARY_PATH=../../:$LD_LIBRARY_PATH
+        ./MixingBounds swapBip "2,1,1;1,2,1" 1e-3
+
+   The output should look like:
+
+        number of states:          5
+        number of transition arcs: 21
+        total mixing time:         72
+        lower spectral bound:      34.1803
+        upper spectral bound:      102.206
+        upper congestion bound:    183.971
 
