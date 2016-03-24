@@ -2,12 +2,12 @@
 
 This C++ library is designed to support the analysis of Markov chain based sampling methods. It provides functions for the analysis of so-called state graphs. For an introduction into its functionality, see the article at http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0147935.
 
-## Current Development Status:
+### Current Development Status:
 * Working on Documentation
 * Integrating of network analysis
 * Integrating additional chains
 
-## Requirements:
+### Requirements:
 
 This library is developed and tested at Linux systems (primarily Ubuntu). In principle it should possible to migrate the library to other operating systems.
 
@@ -17,7 +17,7 @@ Compiling the library requires the following software packages:
  * `cblas` headers
  * `cuda` in version 7.0 or later (optional)
 
-## Installation:
+### Installation:
 
 First Step: Build the `marathon` library.
 
@@ -35,7 +35,7 @@ The [example directory](https://github.com/srechner/marathon/blob/master/example
 3. Tell your system where to find the `marathon` library: `export LD_LIBRARY_PATH=../:$LD_LIBRARY_PATH`
 4. Run the application.
 
-### Link Options:
+#### Link Options:
 
 Linking your application requires several third-party libraries, which have to exist at your system. (Names are those of Ubuntu packages.)
  * `gomp`
@@ -46,7 +46,7 @@ Linking your application requires several third-party libraries, which have to e
  * `superlu`
  * `cublas`	(only when built with CUDA support)
 
-## Example:
+### Example:
 
 This instruction shows how to build the [MixingBounds](https://github.com/srechner/marathon/blob/master/examples/MixingBounds/) example.
 
