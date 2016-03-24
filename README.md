@@ -6,6 +6,7 @@ This C++ library is designed to support the analysis of Markov chain based sampl
 * Working on Documentation
 * Integrating of network analysis
 * Integrating additional chains
+* Setting up new experiments
 
 ### Requirements:
 
@@ -48,7 +49,11 @@ Linking your application requires several third-party libraries, which have to e
 
 ### Example:
 
-This instruction shows how to build the [MixingBounds](https://github.com/srechner/marathon/blob/master/examples/MixingBounds/) example.
+This instruction shows how to build the [MixingBounds](https://github.com/srechner/marathon/blob/master/examples/MixingBounds/) example at a fresh Ubuntu 14.04 system.
+
+Preperation: Install all packages.
+
+	sudo apt-get install git g++ libboost-all-dev libopenblas-dev libarpack++2-dev libsuperlu3-dev
 
 First Step: Build the library.
 
@@ -60,7 +65,7 @@ Second Step: Compile the application.
 
 	cd examples/MixingBounds/
 	make
-	export LD_LIBRARY_PATH=../:$LD_LIBRARY_PATH
+	export LD_LIBRARY_PATH=../../:$LD_LIBRARY_PATH
 	./MixingBounds swapBip "2,1,1;1,2,1" 1e-3
 
 The output should look like:
