@@ -5,6 +5,7 @@
 #include "../../include/marathon/marathon.h"
 
 namespace marathon {
+namespace pathCongestion {
 
 //#define DEBUG
 
@@ -133,3 +134,5 @@ rational pathCongestion(const StateGraph* sg, const PathConstructionScheme& pcs)
 }
 
 }
+}
+

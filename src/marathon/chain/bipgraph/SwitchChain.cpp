@@ -105,6 +105,7 @@ void SwitchChain::computeNeighbours(const State* x,
 	{
 		// each thread has its own set of neighbours
 		std::vector<std::pair<State*, rational>> myneighbours;
+		rational myloop(0);
 
 #pragma omp for
 		// Definition of Kannan, Tetali, Vempala
@@ -144,6 +145,9 @@ void SwitchChain::computeNeighbours(const State* x,
 							s2->flip_edge(k, j); // (k,j) = 0
 
 							myneighbours.push_back(std::make_pair(s2, p));
+						} else {
+							// loop
+							myloop += p;
 						}
 					}
 				}
@@ -153,14 +157,13 @@ void SwitchChain::computeNeighbours(const State* x,
 		// copy thread own neighbors into global neighbour array
 #pragma omp critical
 		{
-			for (auto it = myneighbours.begin(); it != myneighbours.end();
-					++it) {
-				neighbors.push_back(*it);
-			}
+			DenseBipartiteGraph *s2 = new DenseBipartiteGraph(*s);
+			neighbors.push_back(std::make_pair(s2, myloop));
+			neighbors.insert(neighbors.end(), myneighbours.begin(),
+					myneighbours.end());
 		}
 	}
 }
-
 
 }
 }

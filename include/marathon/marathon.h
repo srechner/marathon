@@ -42,7 +42,7 @@ enum device_t {
  * dist(P^t, pi) < epsilon, where P is the transition matrix of mc and pi is
  * its stationary distribution.
  *
- * This method searches the total mixing time of mc by performing finger search.
+ * This implementation searches the total mixing time of mc by a two step procedure.
  * Starting with matrix M=P, it squares M until dist(M,pi) < eps. By doing so,
  * the methods computes the power of two r, such that dist(P^r,pi) <= eps and
  * l = r/2 such that dist(P^l, pi) > eps. After finding the limits l and r, it
@@ -51,38 +51,47 @@ enum device_t {
  * In each step of binary search, the boundaries l and r are transformed.
  * To compute P^m with m=(l+r)/2 we first compute P^(m-l) and multiply the result
  * to P^l. By this, we need three temporary matrices.
+ *
+ * @param sg A pointer to a state graph object.
+ * @param eps The distance to stationary distribution.
+ * @param dev Determines which matrix multiplication library to use.
+ *    Can be one of the following: CPU_ONLY, GPU_ONLY, HYBRID.
  */
 template<typename T>
-int totalMixingTime(const StateGraph* mc, const T epsilon, device_t device =
+int totalMixingTime(const StateGraph* sg, const T eps, device_t dev =
 		CPU_ONLY);
 
 /**
- *  Computes upper congestion bound by canonical path method.
- *  Path construction scheme can be given by function pointer.
- *  @param sg A pointer to a state graph object.
- *  @param constructPath An object of a path construction scheme class.
- */
-rational pathCongestion(const StateGraph* sg,
-		const PathConstructionScheme& pcs);
-
-/**
- * Options for computation of eigenvalues.
- */
-enum eigenvalue_t {
-	// eigenvalue options
-	_2ndLargestMagnitude,
-	_2ndLargestAlgebraic,
-};
-
-/**
- * Computes the eigenvalue with second largest magnitute of the
- * transition matrix of mc.
- * @param mc State Graph Representation of Markov Chain.
- * @param which Which Eigenvalue to compute. Options are: 2nd largest in magnitute and 2nd largest algebraic.
- * @return The corresponding Eigenvalue.
+ * Computes upper congestion bound by canonical path method.
+ * Path construction scheme can be given by function pointer.
+ * @param sg A pointer to a state graph object.
+ * @param constructPath An object of a path construction scheme class.
+ * @param eps The distance to stationary distribution.
+ * @return Maximum congestion of a path.
  */
 template<typename T>
-T eigenvalue(const StateGraph* mc, eigenvalue_t which);
+T upperPathCongestionBound(const StateGraph* sg,
+		const PathConstructionScheme& pcs, T eps);
+
+/**
+ * Compute the lower spectral bound of the state graph.
+ * @param sg A pointer to a state graph object.
+ * @param eps The distance to stationary distribution.
+ * @return A lower bound of the total mixing time.
+ */
+template<typename T>
+T lowerSpectralBound(const StateGraph* sg, T eps);
+
+
+/**
+ * Compute the upper spectral bound of the state graph.
+ * @param sg A pointer to a state graph object.
+ * @param eps The distance to stationary distribution.
+ * @return A lower bound of the total mixing time.
+ */
+template<typename T>
+T upperSpectralBound(const StateGraph* sg, T eps);
+
 
 /**
  * Computes the diameter of the graph, i.e. the maximal length of a shortest path

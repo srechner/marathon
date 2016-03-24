@@ -13,11 +13,16 @@
 #include <cstdlib>
 #include <algorithm>
 #include <cmath>
+#include <climits>
 
-// Project Includes
+#include "../../include/marathon/Eigenvalues.h"
+
 #include "../../include/marathon/marathon.h"
 #include "../../include/arpack++/arlssym.h"
 #include "../../include/arpack++/arlsmat.h"
+
+namespace marathon {
+namespace eigenvalue {
 
 /**
  * Computes the second largest value of the spectrum of transition matrix P.
@@ -27,7 +32,7 @@
  * largest magnitute and returns the lesser one.
  */
 template<typename T>
-T marathon::eigenvalue(const StateGraph* sg, eigenvalue_t opt) {
+T eigenvalue(const StateGraph* sg, eigenvalue_t opt) {
 
 	// Variables
 	size_t omega;			// Number of states
@@ -100,19 +105,19 @@ T marathon::eigenvalue(const StateGraph* sg, eigenvalue_t opt) {
 	}
 
 	/*std::cout << "P: ";
-	 for (i = 0; i < numArcs; i++)
-	 std::cout << p[i] << " ";
-	 std::cout << std::endl;
+	for (i = 0; i < numArcs; i++)
+		std::cout << p[i] << " ";
+	std::cout << std::endl;
 
-	 std::cout << "row: ";
-	 for (i = 0; i <= omega; i++)
-	 std::cout << row[i] << " ";
-	 std::cout << std::endl;
+	std::cout << "row: ";
+	for (i = 0; i <= omega; i++)
+		std::cout << row[i] << " ";
+	std::cout << std::endl;
 
-	 std::cout << "col: ";
-	 for (i = 0; i < numArcs; i++)
-	 std::cout << col[i] << " ";
-	 std::cout << std::endl;*/
+	std::cout << "col: ";
+	for (i = 0; i < numArcs; i++)
+		std::cout << col[i] << " ";
+	std::cout << std::endl;*/
 
 	B.DefineMatrix(omega, numArcs, p, col, row, 'L');
 
@@ -123,7 +128,7 @@ T marathon::eigenvalue(const StateGraph* sg, eigenvalue_t opt) {
 
 	ARluSymStdEig<T> prob;
 	int nev;
-	T tol = 1e-12f;
+	T tol = std::numeric_limits<T>::epsilon() * 10.0;// one power more than machine precision
 	int maxit = 1000 * omega;
 	char which[3];
 
@@ -145,7 +150,11 @@ T marathon::eigenvalue(const StateGraph* sg, eigenvalue_t opt) {
 
 	int ncv = std::min(2 * nev, (int) omega);
 
-	//std::cout << ncv << std::endl;
+	/*std::cout << "omega = " << omega << std::endl;
+	std::cout << "nev   = " << nev << std::endl;
+	std::cout << "ncv   = " << ncv << std::endl;
+	std::cout << "maxit = " << maxit << std::endl;
+	std::cout << "tol   = " << tol << std::endl;*/
 
 	prob.DefineParameters(omega, nev, &B, &ARluSymMatrix<T>::MultMv, which, ncv,
 			tol, maxit);
@@ -154,9 +163,9 @@ T marathon::eigenvalue(const StateGraph* sg, eigenvalue_t opt) {
 	prob.FindEigenvalues();
 
 	/*std::cout << "found " << prob.ConvergedEigenvalues() << std::endl;
-	 for (int i = 0; i < prob.ConvergedEigenvalues(); i++) {
-	 std::cout << i << ": " << prob.Eigenvalue(i) << std::endl;
-	 }*/
+	for (int i = 0; i < prob.ConvergedEigenvalues(); i++) {
+		std::cout << i << ": " << prob.Eigenvalue(i) << std::endl;
+	}*/
 
 	// free memory
 	delete[] p;
@@ -170,7 +179,10 @@ T marathon::eigenvalue(const StateGraph* sg, eigenvalue_t opt) {
  * Export Template Specialization
  */
 
-template float marathon::eigenvalue<float>(const StateGraph*, eigenvalue_t);
-template double marathon::eigenvalue<double>(const StateGraph*, eigenvalue_t);
+template float eigenvalue<float>(const StateGraph*, eigenvalue_t);
+template double eigenvalue<double>(const StateGraph*, eigenvalue_t);
+
+}
+}
 
 #endif /* EIGENVALUES_H_ */

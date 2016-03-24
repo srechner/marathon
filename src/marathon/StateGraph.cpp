@@ -113,14 +113,11 @@ void StateGraph::expandState(const int i, const int limit, const int lastStop,
 		}
 	}
 
-	// determine loop probability and insert loop arc
-	const rational loop = rational(1) - sum;
-	if (loop > 0) {
-		addTransitionProbability(i, i, loop);
-		/*std::cout
-				<< "marathon::StateGraph::expand: Warning: Adding loop transition probability of "
-				<< loop << " to state " << i << " (" << s->to_string() << ")"
-				<< std::endl;*/
+	// do the proposal probabilites sum up to one?
+	if (sum != rational(1)) {
+		std::cerr
+				<< "marathon::StateGraph::expandState: Error: Sum of proposal probabilities of state "
+				<< s << " is not one!" << std::endl;
 	}
 }
 

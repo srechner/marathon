@@ -80,21 +80,21 @@ public:
 	 */
 	virtual std::string to_string() const {
 		std::stringstream ss;
-		ss << "[ ";
+		//ss << "[ ";
 		for (size_t i = 0; i < this->n; i++) {
-			if (i > 0)
-				ss << "  ";
+			ss << " ";
 			for (size_t j = 0; j < this->n - 1; j++) {
 				ss << std::setprecision(8) << std::fixed
-						<< this->data[i * this->ld + j] << ", ";
+						<< this->data[i * this->ld + j] << " ";
 			}
 			ss << std::setprecision(8) << std::fixed
 					<< this->data[i * this->ld + this->n - 1];
 
-			if (i < this->n - 1)
+			/*if (i < this->n - 1)
 				ss << ";\n";
 			else
-				ss << " ]";
+				ss << " ]";*/
+			ss << "\n";
 		}
 
 		return ss.str();

@@ -22,11 +22,12 @@ CUDA = false
 
 # All of the sources participating in the build are defined here
 CPP_SRCS = \
+./src/marathon/marathon.cpp \
 ./src/marathon/Rational.cpp \
 ./src/marathon/StateGraph.cpp \
 ./src/marathon/Transition.cpp \
 ./src/marathon/MarkovChain.cpp \
-./src/marathon/CanonicalPath.cpp \
+./src/marathon/PathCongestion.cpp \
 ./src/marathon/Eigenvalues.cpp \
 ./src/marathon/TotalMixingTime.cpp \
 ./src/marathon/ShortestPaths.cpp \

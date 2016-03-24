@@ -50,21 +50,10 @@ int main(int argc, char** argv) {
 	int t = marathon::totalMixingTime<double>(sg, eps,
 			marathon::device_t::CPU_ONLY);
 
-	// compute spectral bound
-	double lambda = marathon::eigenvalue<double>(sg,
-			marathon::eigenvalue_t::_2ndLargestMagnitude);
-	if (fabs(lambda) < 1e-15)
-		lambda = 0.0;
-	else
-		lambda = fabs(lambda);
-
-	double pimin = (sg->getMinWeight() / sg->getZ()).convert_to<double>();
-	double lower_spectral = 0.5 * lambda / (1.0 - lambda) * -log(2.0 * eps);
-	double upper_spectral = -log(pimin * eps) / (1.0 - lambda);
-
-	// compute congestion bound
-	const marathon::rational load = marathon::pathCongestion(sg, *pcs);
-	double upper_congestion = load.convert_to<double>() * -log(pimin * eps);
+	// compute bounds
+	double lower_spectral = marathon::lowerSpectralBound(sg, eps);
+	double upper_spectral = marathon::upperSpectralBound(sg, eps);
+	double upper_congestion = marathon::upperPathCongestionBound(sg, *pcs, eps);
 
 	// print information
 	std::cout << "number of states:          " << sg->getNumStates()
