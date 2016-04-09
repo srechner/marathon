@@ -1,4 +1,4 @@
-## marathon 0.3
+## marathon 0.31
 
 This C++ library is designed to support the analysis of Markov chain based sampling methods. It provides functions for the analysis of so-called state graphs. For an introduction into its functionality, see its introductional [article](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0147935).
 
