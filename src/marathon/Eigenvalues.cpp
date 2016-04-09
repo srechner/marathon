@@ -42,7 +42,7 @@ T eigenvalue(const StateGraph* sg, eigenvalue_t opt) {
 	omega = sg->getNumStates();
 
 	// Check trivial cases
-	if (omega == 1)
+	if (omega <= 1)
 		return 1;
 
 	// count number of non-zero elements in left upper part of transition matrix
@@ -164,7 +164,7 @@ T eigenvalue(const StateGraph* sg, eigenvalue_t opt) {
 
 	/*std::cout << "found " << prob.ConvergedEigenvalues() << std::endl;
 	for (int i = 0; i < prob.ConvergedEigenvalues(); i++) {
-		std::cout << i << ": " << prob.Eigenvalue(i) << std::endl;
+		std::cout << i << ": " << std::setprecision(std::numeric_limits<T>::digits10) << prob.Eigenvalue(i) << std::endl;
 	}*/
 
 	// free memory

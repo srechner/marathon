@@ -6,10 +6,11 @@
  */
 
 #include "../../include/marathon/MarkovChain.h"
+#include <cstdlib>
 
-marathon::MarkovChain::MarkovChain(const std::string& s) :
+marathon::MarkovChain::MarkovChain(const std::string& s, int seed) :
 		instance(s) {
-
+	srand(seed);
 }
 
 marathon::MarkovChain::~MarkovChain() {
@@ -33,3 +34,7 @@ void marathon::MarkovChain::computeWeights(
 		weights.push_back(1);
 }
 
+
+void marathon::MarkovChain::randomize(State* s) const {
+	// dummy implementation
+}

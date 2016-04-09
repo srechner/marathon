@@ -110,6 +110,7 @@ void StateGraph::expandState(const int i, const int limit, const int lastStop,
 		else {
 			reexpand.insert(i);
 			complete = false;
+			delete s2;
 		}
 	}
 

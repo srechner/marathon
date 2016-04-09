@@ -40,12 +40,17 @@ protected:
 
 public:
 
-	SwitchChain(const std::string& inst);
+	SwitchChain(const std::string& inst, int seed = 0);
 	virtual ~SwitchChain();
 
 	virtual State* computeArbitraryState();
 	virtual void computeNeighbours(const State* s,
 			std::vector<std::pair<State*, rational>>& neighbors) const;
+
+	/**
+	 * Randomize the state s by applying a single transition.
+	 */
+	virtual void randomize(State* s) const;
 };
 
 }

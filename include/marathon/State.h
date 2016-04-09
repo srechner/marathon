@@ -82,6 +82,17 @@ public:
 		}
 	};
 
+	/*
+	 * Wrapper Class for the use in std::maps.
+	 */
+	class Less {
+	public:
+		bool operator()(State * x1, State * x2) const {
+			const bool res = x1->compare_to(x2) == -1;
+			return res;
+		}
+	};
+
 };
 
 }

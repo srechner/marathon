@@ -11,6 +11,7 @@
 #include "TransitionMatrix.h"
 
 namespace marathon {
+namespace tm {
 
 template<typename T>
 class TransitionMatrixCBLAS: public TransitionMatrix<T> {
@@ -84,10 +85,10 @@ public:
 		for (size_t i = 0; i < this->n; i++) {
 			ss << " ";
 			for (size_t j = 0; j < this->n - 1; j++) {
-				ss << std::setprecision(8) << std::fixed
+				ss << std::setprecision(std::numeric_limits<T>::digits10) << std::fixed
 						<< this->data[i * this->ld + j] << " ";
 			}
-			ss << std::setprecision(8) << std::fixed
+			ss << std::setprecision(std::numeric_limits<T>::digits10) << std::fixed
 					<< this->data[i * this->ld + this->n - 1];
 
 			/*if (i < this->n - 1)
@@ -140,6 +141,7 @@ public:
 
 //typedef TransitionMatrixCBLAS TransitionMatrixCBLAS<double>;
 
+}
 }
 
 #endif /* INCLUDE_MARATHON_TRANSITIONMATRIXCBLAS_H_ */

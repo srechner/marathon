@@ -8,8 +8,8 @@ namespace marathon {
 namespace chain {
 namespace bipgraph {
 
-SwitchChain::SwitchChain(const std::string& line) :
-		MarkovChain(line), sum(0) {
+SwitchChain::SwitchChain(const std::string& line, int seed) :
+		MarkovChain(line, seed), sum(0) {
 	parseInstance(line);
 }
 
@@ -163,6 +163,45 @@ void SwitchChain::computeNeighbours(const State* x,
 					myneighbours.end());
 		}
 	}
+}
+
+void SwitchChain::randomize(State* x) const {
+
+	DenseBipartiteGraph* s = (DenseBipartiteGraph*) x;
+
+	const int nrows = u.size();
+	const int ncols = v.size();
+
+	// select four random integers i,j,k,l
+
+	// 0 <= i <= k < nrows
+	int i = rand() % nrows;
+	int k = rand() % nrows;
+	if (i > k)
+		std::swap(i, k);
+
+	// 0 <= j <= l < ncols
+	int j = rand() % ncols;
+	int l = rand() % ncols;
+	if (j > l)
+		std::swap(j, l);
+
+	// check if edges are flippable
+	const bool ij = s->has_edge(i, j);
+	const bool kl = s->has_edge(k, l);
+	const bool il = s->has_edge(i, l);
+	const bool kj = s->has_edge(k, j);
+
+	// if i,j,k,l makes a switchable cycle
+	if (ij == kl && il == kj && ij != kj) {
+
+		// switch the cycle
+		s->flip_edge(i, j);
+		s->flip_edge(k, l);
+		s->flip_edge(i, l);
+		s->flip_edge(k, j);
+	}
+
 }
 
 }

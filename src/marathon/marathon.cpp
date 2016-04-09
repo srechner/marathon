@@ -22,7 +22,7 @@ T marathon::lowerSpectralBound(const StateGraph* sg, T eps) {
 			eigenvalue::eigenvalue<T>(sg,
 					eigenvalue::eigenvalue_t::_2ndLargestMagnitude));
 
-	if (lambda < 1e-10)
+	if (lambda < std::numeric_limits<T>::epsilon())
 		return std::numeric_limits<T>::infinity();
 
 	return 0.5 * lambda / (1.0 - lambda) * -log(2.0 * eps);
@@ -35,7 +35,7 @@ T marathon::upperSpectralBound(const StateGraph* sg, T eps) {
 			eigenvalue::eigenvalue<T>(sg,
 					eigenvalue::eigenvalue_t::_2ndLargestMagnitude));
 
-	if (fabs(lambda) < 1e-10)
+	if (fabs(lambda) < std::numeric_limits<T>::epsilon())
 		return std::numeric_limits<T>::infinity();
 
 	const rational pimin = sg->getMinWeight() / sg->getZ();
@@ -56,6 +56,7 @@ T marathon::upperPathCongestionBound(const StateGraph* sg,
 
 	return load.convert_to<T>() * -log(pimin.convert_to<T>() * eps);
 }
+
 
 
 /**

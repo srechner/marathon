@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
 	marathon::StateGraph* sg = new marathon::StateGraph(mc);
 
 	// print transition matrix
-	marathon::TransitionMatrix<double>* P = new marathon::TransitionMatrixCBLAS<double>(sg);
+	marathon::TransitionMatrix<double>* P = new marathon::tm::TransitionMatrixCBLAS<double>(sg);
 	std::cout << P << std::endl;
 
 	delete sg;

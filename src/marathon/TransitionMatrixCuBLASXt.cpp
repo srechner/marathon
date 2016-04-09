@@ -14,6 +14,8 @@ namespace marathon {
 
 extern cublasXtHandle_t cublasXtHandle;
 
+namespace tm {
+
 template<>
 void TransitionMatrixCuBLASXt<float>::mult(const TransitionMatrix<float>* A,
 		const TransitionMatrix<float>* B) {
@@ -41,6 +43,7 @@ void TransitionMatrixCuBLASXt<double>::mult(const TransitionMatrix<double>* A,
 			A->getLeadDimension(), &beta, this->getData(),
 			this->getLeadDimension());
 
+}
 }
 
 }

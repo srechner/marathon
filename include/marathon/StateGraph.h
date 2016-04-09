@@ -23,19 +23,6 @@ namespace marathon {
 class StateGraph;
 class MarkovChain;
 
-/*****************************************************************************
- * forward declaration of StateGraph's friend functions
- ****************************************************************************/
-
-namespace cpu {
-
-template<typename T>
-T secondEigenvalueWithSecondLargestMagnitude(const StateGraph*);
-
-template<typename T>
-class DenseTransitionMatrix;
-
-}
 
 /**
  * State Graph representation. A State Graph is
@@ -43,18 +30,6 @@ class DenseTransitionMatrix;
  * of a Markov Chain for a certain input instance.
  */
 class StateGraph {
-
-	/***************************************************
-	 * declare friends
-	 ***************************************************/
-
-	friend class MarkovChain;
-
-	template<typename T>
-	friend T cpu::secondEigenvalueWithSecondLargestMagnitude(const StateGraph*);
-
-	template<typename T>
-	friend class cpu::DenseTransitionMatrix;
 
 protected:
 

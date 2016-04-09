@@ -10,6 +10,7 @@
 
 
 namespace marathon {
+namespace tm {
 
 template<>
 void TransitionMatrixCBLAS<float>::mult(const TransitionMatrix<float>* A,
@@ -36,6 +37,7 @@ void TransitionMatrixCBLAS<double>::mult(const TransitionMatrix<double>* A,
 			this->n, alpha, B->getData(), B->getLeadDimension(), A->getData(),
 			A->getLeadDimension(), beta, this->data, this->ld);
 
+}
 }
 
 }

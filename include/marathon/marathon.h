@@ -106,6 +106,7 @@ int diameter(const StateGraph* G);
  */
 void pathLengthHistogram(std::vector<long>& count, const StateGraph* G);
 
+
 }
 
 // include Transition Matrix classes

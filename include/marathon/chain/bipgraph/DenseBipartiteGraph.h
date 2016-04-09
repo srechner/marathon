@@ -20,9 +20,11 @@ namespace bipgraph {
 
 class DenseBipartiteGraph: public State {
 
+private:
+
 public:
 
-	static int COORD_TRANSFORM(const int x, const int y, const int ld) {
+	static inline int COORD_TRANSFORM(const int x, const int y, const int ld) {
 		return (x * ld + y);
 	}
 

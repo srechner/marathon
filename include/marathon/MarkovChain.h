@@ -30,6 +30,7 @@ protected:
 
 	std::string instance;		// the instance representation
 
+
 public:
 
 	/**
@@ -37,7 +38,7 @@ public:
 	 * @param s input string of the markov chain.
 	 * false if is to be constructed by Omega^2 procedure.
 	 */
-	MarkovChain(const std::string& s);
+	MarkovChain(const std::string& s, int seed = 0);
 
 	/*
 	 * Standard Destructor
@@ -53,7 +54,6 @@ public:
 	 * Return a human readable name (identifier) of the Markov chain.
 	 */
 	std::string getName() const;
-
 
 	/* Virtual Function that has to be implemented by subclasses */
 
@@ -80,6 +80,30 @@ public:
 	 */
 	virtual void computeWeights(const std::vector<const State*>& states,
 			std::vector<rational>& weights);
+
+	/**
+	 * Apply a random walk and return the current state at the end of the walk.
+	 *
+	 * @param t The number of steps in the walk.
+	 *
+	 * @return A state, randomly selected from the probability distribution p^(t)_s,
+	 *         where s is the state that is constructed via the computeArbitraryState
+	 *         method.
+	 */
+	State* randomWalk(const int t) {
+		marathon::State* s = computeArbitraryState();
+
+		for (int i = 0; i < t; i++)
+			randomize(s);
+
+		return s;
+	}
+
+	/**
+		 * Apply a random transition to the state. Used to simulate a random walk.
+		 * @param s A pointer to a state, which is randomly modified by the method.
+		 */
+		virtual void randomize(State* s) const;
 
 };
 

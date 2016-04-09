@@ -39,19 +39,19 @@ int marathon::totalMixingTime(const StateGraph* sg, const T eps,
 
 	case device_t::CPU_ONLY:
 		// allocate memory
-		P = new TransitionMatrixCBLAS<T>(sg);
-		tmp[0] = new TransitionMatrixCBLAS<T>(omega);
-		tmp[1] = new TransitionMatrixCBLAS<T>(omega);
-		tmp[2] = new TransitionMatrixCBLAS<T>(omega);
+		P = new tm::TransitionMatrixCBLAS<T>(sg);
+		tmp[0] = new tm::TransitionMatrixCBLAS<T>(omega);
+		tmp[1] = new tm::TransitionMatrixCBLAS<T>(omega);
+		tmp[2] = new tm::TransitionMatrixCBLAS<T>(omega);
 		break;
 
 	case device_t::GPU_ONLY:
 #ifdef CUDA
 		// allocate memory
-		P = new TransitionMatrixCuBLAS<T>(sg);
-		tmp[0] = new TransitionMatrixCuBLAS<T>(omega);
-		tmp[1] = new TransitionMatrixCuBLAS<T>(omega);
-		tmp[2] = new TransitionMatrixCuBLAS<T>(omega);
+		P = new tm::TransitionMatrixCuBLAS<T>(sg);
+		tmp[0] = new tm::TransitionMatrixCuBLAS<T>(omega);
+		tmp[1] = new tm::TransitionMatrixCuBLAS<T>(omega);
+		tmp[2] = new tm::TransitionMatrixCuBLAS<T>(omega);
 		// prepare stationary distribution in device memory
 		T* pi_d;
 		myCudaMalloc((void**) &pi_d, omega * sizeof(T));
@@ -63,10 +63,10 @@ int marathon::totalMixingTime(const StateGraph* sg, const T eps,
 				<< std::endl;
 
 		// allocate memory
-		P = new TransitionMatrixCBLAS<T>(sg);
-		tmp[0] = new TransitionMatrixCBLAS<T>(omega);
-		tmp[1] = new TransitionMatrixCBLAS<T>(omega);
-		tmp[2] = new TransitionMatrixCBLAS<T>(omega);
+		P = new tm::TransitionMatrixCBLAS<T>(sg);
+		tmp[0] = new tm::TransitionMatrixCBLAS<T>(omega);
+		tmp[1] = new tm::TransitionMatrixCBLAS<T>(omega);
+		tmp[2] = new tm::TransitionMatrixCBLAS<T>(omega);
 #endif
 		break;
 
@@ -74,20 +74,20 @@ int marathon::totalMixingTime(const StateGraph* sg, const T eps,
 
 #ifdef CUDA
 		// allocate memory
-		P = new TransitionMatrixCuBLASXt<T>(sg);
-		tmp[0] = new TransitionMatrixCuBLASXt<T>(omega);
-		tmp[1] = new TransitionMatrixCuBLASXt<T>(omega);
-		tmp[2] = new TransitionMatrixCuBLASXt<T>(omega);
+		P = new tm::TransitionMatrixCuBLASXt<T>(sg);
+		tmp[0] = new tm::TransitionMatrixCuBLASXt<T>(omega);
+		tmp[1] = new tm::TransitionMatrixCuBLASXt<T>(omega);
+		tmp[2] = new tm::TransitionMatrixCuBLASXt<T>(omega);
 #else
 		std::cerr
 				<< "marathon::TotalMixingTime: Error: Library was compiled without CUDA support. Will use CBLAS implementation."
 				<< std::endl;
 
 		// allocate memory
-		P = new TransitionMatrixCBLAS<T>(sg);
-		tmp[0] = new TransitionMatrixCBLAS<T>(omega);
-		tmp[1] = new TransitionMatrixCBLAS<T>(omega);
-		tmp[2] = new TransitionMatrixCBLAS<T>(omega);
+		P = new tm::TransitionMatrixCBLAS<T>(sg);
+		tmp[0] = new tm::TransitionMatrixCBLAS<T>(omega);
+		tmp[1] = new tm::TransitionMatrixCBLAS<T>(omega);
+		tmp[2] = new tm::TransitionMatrixCBLAS<T>(omega);
 #endif
 		break;
 

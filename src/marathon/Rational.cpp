@@ -57,6 +57,11 @@ rational rational::operator-(const rational& o) const {
 	return rational(res);
 }
 
+rational rational::operator+(const rational& o) const {
+	boost::multiprecision::cpp_rational res = _r + o._r;
+	return rational(res);
+}
+
 rational rational::operator/(const rational& o) const {
 	boost::multiprecision::cpp_rational res = _r / o._r;
 	return rational(res);

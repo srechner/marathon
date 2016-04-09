@@ -40,6 +40,7 @@ public:
 
 	rational operator*(const rational& o) const;
 	rational operator-(const rational& o) const;
+	rational operator+(const rational& o) const;
 	rational operator/(const rational& o) const;
 
 	bool operator<(const rational& o) const;

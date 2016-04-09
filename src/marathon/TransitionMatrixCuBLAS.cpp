@@ -16,6 +16,8 @@ namespace marathon {
 // a handle for using cublas library
 extern cublasHandle_t cublasHandle;
 
+namespace tm {
+
 template<>
 void TransitionMatrixCuBLAS<float>::mult(const TransitionMatrix<float>* A,
 		const TransitionMatrix<float>* B) {
@@ -43,6 +45,7 @@ void TransitionMatrixCuBLAS<double>::mult(const TransitionMatrix<double>* A,
 			A->getLeadDimension(), &beta, this->getData(),
 			this->getLeadDimension());
 
+}
 }
 
 }

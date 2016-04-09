@@ -11,6 +11,7 @@
 #include "TransitionMatrixCBLAS.h"
 
 namespace marathon {
+namespace tm {
 
 template<typename T>
 class TransitionMatrixCuBLASXt: public TransitionMatrixCBLAS<T> {
@@ -42,6 +43,7 @@ public:
 
 };
 
+}
 }
 
 #endif /* INCLUDE_MARATHON_TRANSITIONMATRIXCUBLASXT_H_ */

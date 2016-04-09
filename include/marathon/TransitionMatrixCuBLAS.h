@@ -26,6 +26,8 @@ template<typename T>
 extern T cudaTotalVariationDistance(const T* data, const size_t n,
 		const size_t ld, const T * pi);
 
+namespace tm {
+
 template<typename T>
 class TransitionMatrixCuBLAS: public TransitionMatrix<T> {
 
@@ -146,6 +148,7 @@ public:
 
 };
 
+}
 }
 
 #endif /* INCLUDE_MARATHON_TRANSITIONMATRIXCUBLAS_H_ */
