@@ -11,8 +11,7 @@ namespace marathon {
 namespace chain {
 namespace matching {
 
-Broder86::Broder86(const std::string& inst) :
-			MarkovChain(inst) {
+Broder86::Broder86(const std::string& inst) {
 	// construct input object from input instance
 	parseInstance(inst);
 }
@@ -28,7 +27,7 @@ void Broder86::parseInstance(const std::string& inst) {
 	g = new SparseBipartiteGraph(inst);
 }
 
-State* Broder86::computeArbitraryState() {
+State* Broder86::computeArbitraryState() const {
 
 	int n = g->getNumberOfNodes();
 

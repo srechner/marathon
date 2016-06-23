@@ -25,7 +25,8 @@ private:
 public:
 
 	static inline int COORD_TRANSFORM(const int x, const int y, const int ld) {
-		return (x * ld + y);
+		int res = (x * ld + y);
+		return res;
 	}
 
 	int nrows, ncols;
@@ -47,9 +48,10 @@ public:
 
 	void get_row(int u, boost::dynamic_bitset<>& row) const;
 
-	size_t hash_value() const;
-	int compare_to(const State* x) const;
-	std::string to_string() const;
+	size_t hashValue() const;
+	int compare(const State* x) const;
+	std::string toString() const;
+	State* copy()  const;
 
 	void operator=(const DenseBipartiteGraph& s);
 	bool operator<(const DenseBipartiteGraph &rhs) const;

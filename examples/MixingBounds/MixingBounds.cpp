@@ -28,16 +28,16 @@ int main(int argc, char** argv) {
 	// check which chain is selected
 	if (strcmp(argv[1], "js89") == 0) {
 		mc = new marathon::chain::matching::Broder86(inst);
-		pcs = new marathon::chain::matching::JS89Path;
+		pcs = new marathon::chain::matching::JS89Path();
 	} else if (strcmp(argv[1], "jsv04") == 0) {
 		mc = new marathon::chain::matching::JerrumSinclairVigoda04(inst);
-		pcs = new marathon::chain::matching::JS89Path;
+		pcs = new marathon::chain::matching::JS89Path();
 	} else if (strcmp(argv[1], "swapBip") == 0) {
 		mc = new marathon::chain::bipgraph::SwitchChain(inst);
-		pcs = new marathon::chain::bipgraph::KannanPath;
+		pcs = new marathon::chain::bipgraph::KannanPath();
 	} else if (strcmp(argv[1], "swapBipFast") == 0) {
 		mc = new marathon::chain::bipgraph::SwitchChainBerger(inst);
-		pcs = new marathon::chain::bipgraph::KannanPath;
+		pcs = new marathon::chain::bipgraph::KannanPath();
 	} else {
 		std::cerr << "unknown chain specifier: " << argv[1] << std::endl;
 		return -1;
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
 	// compute bounds
 	double lower_spectral = marathon::lowerSpectralBound(sg, eps);
 	double upper_spectral = marathon::upperSpectralBound(sg, eps);
-	double upper_congestion = marathon::upperPathCongestionBound(sg, *pcs, eps);
+	//double upper_congestion = marathon::upperPathCongestionBound(sg, *pcs, eps);
 
 	// print information
 	std::cout << "number of states:          " << sg->getNumStates()
@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
 	std::cout << "total mixing time:         " << t << std::endl;
 	std::cout << "lower spectral bound:      " << lower_spectral << std::endl;
 	std::cout << "upper spectral bound:      " << upper_spectral << std::endl;
-	std::cout << "upper congestion bound:    " << upper_congestion << std::endl;
+	//std::cout << "upper congestion bound:    " << upper_congestion << std::endl;
 
 	delete mc;
 	delete sg;

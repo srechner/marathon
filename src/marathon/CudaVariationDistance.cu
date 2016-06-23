@@ -140,4 +140,5 @@ template float cudaTotalVariationDistance<float>(const float*, const size_t,
 		const size_t, const float *);
 template double cudaTotalVariationDistance<double>(const double*, const size_t,
 		const size_t, const double *);
+		
 }

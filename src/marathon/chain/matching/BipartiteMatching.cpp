@@ -87,17 +87,21 @@ void BipartiteMatching::removeEdge(int u, int v) {
 	unmatched[1] = v;
 }
 
-size_t BipartiteMatching::hash_value() const {
+State* BipartiteMatching::copy()  const {
+	return new BipartiteMatching(*this);
+}
+
+size_t BipartiteMatching::hashValue() const {
 	return unmatched[0] * n + unmatched[1];
 }
 
-int BipartiteMatching::compare_to(const State* x) const {
+int BipartiteMatching::compare(const State* x) const {
 	const BipartiteMatching* b = (const BipartiteMatching*) x;
 	const int  res = memcmp(this->mates, b->mates, this->n * sizeof(int));
 	return res;
 }
 
-std::string BipartiteMatching::to_string() const {
+std::string BipartiteMatching::toString() const {
 
 	std::stringstream ss;
 

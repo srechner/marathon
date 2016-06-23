@@ -10,15 +10,28 @@
 
 #include <vector>
 #include <cstdlib>
+#include "DenseBipartiteGraph.h"
 
 namespace marathon {
 namespace chain {
 namespace bipgraph {
 
-bool HavelHakimiBipartite(const std::vector<int>& u,
-		const std::vector<int>& v, bool* M);
+/**
+ * Construct a bipartite graph with vertex degrees sequence u and v.
+ */
+DenseBipartiteGraph* HavelHakimiBipartite(const std::vector<int>& u,
+		const std::vector<int>& v);
 
-bool isRealizable(const int* rowsum, const int* colsum, const int nrow, const int ncol);
+/**
+ * Construct a bipartite graph with vertex degrees sequence u and v
+ * where all entries that are marked as 'forbidden' are set to zero.
+ * @param u Degree Sequence of first bipartition set.
+ * @param v Degree Sequence of second bipartition set.
+ * @param forbidden binary matrix of size |u|*|v|.
+ */
+DenseBipartiteGraph* HavelHakimiBipartiteForbidden(const std::vector<int>& u,
+		const std::vector<int>& v, bool* const forbidden);
+
 
 }
 }

@@ -104,7 +104,8 @@ T eigenvalue(const StateGraph* sg, eigenvalue_t opt) {
 		}
 	}
 
-	/*std::cout << "P: ";
+	/*
+	std::cout << "P: ";
 	for (i = 0; i < numArcs; i++)
 		std::cout << p[i] << " ";
 	std::cout << std::endl;
@@ -117,7 +118,8 @@ T eigenvalue(const StateGraph* sg, eigenvalue_t opt) {
 	std::cout << "col: ";
 	for (i = 0; i < numArcs; i++)
 		std::cout << col[i] << " ";
-	std::cout << std::endl;*/
+	std::cout << std::endl;
+	*/
 
 	B.DefineMatrix(omega, numArcs, p, col, row, 'L');
 

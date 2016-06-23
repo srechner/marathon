@@ -71,9 +71,15 @@ void rational::operator/=(const rational& o) {
 	_r /= o._r;
 }
 
-void rational::stream_to(std::ostream& os) const {
-	os << _r;
+std::string rational::to_string_fraction() const {
+	return _r.str();
 }
+
+std::string rational::to_string_dec_float(int precision) const {
+	boost::multiprecision::cpp_dec_float_100 x(_r);
+	return x.str(precision);
+}
+
 
 bool rational::operator<(const rational& o) const {
 	return _r < o._r;
@@ -88,16 +94,8 @@ void rational::operator=(const rational& o) {
 }
 
 std::ostream& operator<<(std::ostream& out, const rational& r) {
-	r.stream_to(out);
+	out << r.to_string_fraction();
 	return out;
-}
-
-rational faculty(const int& n) {
-	rational res = 1;
-	for(int i=1; i<=n; i++) {
-		res = res * rational(i);
-	}
-	return res;
 }
 
 }

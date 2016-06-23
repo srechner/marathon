@@ -7,16 +7,8 @@
 #
 
 CC = g++
-CUDA_PATH = /usr/local/cuda/
+CUDA_PATH = /usr/
 NVCC = $(CUDA_PATH)/bin/nvcc
-
-
-COMP_CAP = \
--gencode arch=compute_20,code=sm_20 \
--gencode arch=compute_30,code=sm_30 \
--gencode arch=compute_35,code=sm_35 \
--gencode arch=compute_50,code=sm_50 \
--gencode arch=compute_52,code=sm_52
 
 CUDA = false
 
@@ -32,6 +24,8 @@ CPP_SRCS = \
 ./src/marathon/TotalMixingTime.cpp \
 ./src/marathon/ShortestPaths.cpp \
 ./src/marathon/InitFinalize.cpp \
+./src/marathon/Random.cpp \
+./src/marathon/Combinatorics.cpp \
 ./src/marathon/TransitionMatrixCBLAS.cpp \
 ./src/marathon/TransitionMatrixCuBLAS.cpp \
 ./src/marathon/TransitionMatrixCuBLASXt.cpp \
@@ -40,6 +34,8 @@ CPP_SRCS = \
 ./src/marathon/chain/matching/JSV04.cpp \
 ./src/marathon/chain/matching/SparseBipartiteGraph.cpp \
 ./src/marathon/chain/matching/JS89CanPath.cpp \
+./src/marathon/chain/bipgraph/Curveball.cpp \
+./src/marathon/chain/bipgraph/CurveballForbiddenEntries.cpp \
 ./src/marathon/chain/bipgraph/SwitchChain.cpp \
 ./src/marathon/chain/bipgraph/SwitchChainBerger.cpp \
 ./src/marathon/chain/bipgraph/DenseBipartiteGraph.cpp \
@@ -61,8 +57,9 @@ LIBS = -lgomp -lpthread -lopenblas -larpack++ -larpack -lsuperlu
 
 ifeq ($(CUDA),true)
 	CC = $(NVCC)
-	CFLAGS = -DCUDA -O3 -Xcompiler -fPIC -Xcompiler -fopenmp \
-	         -std=c++11 --compile --relocatable-device-code=true $(COMP_CAP) 
+	CFLAGS = -O3 -Xcompiler -fPIC -Xcompiler -fopenmp \
+	         -std=c++11 --compile --relocatable-device-code=true \
+	         -DCUDA -D_FORCE_INLINES -D_MWAITXINTRIN_H_INCLUDED 
 	OBJECTS += $(CU_OBJS)
 	LIBS += -lcublas
 endif

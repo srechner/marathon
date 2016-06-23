@@ -40,7 +40,7 @@ void StateGraph::expandState(const int i, const int limit, const int lastStop,
 	 **********************************************************************/
 	std::sort(neighbours.begin(), neighbours.end(),
 			[](const std::pair<State*, rational>& s1, const std::pair<State*, rational>& s2) -> bool {
-				return s1.first->compare_to(s2.first) < 0;
+				return s1.first->compare(s2.first) < 0;
 			});
 
 	// compress
@@ -50,7 +50,7 @@ void StateGraph::expandState(const int i, const int limit, const int lastStop,
 	tmp.push_back(*it);
 	for (++it; it != neighbours.end(); ++it) {
 		// if duplicate state
-		if (it->first->compare_to(tmp.back().first) == 0) {
+		if (it->first->compare(tmp.back().first) == 0) {
 			tmp.back().second += it->second;
 			delete it->first;
 		} else {
@@ -80,7 +80,7 @@ void StateGraph::expandState(const int i, const int limit, const int lastStop,
 		if (j != -1) {
 
 			if (verbose) {
-				std::cout << " " << j << ": " << s2->to_string() << " " << kappa
+				std::cout << " " << j << ": " << s2->toString() << " " << kappa
 						<< " already known state" << std::endl;
 			}
 
@@ -99,7 +99,7 @@ void StateGraph::expandState(const int i, const int limit, const int lastStop,
 			j = addState(s2);
 
 			if (verbose) {
-				std::cout << " " << j << ": " << s2->to_string() << " " << kappa
+				std::cout << " " << j << ": " << s2->toString() << " " << kappa
 						<< " new state" << std::endl;
 			}
 
@@ -139,14 +139,13 @@ void StateGraph::expand(const int limit, const bool verbose) {
 
 			if (verbose) {
 				// print warning if statespace is empty
-				std::cerr << "Warning! Empty state space for input instance "
-						<< mc->getInstance() << std::endl;
+				std::cerr << "Warning! Empty state!" << std::endl;
 			}
 			return;
 		}
 
 		if (verbose) {
-			std::cout << "Start state is " << s1->to_string() << std::endl;
+			std::cout << "Start state is " << s1->toString() << std::endl;
 		}
 
 		// add initial state
@@ -192,6 +191,9 @@ void StateGraph::expand(const int limit, const bool verbose) {
 	 * P(i,j) = kappa(i,j) * min( w(j) / w(i) , 1)
 	 ************************************************************/
 
+	// gather the newly introduced loop probability
+	std::vector<rational> generatedLoopProbability(getNumStates());
+
 	// Transform Transition probabilities
 	for (Transition* t : getArcs()) {
 
@@ -211,8 +213,13 @@ void StateGraph::expand(const int limit, const bool verbose) {
 
 			// add remaining probability as loop probability
 			const rational prob = (rational(1) - metr) * kappa;
-			addTransitionProbability(i, i, prob);
+			generatedLoopProbability[i] += prob;
 		}
+	}
+
+	// add additional loop probability
+	for(int i=0; i<generatedLoopProbability.size(); i++) {
+		addTransitionProbability(i, i, generatedLoopProbability[i]);
 	}
 
 	/***********************************************************
@@ -265,7 +272,7 @@ void StateGraph::expand(const int limit, const bool verbose) {
 		std::cout << "state size: " << getNumStates() << std::endl;
 		for (int ii = 0; ii < getNumStates(); ii++) {
 			const State* s = getState(ii);
-			std::cout << ii << ": " << s->to_string() << " " << weights[ii]
+			std::cout << ii << ": " << s->toString() << " " << weights[ii]
 					<< std::endl;
 		}
 

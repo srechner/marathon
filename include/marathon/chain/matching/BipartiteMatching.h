@@ -38,9 +38,10 @@ public:
 	void operator=(BipartiteMatching const& s);
 	bool operator==(const BipartiteMatching &s) const;
 	bool operator<(const BipartiteMatching& s) const;
-	size_t hash_value() const;
-	int compare_to(const State*) const;
-	std::string to_string() const;
+	size_t hashValue() const;
+	int compare(const State*) const;
+	std::string toString() const;
+	State* copy()  const;
 
 	bool is_perfect() const;
 	bool is_near_perfect() const;

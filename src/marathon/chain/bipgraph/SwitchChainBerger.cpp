@@ -117,7 +117,8 @@ void SwitchChainBerger::computeNeighbours(const State* x,
 	// choose second edge as artificial edge
 	loop += rational(sum, numNonAdjacentEdgePairs);
 
-	neighbors.push_back(std::make_pair((State*) s, loop));
+	DenseBipartiteGraph *sl = new DenseBipartiteGraph(*s);
+	neighbors.push_back(std::make_pair(sl, loop));
 }
 
 }

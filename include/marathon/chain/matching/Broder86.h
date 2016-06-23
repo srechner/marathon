@@ -51,7 +51,7 @@ public:
 	Broder86(const std::string& instance);
 	~Broder86();
 
-	virtual State* computeArbitraryState();
+	virtual State* computeArbitraryState() const;
 	virtual void computeNeighbours(const State* s,
 			std::vector<std::pair<State*, rational>>& neighbors) const;
 

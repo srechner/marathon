@@ -25,7 +25,7 @@ class SwitchChain: public MarkovChain {
 
 	friend class KannanPath;
 
-protected:
+public:
 
 	// variables and methods for general purpose
 	std::vector<int> u;
@@ -40,17 +40,24 @@ protected:
 
 public:
 
-	SwitchChain(const std::string& inst, int seed = 0);
+	SwitchChain(const std::string& inst);
+	SwitchChain(const std::vector<int>& u, const std::vector<int>& v);
+	SwitchChain(int* const rowsum, int* const colsum, const int nrow, const int ncol);
 	virtual ~SwitchChain();
 
-	virtual State* computeArbitraryState();
+	virtual State* computeArbitraryState() const;
 	virtual void computeNeighbours(const State* s,
 			std::vector<std::pair<State*, rational>>& neighbors) const;
 
 	/**
+	 * Return the loop probability of State s.
+	 */
+	virtual rational loopProbability(const State* s) const;
+
+	/**
 	 * Randomize the state s by applying a single transition.
 	 */
-	virtual void randomize(State* s) const;
+	virtual void randomize(State* s, const uint32_t t=1) const;
 };
 
 }

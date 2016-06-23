@@ -65,15 +65,30 @@ int DenseBipartiteGraph::get_ncols() const {
 }
 
 void DenseBipartiteGraph::set_edge(int u, int v, bool b) {
-	M[COORD_TRANSFORM(u, v, ncols)] = b;
+	int p = COORD_TRANSFORM(u, v, ncols);
+	if (p >= M.m_num_bits) {
+		std::cerr << "set_edge::Error! " << u << " " << v << " " << M.m_num_bits
+				<< std::endl;
+	}
+	M[p] = b;
 }
 
 bool DenseBipartiteGraph::has_edge(int u, int v) const {
-	return M[COORD_TRANSFORM(u, v, ncols)];
+	int p = COORD_TRANSFORM(u, v, ncols);
+	if (p >= M.m_num_bits) {
+		std::cerr << "has_edge::Error! " << u << " " << v << " " << M.m_num_bits
+				<< std::endl;
+	}
+	return M[p];
 }
 
 void DenseBipartiteGraph::flip_edge(int u, int v) {
-	M[COORD_TRANSFORM(u, v, ncols)].flip();
+	int p = COORD_TRANSFORM(u, v, ncols);
+	if (p >= M.m_num_bits) {
+		std::cerr << "flip_edge::Error! " << u << " " << v << " " << M.m_num_bits
+				<< std::endl;
+	}
+	M[p].flip();
 }
 
 bool DenseBipartiteGraph::is_switchable(int u1, int v1, int u2, int v2) const {
@@ -160,11 +175,11 @@ void DenseBipartiteGraph::get_row(int u, boost::dynamic_bitset<>& row) const {
 	}
 }
 
-size_t DenseBipartiteGraph::hash_value() const {
+size_t DenseBipartiteGraph::hashValue() const {
 	return boost::hash_value(M.m_bits);
 }
 
-int DenseBipartiteGraph::compare_to(const State* x) const {
+int DenseBipartiteGraph::compare(const State* x) const {
 	const DenseBipartiteGraph* d = (const DenseBipartiteGraph*) x;
 	if (operator==(*d))
 		return 0;
@@ -175,7 +190,11 @@ int DenseBipartiteGraph::compare_to(const State* x) const {
 	return 1;
 }
 
-std::string DenseBipartiteGraph::to_string() const {
+State* DenseBipartiteGraph::copy() const {
+	return new DenseBipartiteGraph(*this);
+}
+
+std::string DenseBipartiteGraph::toString() const {
 	std::stringstream ss;
 	for (unsigned int i = 0; i < M.size(); i++)
 		ss << M[i];

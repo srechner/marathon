@@ -10,6 +10,7 @@
 
 #include <ostream>
 #include "boost/multiprecision/cpp_int.hpp"
+#include <boost/multiprecision/cpp_dec_float.hpp>
 
 namespace marathon {
 
@@ -46,7 +47,8 @@ public:
 	bool operator<(const rational& o) const;
 	bool operator>(const rational& o) const;
 
-	void stream_to(std::ostream& os) const;
+	std::string to_string_fraction() const;
+	std::string to_string_dec_float(int precision) const;
 
 	template<typename T>
 	T convert_to() const {
@@ -54,8 +56,6 @@ public:
 	}
 };
 
-
-rational faculty(const int& n);
 
 std::ostream& operator<<(std::ostream& out, const rational& r);
 

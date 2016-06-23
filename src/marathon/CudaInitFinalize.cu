@@ -14,14 +14,14 @@ namespace marathon {
 cublasHandle_t cublasHandle;
 cublasXtHandle_t cublasXtHandle;
 
-extern void cudaInit() {
+extern bool cudaInit() {
 
 	// check of cuda capable gpu is available
 	int deviceCount = 0;
 	cudaError_t error_id = cudaGetDeviceCount(&deviceCount);
 
 	if (error_id != cudaSuccess || deviceCount == 0)
-		return;
+		return false;
 
 	cublasCreate_v2(&cublasHandle);
 
@@ -34,12 +34,14 @@ extern void cudaInit() {
 
 	cublasXtDeviceSelect(cublasXtHandle, numDevices, devices);
 
+	return true;
 }
 
 extern void cudaFinalize() {
+
 	cublasDestroy_v2(cublasHandle);
 	cublasXtDestroy(cublasXtHandle);
-}
+	}
 
 }
 

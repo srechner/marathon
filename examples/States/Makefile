@@ -15,7 +15,7 @@ CUDA = false
 
 EXECUTABLE = "States"
 CFLAGS = -c -std=c++11 -O3 -fopenmp -I"../../include"
-LDFLAGS = -L"../.."
+LDFLAGS = -L"../.." 
 LIBS := -lmarathon -lgomp -lpthread -lopenblas -larpack++ -larpack -lsuperlu
 
 SRCS = States.cpp 
