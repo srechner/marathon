@@ -107,7 +107,7 @@ State* SwitchChain::computeArbitraryState() const {
 void SwitchChain::computeNeighbours(const State* x,
 		std::vector<std::pair<State*, rational>>& neighbors) const {
 
-	const DenseBipartiteGraph* s = (const DenseBipartiteGraph*) x;
+	const BinaryMatrix* s = (const BinaryMatrix*) x;
 
 	const long m = u.size();
 	const long n = v.size();
@@ -145,32 +145,32 @@ void SwitchChain::computeNeighbours(const State* x,
 					 */
 
 					// situation a
-					if (s->has_edge(i, j) && s->has_edge(k, l)
-							&& !s->has_edge(i, l) && !s->has_edge(k, j)) {
+					if (s->get(i, j) && s->get(k, l)
+							&& !s->get(i, l) && !s->get(k, j)) {
 
 						// make a copy
-						DenseBipartiteGraph *s2 = new DenseBipartiteGraph(*s);
+						BinaryMatrix *s2 = new BinaryMatrix(*s);
 
 						// switch the cycle
-						s2->flip_edge(i, j); // (i,j) = 0
-						s2->flip_edge(k, l); // (k,l) = 0
-						s2->flip_edge(i, l); // (i,l) = 1
-						s2->flip_edge(k, j); // (k,j) = 1
+						s2->flip(i, j); // (i,j) = 0
+						s2->flip(k, l); // (k,l) = 0
+						s2->flip(i, l); // (i,l) = 1
+						s2->flip(k, j); // (k,j) = 1
 
 						neighbors.push_back(std::make_pair(s2, p));
 					}
 					// situation b
-					else if (!s->has_edge(i, j) && !s->has_edge(k, l)
-							&& s->has_edge(i, l) && s->has_edge(k, j)) {
+					else if (!s->get(i, j) && !s->get(k, l)
+							&& s->get(i, l) && s->get(k, j)) {
 
 						// make a copy
-						DenseBipartiteGraph *s2 = new DenseBipartiteGraph(*s);
+						BinaryMatrix *s2 = new BinaryMatrix(*s);
 
 						// switch the cycle
-						s2->flip_edge(i, j); // (i,j) = 1
-						s2->flip_edge(k, l); // (k,l) = 1
-						s2->flip_edge(i, l); // (i,l) = 0
-						s2->flip_edge(k, j); // (k,j) = 0
+						s2->flip(i, j); // (i,j) = 1
+						s2->flip(k, l); // (k,l) = 1
+						s2->flip(i, l); // (i,l) = 0
+						s2->flip(k, j); // (k,j) = 0
 
 						neighbors.push_back(std::make_pair(s2, p));
 					} else {
@@ -182,13 +182,13 @@ void SwitchChain::computeNeighbours(const State* x,
 		}
 	}
 	// create loop
-	DenseBipartiteGraph *s2 = new DenseBipartiteGraph(*s);
+	BinaryMatrix *s2 = new BinaryMatrix(*s);
 	neighbors.push_back(std::make_pair(s2, loop));
 }
 
 void SwitchChain::randomize(State* x, const uint32_t t) const {
 
-	DenseBipartiteGraph* s = (DenseBipartiteGraph*) x;
+	BinaryMatrix* s = (BinaryMatrix*) x;
 
 	const int nrows = u.size();
 	const int ncols = v.size();
@@ -212,26 +212,26 @@ void SwitchChain::randomize(State* x, const uint32_t t) const {
 		//std::cout << i << " " << k << " " << j << " " << l << std::endl;
 
 		// check if edges are flippable
-		const bool ij = s->has_edge(i, j);
-		const bool kl = s->has_edge(k, l);
-		const bool il = s->has_edge(i, l);
-		const bool kj = s->has_edge(k, j);
+		const bool ij = s->get(i, j);
+		const bool kl = s->get(k, l);
+		const bool il = s->get(i, l);
+		const bool kj = s->get(k, j);
 
 		// if i,j,k,l makes a switchable cycle
 		if (ij == kl && il == kj && ij != kj) {
 
 			// switch the cycle
-			s->flip_edge(i, j);
-			s->flip_edge(k, l);
-			s->flip_edge(i, l);
-			s->flip_edge(k, j);
+			s->flip(i, j);
+			s->flip(k, l);
+			s->flip(i, l);
+			s->flip(k, j);
 		}
 	}
 }
 
 rational SwitchChain::loopProbability(const State* x) const {
 
-	const DenseBipartiteGraph* s = (const DenseBipartiteGraph*) x;
+	const BinaryMatrix* s = (const BinaryMatrix*) x;
 
 	const long m = u.size();
 	const long n = v.size();
@@ -267,8 +267,8 @@ rational SwitchChain::loopProbability(const State* x) const {
 					 *   3 | x x x x x
 					 *
 					 */
-					if (s->has_edge(i, j) != s->has_edge(k, l)
-							|| s->has_edge(i, l) != s->has_edge(k, j)) {
+					if (s->get(i, j) != s->get(k, l)
+							|| s->get(i, l) != s->get(k, j)) {
 						loop += p;
 					}
 				}

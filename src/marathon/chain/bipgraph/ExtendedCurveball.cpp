@@ -22,10 +22,10 @@ void ExtendedCurveball::computeNeighbours(const State* x,
 	int nrows, ncols, nTwoPartitions;
 	boost::dynamic_bitset<>* A;
 
-	const DenseBipartiteGraph* s = (const DenseBipartiteGraph*) x;
+	const BinaryMatrix* s = (const BinaryMatrix*) x;
 
-	nrows = s->get_nrows();
-	ncols = s->get_ncols();
+	nrows = s->getNumRows();
+	ncols = s->getNumColumns();
 
 	/**
 	 * Modification of the Curveball algorithm by Annabell Berger.
@@ -104,10 +104,10 @@ void ExtendedCurveball::computeNeighbours(const State* x,
 					Bj = A[j] - Aji;
 					Bj |= X - sub;
 
-					DenseBipartiteGraph *s2 = new DenseBipartiteGraph(*s);
+					BinaryMatrix *s2 = new BinaryMatrix(*s);
 					for (k = 0; k < ncols; k++) {
-						s2->set_edge(i, k, Bi[k]);
-						s2->set_edge(j, k, Bj[k]);
+						s2->set(i, k, Bi[k]);
+						s2->set(j, k, Bj[k]);
 					}
 
 					/*std::cout << " new neighbour: " << s2

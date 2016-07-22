@@ -8,8 +8,8 @@
 #ifndef INCLUDE_MARATHON_CHAINS_SEQUENCES_KANNANCANPATH_H_
 #define INCLUDE_MARATHON_CHAINS_SEQUENCES_KANNANCANPATH_H_
 
-#include "DenseBipartiteGraph.h"
 #include "../../PathConstructionScheme.h"
+#include "BinaryMatrix.h"
 
 namespace marathon {
 namespace chain {
@@ -27,8 +27,8 @@ protected:
 			std::list<std::vector<int> >& cycles, const int m,
 			const int n) const;
 	void cycle_decomposition(
-			const DenseBipartiteGraph& x,
-			const DenseBipartiteGraph& y,
+			const BinaryMatrix& x,
+			const BinaryMatrix& y,
 			std::list<std::vector<int> >& cycles) const;
 	struct cycle_comparator {
 		bool operator()(const std::vector<int>& c1,

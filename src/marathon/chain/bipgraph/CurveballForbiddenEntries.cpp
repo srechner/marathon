@@ -37,7 +37,7 @@ State* CurveballForbiddenEntries::computeArbitraryState() const {
 
 void CurveballForbiddenEntries::randomize(State* x, const uint32_t t) const {
 
-	DenseBipartiteGraph* s = (DenseBipartiteGraph*) x;
+	BinaryMatrix* s = (BinaryMatrix*) x;
 
 	const int nrow = u.size();
 	const int ncol = v.size();
@@ -68,8 +68,8 @@ void CurveballForbiddenEntries::randomize(State* x, const uint32_t t) const {
 
 			if (!forbidden[i * ncol + k] && !forbidden[j * ncol + k]) {
 
-				bool A_ik = s->has_edge(i, k);
-				bool A_jk = s->has_edge(j, k);
+				bool A_ik = s->get(i, k);
+				bool A_jk = s->get(j, k);
 
 				if (A_ik != A_jk) {
 
@@ -93,8 +93,8 @@ void CurveballForbiddenEntries::randomize(State* x, const uint32_t t) const {
 
 		// for each integer in X
 		for (int k = 0; k < a + b; k++) {
-			s->set_edge(i, X[k], Y[k]);
-			s->set_edge(j, X[k], !Y[k]);
+			s->set(i, X[k], Y[k]);
+			s->set(j, X[k], !Y[k]);
 		}
 	}
 }

@@ -109,41 +109,41 @@ void KannanPath::splice_cycle(std::vector<int> cycle,
 }
 
 void KannanPath::cycle_decomposition(
-		const DenseBipartiteGraph& x,
-		const DenseBipartiteGraph& y,
+		const BinaryMatrix& x,
+		const BinaryMatrix& y,
 		std::list<std::vector<int> >& cycles) const {
 
-	const int m = x.get_nrows();
-	const int n = x.get_ncols();
+	const int nrow = x.getNumRows();
+	const int ncol = x.getNumColumns();
 
-	bool red[m * n];
-	bool blue[m * n];
+	bool red[nrow * ncol];
+	bool blue[nrow * ncol];
 
 	std::vector<int> cycle;
 	std::vector<int>::iterator cit;
 	std::list<std::vector<int> >::iterator it;
 
-	memset(red, 0, m * n * sizeof(bool));
-	memset(blue, 0, m * n * sizeof(bool));
+	memset(red, 0, nrow * ncol * sizeof(bool));
+	memset(blue, 0, nrow * ncol * sizeof(bool));
 
-	for (int i = 0; i < m; i++) {
-		for (int j = 0; j < n; j++) {
-			if (x.has_edge(i, j) && !y.has_edge(i, j))
-				blue[DenseBipartiteGraph::COORD_TRANSFORM(i, j, n)] = true;
-			else if (!x.has_edge(i, j) && y.has_edge(i, j))
-				red[DenseBipartiteGraph::COORD_TRANSFORM(i, j, n)] = true;
+	for (int i = 0; i < nrow; i++) {
+		for (int j = 0; j < ncol; j++) {
+			if (x.get(i, j) && !y.get(i, j))
+				blue[i*ncol+j] = true;
+			else if (!x.get(i, j) && y.get(i, j))
+				red[i*ncol+j] = true;
 		}
 	}
 
-	for (int i = 0; i < m; i++) {
-		for (int j = 0; j < n; j++) {
-			if (blue[DenseBipartiteGraph::COORD_TRANSFORM(i, j, n)]) {
+	for (int i = 0; i < nrow; i++) {
+		for (int j = 0; j < ncol; j++) {
+			if (blue[i*ncol+j]) {
 				// start of alternating Cycle in x found
 				cycle.clear();
 				// trace cycle
-				trace_cycle(blue, red, m, n, i, j, cycle);
+				trace_cycle(blue, red, nrow, ncol, i, j, cycle);
 				// try to splice cycles into smaller ones
-				splice_cycle(cycle, cycles, m, n);
+				splice_cycle(cycle, cycles, nrow, ncol);
 			}
 		}
 	}
@@ -161,8 +161,8 @@ void KannanPath::construct(const StateGraph* sg, const int s, const int t,
 	path.push_back(s);
 
 	// continously modify u
-	DenseBipartiteGraph u = *((DenseBipartiteGraph*) sg->getState(s));
-	DenseBipartiteGraph v = *((const DenseBipartiteGraph*) sg->getState(t));
+	BinaryMatrix u = *((BinaryMatrix*) sg->getState(s));
+	BinaryMatrix v = *((const BinaryMatrix*) sg->getState(t));
 
 	std::list<std::vector<int> > cycles;
 	std::list<std::vector<int> >::iterator it;

@@ -36,8 +36,8 @@ void Curveball::computeNeighbours(const State* x,
 		std::vector<std::pair<State*, rational>>& neighbors) const {
 
 	// Declare Variables
-	const DenseBipartiteGraph* s = (const DenseBipartiteGraph*) x;
-	const int nrows = s->get_nrows();
+	const BinaryMatrix* s = (const BinaryMatrix*) x;
+	const int nrows = s->getNumRows();
 	boost::dynamic_bitset<>* A;
 
 	/**
@@ -103,7 +103,7 @@ void Curveball::computeNeighbours(const State* x,
 void Curveball::backtrackSubsets(boost::dynamic_bitset<>& population, int n,
 		const rational& p, const boost::dynamic_bitset<>& Bi,
 		const boost::dynamic_bitset<>& Bj, const boost::dynamic_bitset<>& X,
-		const DenseBipartiteGraph* s, const int i, const int j,
+		const BinaryMatrix* s, const int i, const int j,
 		std::vector<std::pair<State*, rational>>& myneighbours) const {
 
 	boost::dynamic_bitset<> tmp(population.size(), 0);
@@ -116,7 +116,7 @@ void Curveball::backtrackSubsetsRecursive(
 		const boost::dynamic_bitset<>& population, boost::dynamic_bitset<>& sub,
 		int pos, int m, int n, const boost::dynamic_bitset<>& Bi,
 		const boost::dynamic_bitset<>& Bj, const boost::dynamic_bitset<>& X,
-		const DenseBipartiteGraph* s, const int i, const int j,
+		const BinaryMatrix* s, const int i, const int j,
 		const rational& p,
 		std::vector<std::pair<State*, rational>>& myneighbours) const {
 
@@ -125,7 +125,7 @@ void Curveball::backtrackSubsetsRecursive(
 
 		//std::cout << "  " << sub << std::endl;
 
-		const int ncols = s->get_ncols();
+		const int ncols = s->getNumColumns();
 
 		// fill Bi with elements from sub
 		const boost::dynamic_bitset<> Ci = Bi | sub;
@@ -133,10 +133,10 @@ void Curveball::backtrackSubsetsRecursive(
 		// Fill Bj with remaining elements
 		const boost::dynamic_bitset<> Cj = Bj | (X - sub);
 
-		DenseBipartiteGraph *s2 = new DenseBipartiteGraph(*s);
+		BinaryMatrix *s2 = new BinaryMatrix(*s);
 		for (int k = 0; k < ncols; k++) {
-			s2->set_edge(i, k, Ci[k]);
-			s2->set_edge(j, k, Cj[k]);
+			s2->set(i, k, Ci[k]);
+			s2->set(j, k, Cj[k]);
 		}
 		myneighbours.push_back(std::make_pair(s2, p));
 		return;
@@ -157,7 +157,7 @@ void Curveball::backtrackSubsetsRecursive(
 
 void Curveball::randomize(State* x, const uint32_t t) const {
 
-	DenseBipartiteGraph* s = (DenseBipartiteGraph*) x;
+	BinaryMatrix* s = (BinaryMatrix*) x;
 
 	const int nrows = u.size();
 	const int ncols = v.size();
@@ -186,8 +186,8 @@ void Curveball::randomize(State* x, const uint32_t t) const {
 		// for each column position
 		for (int k = 0; k < ncols; k++) {
 
-			bool A_ik = s->has_edge(i, k);
-			bool A_jk = s->has_edge(j, k);
+			bool A_ik = s->get(i, k);
+			bool A_jk = s->get(j, k);
 
 			if (A_ik != A_jk) {
 
@@ -210,15 +210,15 @@ void Curveball::randomize(State* x, const uint32_t t) const {
 
 		// for each integer in X
 		for (int k = 0; k < a + b; k++) {
-			s->set_edge(i, X[k], Y[k]);
-			s->set_edge(j, X[k], !Y[k]);
+			s->set(i, X[k], Y[k]);
+			s->set(j, X[k], !Y[k]);
 		}
 	}
 }
 
 marathon::rational Curveball::loopProbability(const State* x) const {
 
-	const DenseBipartiteGraph* s = (const DenseBipartiteGraph*) x;
+	const BinaryMatrix* s = (const BinaryMatrix*) x;
 
 	rational loop(0);
 
@@ -238,8 +238,8 @@ marathon::rational Curveball::loopProbability(const State* x) const {
 				// for each column position
 				for (int k = 0; k < ncols; k++) {
 
-					bool A_ik = s->has_edge(i, k);
-					bool A_jk = s->has_edge(j, k);
+					bool A_ik = s->get(i, k);
+					bool A_jk = s->get(j, k);
 
 					if (A_ik != A_jk) {
 

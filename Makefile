@@ -37,8 +37,9 @@ CPP_SRCS = \
 ./src/marathon/chain/bipgraph/Curveball.cpp \
 ./src/marathon/chain/bipgraph/CurveballForbiddenEntries.cpp \
 ./src/marathon/chain/bipgraph/SwitchChain.cpp \
+./src/marathon/chain/bipgraph/LindaChain.cpp \
 ./src/marathon/chain/bipgraph/SwitchChainBerger.cpp \
-./src/marathon/chain/bipgraph/DenseBipartiteGraph.cpp \
+./src/marathon/chain/bipgraph/BinaryMatrix.cpp \
 ./src/marathon/chain/bipgraph/HavelHakimi.cpp \
 ./src/marathon/chain/bipgraph/KannanCanPath.cpp
 

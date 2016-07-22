@@ -38,7 +38,7 @@ protected:
 	void backtrackSubsets(boost::dynamic_bitset<>& population, int n,
 			const rational& p, const boost::dynamic_bitset<>& Bi,
 			const boost::dynamic_bitset<>& Bj, const boost::dynamic_bitset<>& X,
-			const DenseBipartiteGraph* s, const int i, const int j,
+			const BinaryMatrix* s, const int i, const int j,
 			std::vector<std::pair<State*, rational>>& myneighbours) const;
 
 	// just another recursive backtracking procedure
@@ -46,7 +46,7 @@ protected:
 			boost::dynamic_bitset<>& tmp, int pos, int m, int n,
 			const boost::dynamic_bitset<>& Bi,
 			const boost::dynamic_bitset<>& Bj, const boost::dynamic_bitset<>& X,
-			const DenseBipartiteGraph* s, const int i, const int j,
+			const BinaryMatrix* s, const int i, const int j,
 			const rational& p,
 			std::vector<std::pair<State*, rational>>& myneighbours) const;
 

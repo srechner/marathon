@@ -12,7 +12,7 @@
 #include <vector>
 #include <stack>
 
-#include "../bipgraph/DenseBipartiteGraph.h"
+#include "BinaryMatrix.h"
 
 namespace marathon {
 namespace chain {

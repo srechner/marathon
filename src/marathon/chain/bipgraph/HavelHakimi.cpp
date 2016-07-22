@@ -11,17 +11,14 @@ namespace bipgraph {
 struct A {
 	int id;
 	int deg;
+	int numForbidden;
 
-	A(int id, int deg) :
-			id(id), deg(deg) {
-	}
-
-	bool operator<(const A& a) const {
-		return deg < a.deg;
+	A(int id, int deg, int numForbidden = 0) :
+			id(id), deg(deg), numForbidden(numForbidden) {
 	}
 };
 
-DenseBipartiteGraph* HavelHakimiBipartite(const std::vector<int>& u,
+BinaryMatrix* HavelHakimiBipartite(const std::vector<int>& u,
 		const std::vector<int>& v) {
 
 	int m = u.size();
@@ -64,7 +61,11 @@ DenseBipartiteGraph* HavelHakimiBipartite(const std::vector<int>& u,
 	}
 
 	for (int i = 0; i < m; i++) {
-		std::sort(vv.begin(), vv.end());
+
+		// sort by degree
+		std::sort(vv.begin(), vv.end(), [](const A& a, const A& b) {
+			return a.deg < b.deg;
+		});
 
 		for (int j = n - u[i]; j < n; j++) {
 			if (vv[j].deg == 0) {
@@ -78,12 +79,12 @@ DenseBipartiteGraph* HavelHakimiBipartite(const std::vector<int>& u,
 		}
 	}
 
-	DenseBipartiteGraph* bip = new DenseBipartiteGraph(m, n, M);
+	BinaryMatrix* bip = new BinaryMatrix(m, n, M);
 
 	return bip;
 }
 
-DenseBipartiteGraph* HavelHakimiBipartiteForbidden(const std::vector<int>& u,
+BinaryMatrix* HavelHakimiBipartiteForbidden(const std::vector<int>& u,
 		const std::vector<int>& v, bool* const forbidden) {
 
 	int nrow = u.size();
@@ -100,7 +101,7 @@ DenseBipartiteGraph* HavelHakimiBipartiteForbidden(const std::vector<int>& u,
 	int* forbidden_rowsum = new int[nrow];
 	int* forbidden_colsum = new int[ncol];
 	memset(forbidden_rowsum, 0, nrow * sizeof(int));
-	memset(forbidden_colsum, 0, ncol* sizeof(int));
+	memset(forbidden_colsum, 0, ncol * sizeof(int));
 	for (int i = 0; i < nrow; i++) {
 		for (int j = 0; j < ncol; j++) {
 			if (forbidden[i * ncol + j]) {
@@ -134,6 +135,23 @@ DenseBipartiteGraph* HavelHakimiBipartiteForbidden(const std::vector<int>& u,
 
 	// start realizing
 
+	std::vector<A> uu;
+	for (int i = 0; i < u.size(); i++) {
+		// determine number of forbidden elements in row i
+		int numForbidden = 0;
+		for (int j = 0; j < ncol; j++) {
+			if (forbidden[i * ncol + j]) {
+				numForbidden++;
+			}
+		}
+		uu.push_back(A(i, u[i], numForbidden));
+	}
+
+	// descendlingly sort uu by number of forbidden elements
+	std::sort(uu.begin(), uu.end(), [](const A& a, const A& b) {
+		return a.numForbidden > b.numForbidden;
+	});
+
 	std::vector<A> vv;
 	for (int i = 0; i < v.size(); i++) {
 		vv.push_back(A(i, v[i]));
@@ -142,34 +160,36 @@ DenseBipartiteGraph* HavelHakimiBipartiteForbidden(const std::vector<int>& u,
 	// for each row
 	for (int i = 0; i < nrow; i++) {
 
-		std::sort(vv.begin(), vv.end());
-
-		int ui = u[i];
+		// sort by degree
+		std::sort(vv.begin(), vv.end(), [](const A& a, const A& b) {
+			return a.deg < b.deg;
+		});
 
 		// for each one that has to be distributed in line i
-		for (int j = ncol - 1; ui > 0; j--) {
+		for (int j = ncol - 1; uu[i].deg > 0; j--) {
 
 			// if (i,vv[j].id) is not a forbidden entry
-			if (!forbidden[i * ncol + vv[j].id]) {
+			if (!forbidden[uu[i].id * ncol + vv[j].id]) {
 				if (vv[j].deg == 0) {
 					return nullptr;
 				} else {
-					M[i * ncol + vv[j].id] = 1;
+					M[uu[i].id * ncol + vv[j].id] = 1;
 					vv[j].deg--;
-					ui--;
+					uu[i].deg--;
 				}
 			}
 		}
 	}
 
 	// assert that nodes have zero degree now
-	int sumv = 0;
-	for (auto a : vv) {
-		sumv += a.deg;
+	for (auto a : uu) {
+		assert(a.deg == 0);
 	}
-	assert(sumv == 0);
+	for (auto a : vv) {
+		assert(a.deg == 0);
+	}
 
-	DenseBipartiteGraph* bip = new DenseBipartiteGraph(nrow, ncol, M);
+	BinaryMatrix* bip = new BinaryMatrix(nrow, ncol, M);
 
 	delete[] M;
 	delete[] forbidden_rowsum;

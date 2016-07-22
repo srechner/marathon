@@ -35,7 +35,7 @@ int nextInt(int b) {
 	return nextInt(0,b);
 }
 
-void select(int N, int n, int* selection) {
+void select(int n, int k, int* selection) {
 
 	/**************************************************************************
 	 * Generate Random Combination of k out of n numbers.
@@ -48,12 +48,12 @@ void select(int N, int n, int* selection) {
 	m = 0;
 	t = 0;
 
-	while (m < n) {
+	while (m < k) {
 
 		U = nextDouble();	// U is uniformly distributed between 0 and 1
 
 		// select t+1 with probability (n-m)/(N-t)
-		if ((N - t) * U < (n - m)) {
+		if ((n - t) * U < (k - m)) {
 			selection[m] = t;
 			m++;
 		}
