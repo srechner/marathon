@@ -14,7 +14,6 @@
 #include "bipgraph/ExtendedCurveball.h"
 #include "bipgraph/SwitchChain.h"
 #include "bipgraph/SwitchChainBerger.h"
-#include "bipgraph/LindaChain.h"
 
 // include chains regarding matchings
 #include "matching/Broder86.h"

@@ -12,39 +12,42 @@
 namespace marathon {
 
 #ifdef CUDA
+
 // declare external function that initialize and finalze cuda stuff
-extern bool cudaInit();
-extern void cudaFinalize();
-bool cuda_init_success = false;
+	extern bool cudaInit();
+
+	extern void cudaFinalize();
+
+	bool cuda_init_success = false;
 #endif
 
-void init() {
+	void init() {
 
 #ifdef CUDA
-	cuda_init_success = cudaInit();
+		cuda_init_success = cudaInit();
 #endif
 
-	// init RNG
-	std::random_device rd;
-	random::rng.seed( rd() );
+		// init RNG
+		std::random_device rd;
+		random::rng.seed(rd());
 
 
-	// init binomial coefficients
-	combinatorics::_nrow = 1;
-	combinatorics::_ncol = 1;
-	combinatorics::_binom = new rational[combinatorics::_nrow * combinatorics::_ncol];
-	combinatorics::_binom[0] = 1;
+		// init binomial coefficients
+		combinatorics::_nrow = 1;
+		combinatorics::_ncol = 1;
+		combinatorics::_binom = new rational[combinatorics::_nrow * combinatorics::_ncol];
+		combinatorics::_binom[0] = 1;
 
-}
+	}
 
-void finalize() {
+	void finalize() {
 
 #ifdef CUDA
-	if(cuda_init_success)
-		cudaFinalize();
+		if (cuda_init_success)
+			cudaFinalize();
 #endif
 
-	delete[] combinatorics::_binom;
-}
+		delete[] combinatorics::_binom;
+	}
 
 }

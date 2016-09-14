@@ -15,11 +15,11 @@
 #include <cmath>
 #include <climits>
 
-#include "../../include/marathon/Eigenvalues.h"
+#include "marathon/Eigenvalues.h"
 
-#include "../../include/marathon/marathon.h"
-#include "../../include/arpack++/arlssym.h"
-#include "../../include/arpack++/arlsmat.h"
+#include "marathon/marathon.h"
+#include "arpack++/arlssym.h"
+#include "arpack++/arlsmat.h"
 
 namespace marathon {
 namespace eigenvalue {

@@ -1,0 +1,13 @@
+//
+// Created by rechner on 06.09.16.
+//
+
+#ifndef MARATHON_CONFIG_H_IN_H
+#define MARATHON_CONFIG_H_IN_H
+
+#define VERSION_MAJOR @marathon_VERSION_MAJOR@
+#define VERSION_MINOR @marathon_VERSION_MINOR@
+
+#cmakedefine CUDA
+
+#endif //MARATHON_CONFIG_H_IN_H

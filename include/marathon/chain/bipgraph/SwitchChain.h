@@ -46,6 +46,8 @@ public:
 	virtual ~SwitchChain();
 
 	virtual State* computeArbitraryState() const;
+
+
 	virtual void computeNeighbours(const State* s,
 			std::vector<std::pair<State*, rational>>& neighbors) const;
 

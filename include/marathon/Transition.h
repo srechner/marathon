@@ -15,24 +15,26 @@
 
 namespace marathon {
 
-/**
- * Transition Arc Representation of State Graph
- */
-class Transition {
+    /**
+     * Transition Arc Representation of State Graph
+     */
+    class Transition {
 
-public:
+    public:
 
-	uint u, v;			// from, to
-	rational p;			// P(u,v)
+        uint u, v;            // from, to
+        rational p;            // P(u,v)
 
-	Transition();
-	Transition(uint u, uint v, rational p);
-	virtual ~Transition();
-};
+        Transition();
 
-struct TransitionComparator {
-	bool operator()(const Transition& a, const Transition& b);
-};
+        Transition(uint u, uint v, rational p);
+
+        virtual ~Transition();
+    };
+
+    struct TransitionComparator {
+        bool operator()(const Transition &a, const Transition &b);
+    };
 
 }
 

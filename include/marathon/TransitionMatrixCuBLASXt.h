@@ -10,40 +10,44 @@
 
 #include "TransitionMatrixCBLAS.h"
 
+#ifdef CUDA
+
 namespace marathon {
-namespace tm {
+    namespace tm {
 
-template<typename T>
-class TransitionMatrixCuBLASXt: public TransitionMatrixCBLAS<T> {
+        template<typename T>
+        class TransitionMatrixCuBLASXt : public TransitionMatrixCBLAS<T> {
 
-protected:
+        protected:
 
-public:
+        public:
 
-	TransitionMatrixCuBLASXt(const int n) :
-			TransitionMatrixCBLAS<T>(n) {
+            TransitionMatrixCuBLASXt(const int n) :
+                    TransitionMatrixCBLAS<T>(n) {
 
-	}
+            }
 
-	TransitionMatrixCuBLASXt(const StateGraph* sg) :
-			TransitionMatrixCBLAS<T>(sg) {
-	}
+            TransitionMatrixCuBLASXt(const StateGraph *sg) :
+                    TransitionMatrixCBLAS<T>(sg) {
+            }
 
-	virtual ~TransitionMatrixCuBLASXt() {
+            virtual ~TransitionMatrixCuBLASXt() {
 
-	}
+            }
 
-	/**
-	 * Multiply A with B and write the result to this.
-	 * @param A A pointer to matrix A. Will not be changed.
-	 * @param B A pointer to matrix B. Will not be changed.
-	 */
-	virtual void mult(const TransitionMatrix<T>* A,
-			const TransitionMatrix<T>* B);
+            /**
+             * Multiply A with B and write the result to this.
+             * @param A A pointer to matrix A. Will not be changed.
+             * @param B A pointer to matrix B. Will not be changed.
+             */
+            virtual void mult(const TransitionMatrix <T> *A,
+                              const TransitionMatrix <T> *B);
 
-};
+        };
 
+    }
 }
-}
+
+#endif /* CUDA */
 
 #endif /* INCLUDE_MARATHON_TRANSITIONMATRIXCUBLASXT_H_ */

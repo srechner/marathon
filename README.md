@@ -1,10 +1,15 @@
-## marathon 0.31
+## marathon 0.4
 
 This C++ library is designed to support the analysis of Markov chain based sampling methods. It provides functions for the analysis of so-called state graphs. For an introduction into its functionality, see its introductional [article](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0147935).
+If you use this library for your work, please cite
 
-An API description can be found [here](https://github.com/srechner/marathon/blob/master/doc/marathon.pdf) (It's a start and will be gradually improved.)
+Steffen Rechner and Annabell Berger:
+marathon: An open source software library for the analysis of Markov-Chain Monte Carlo algorithms   , PLoS ONE 2016
 
-### Current Development Status: Active
+
+An API description can be found [here](./doc/marathon.pdf) (It's a start and will be gradually improved.)
+
+### Current ToDo's:
 * Improving Documentation / API Description
 * Integrating of network analysis
 * Integrating additional chains
@@ -14,62 +19,37 @@ An API description can be found [here](https://github.com/srechner/marathon/blob
 
 This library is developed and tested at Linux systems (primarily Ubuntu). In principle it should possible to migrate the library to other operating systems.
 
-Compiling the library requires the following software packages:
- * `g++` in version 4.8 or later
- * `boost` headers 
- * `cblas` headers
- * `cuda` headers in version 7.0 or later (optional)
-
-Linking an application to `marathon` requires several third-party libraries, which have to exist at your system. (Names are those of Ubuntu packages.)
- * `gomp`
- * `pthread`
- * `openblas` (or an equivalent `CBLAS` implementation)
- * `arpack++`
- * `arpack`
- * `superlu`
- * `cublas`	(only when built with CUDA support)
+Building the marathon library requires the following libraries:
+ * `Boost` 
+ * a BLAS implementation (e.g. `OpenBLAS`)
+ * `Arpack++`
+ * `SuperLU`
+ * `CUDA` (optional)
 
 ### Installation:
 
-First Step: Build the `marathon` library.
-
-1. Download the sources as zip archive.
-2. Extract the archive to a directory of your choice.
-3. Enter the `marathon` directory.
-4. Run `make` to build `marathon` in standard C++ mode (without CUDA support). To compile with CUDA support, run instead `make CUDA=true`.
-
-Second Step: Build an application and link to the `marathon` library.
-
-The [example directory](https://github.com/srechner/marathon/blob/master/examples/) contains several example programs that demonstrate how `marathon` applications can look like. To compile an example program:
-
-1. Enter an example directory.
-2. Run `make` or `make CUDA=true`. The command has to match the mode you have used to build the library. Please see next section if something goes wrong.
-3. Tell your system where to find the `marathon` library: `export LD_LIBRARY_PATH=../:$LD_LIBRARY_PATH`
-4. Run the application.
-
-### Example:
-
-This instruction shows how to build the [MixingBounds](https://github.com/srechner/marathon/blob/master/examples/MixingBounds/) example at a fresh Ubuntu 14.04 system.
+This instruction shows how to build the library and run the [MixingBounds](./applications/MixingBounds/) example at a fresh Ubuntu 16.04 system.
 
 1. Install packages.
 
-        sudo apt-get install git g++ libboost-all-dev libopenblas-dev libarpack++2-dev libsuperlu3-dev
+        sudo apt-get install git cmake g++ libboost-all-dev libblas-dev libarpack++2-dev libsuperlu-dev
 
 2. Build the library.
 
         git clone https://github.com/srechner/marathon.git
         cd marathon
+        mkdir build
+        cd build
+        cmake..
+        
+3. Install the library to the system path.
+
         make
+        sudo make install
 
-3. Build the application.
+4. Run an application.
 
-        cd examples/MixingBounds/
-        make
-
-4. Run the application.
-
-        export LD_LIBRARY_PATH=../../:$LD_LIBRARY_PATH
-        ./MixingBounds swapBip "2,1,1;1,2,1" 1e-3
+        MixingBounds swapBip "2,1,1;1,2,1" 1e-3
 
    The output should look like:
 
