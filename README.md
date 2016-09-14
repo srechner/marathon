@@ -1,11 +1,10 @@
 ## marathon 0.4
 
 This C++ library is designed to support the analysis of Markov chain based sampling methods. It provides functions for the analysis of so-called state graphs. For an introduction into its functionality, see its introductional [article](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0147935).
-If you use this library for your work, please cite
+If you use this library for your work, please feel free to contact me and cite
 
 Steffen Rechner and Annabell Berger:
-marathon: An open source software library for the analysis of Markov-Chain Monte Carlo algorithms   , PLoS ONE 2016
-
+marathon: An open source software library for the analysis of Markov-Chain Monte Carlo algorithms   , PLoS ONE 2016.
 
 An API description can be found [here](./doc/marathon.pdf) (It's a start and will be gradually improved.)
 
