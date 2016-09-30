@@ -8,24 +8,16 @@ marathon: An open source software library for the analysis of Markov-Chain Monte
 
 An API description can be found [here](./doc/marathon.pdf) (It's a start and will be gradually improved.)
 
-### Current ToDo's:
-* Improving Documentation / API Description
-* Integrating of network analysis
-* Integrating additional chains
-* Setting up new experiments
-
-### Requirements:
+### Installation:
 
 This library is developed and tested at Linux systems (primarily Ubuntu). In principle it should possible to migrate the library to other operating systems.
 
-Building the marathon library requires the following libraries:
+Building the marathon software requires various third party libraries:
  * `Boost` 
  * a BLAS implementation (e.g. `OpenBLAS`)
  * `Arpack++`
  * `SuperLU`
  * `CUDA` (optional)
-
-### Installation:
 
 This instruction shows how to build the library and run the [MixingBounds](./applications/MixingBounds/) example at a fresh Ubuntu 16.04 system.
 
@@ -33,22 +25,18 @@ This instruction shows how to build the library and run the [MixingBounds](./app
 
         sudo apt-get install git cmake g++ libboost-all-dev libblas-dev libarpack++2-dev libsuperlu-dev
 
-2. Build the library.
+2. Build the software.
 
         git clone https://github.com/srechner/marathon.git
         cd marathon
         mkdir build
         cd build
-        cmake..
-        
-3. Install the library to the system path.
-
+        cmake -DCMAKE_BUILD_TYPE=Release ..
         make
-        sudo make install
 
 4. Run an application.
 
-        MixingBounds swapBip "2,1,1;1,2,1" 1e-3
+        ./applications/MixingBounds/MixingBounds swapBip "2,1,1;1,2,1" 1e-3
 
    The output should look like:
 

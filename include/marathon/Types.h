@@ -1,7 +1,7 @@
 /*
- * Transition.cpp
+ * Types.h
  *
- * Created on: Jun 13, 2015
+ * Created on: Sep 16, 2016
  * Author: Steffen Rechner <steffen.rechner@informatik.uni-halle.de>
  *
  * This file is part of the marathon software.
@@ -23,28 +23,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#ifndef PROJECT_TYPES_H
+#define PROJECT_TYPES_H
 
-#include "../../include/marathon/Transition.h"
+#include "boost/multiprecision/cpp_int.hpp"
 
 namespace marathon {
 
-Transition::Transition() :
-		u((uint) -1), v((uint) -1), p(0) {
-}
-
-Transition::Transition(uint u, uint v, rational p) :
-		u(u), v(v), p(p) {
-}
-
-Transition::~Transition() {
+	typedef boost::multiprecision::cpp_int integer;
 
 }
 
-
-
-bool TransitionComparator::operator()(const Transition& a,
-		const Transition& b) {
-	return a.u == b.u ? a.v < b.v : a.u < b.u;
-}
-
-}
+#endif //PROJECT_TYPES_H

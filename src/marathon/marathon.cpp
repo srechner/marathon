@@ -1,71 +1,52 @@
 /*
  * marathon.cpp
  *
- *  Created on: Mar 24, 2016
- *      Author: rechner
+ * Created on: Mar 24, 2016
+ * Author: Steffen Rechner <steffen.rechner@informatik.uni-halle.de>
+ *
+ * This file is part of the marathon software.
+ *
+ * Copyright (c) 2016, Steffen Rechner
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is furnished
+ * to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
-#include "../../include/marathon/marathon.h"
-#include "../../include/marathon/Eigenvalues.h"
-#include "../../include/marathon/PathCongestion.h"
+#include "marathon/marathon.h"
+#include "marathon/Random.h"
+#include "marathon/Combinatorics.h"
+#include "marathon/Cuda.h"
 
-#include <cmath>
+namespace marathon {
 
-/**
- * Implement Eigenvalue functions.
- */
 
-template<typename T>
-T marathon::lowerSpectralBound(const StateGraph* sg, T eps) {
+	void init() {
 
-	const double lambda = fabs(
-			eigenvalue::eigenvalue<T>(sg,
-					eigenvalue::eigenvalue_t::_2ndLargestMagnitude));
+		// init components
+		Random::init();
+		Combinatorics::init();
+		cuda::init();
 
-	if (lambda < std::numeric_limits<T>::epsilon())
-		return std::numeric_limits<T>::infinity();
+	}
 
-	return 0.5 * lambda / (1.0 - lambda) * -log(2.0 * eps);
+	void cleanup() {
+
+		// cleanup components
+		Random::cleanup();
+		Combinatorics::cleanup();
+		cuda::cleanup();
+	}
+
 }
-
-template<typename T>
-T marathon::upperSpectralBound(const StateGraph* sg, T eps) {
-
-	const double lambda = fabs(
-			eigenvalue::eigenvalue<T>(sg,
-					eigenvalue::eigenvalue_t::_2ndLargestMagnitude));
-
-	if (fabs(lambda) < std::numeric_limits<T>::epsilon())
-		return std::numeric_limits<T>::infinity();
-
-	const rational pimin = sg->getMinWeight() / sg->getZ();
-
-	return -log(eps * pimin.convert_to<double>()) / (1.0 - lambda);
-}
-
-/**
- * Implement Path Congestion functions.
- */
-
-template<typename T>
-T marathon::upperPathCongestionBound(const StateGraph* sg,
-		const PathConstructionScheme& pcs, T eps) {
-
-	const rational load = marathon::pathCongestion::pathCongestion(sg, pcs);
-	const rational pimin = sg->getMinWeight() / sg->getZ();
-
-	return load.convert_to<T>() * -log(pimin.convert_to<T>() * eps);
-}
-
-
-
-/**
- * Export Template Specializations
- */
-
-template float marathon::lowerSpectralBound(const StateGraph*, float);
-template double marathon::lowerSpectralBound(const StateGraph*, double);
-template float marathon::upperSpectralBound(const StateGraph*, float);
-template double marathon::upperSpectralBound(const StateGraph*, double);
-template float marathon::upperPathCongestionBound(const StateGraph* sg, const PathConstructionScheme&, float);
-template double marathon::upperPathCongestionBound(const StateGraph* sg, const PathConstructionScheme&, double);

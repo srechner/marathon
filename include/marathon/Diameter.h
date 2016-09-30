@@ -1,7 +1,7 @@
 /*
- * Transition.cpp
+ * Diameter.h
  *
- * Created on: Jun 13, 2015
+ * Created on: Sep 23, 2016
  * Author: Steffen Rechner <steffen.rechner@informatik.uni-halle.de>
  *
  * This file is part of the marathon software.
@@ -24,27 +24,35 @@
  * SOFTWARE.
  */
 
-#include "../../include/marathon/Transition.h"
+#ifndef PROJECT_DIAMETER_H
+#define PROJECT_DIAMETER_H
+
+#include "StateGraph.h"
 
 namespace marathon {
 
-Transition::Transition() :
-		u((uint) -1), v((uint) -1), p(0) {
+	class Diameter {
+
+		/**
+		 * Computes the diameter of the graph, i.e. the maximal length of a shortest path
+		 * between some nodes of the graph. Each arc has a length of 1.
+		 */
+		static
+		int
+		diameter(const StateGraph *G);
+
+		/**
+		 * Computes a histogram of the length of shortest path in G. Each arc of the graph
+		 * contributes one to the length of a path. For each length l for l in 0..diameter(G),
+		 * the number of shortest paths of G is stored in the vector count[l].
+		 */
+		static
+		void
+		pathLengthHistogram(std::vector<long> &count, const StateGraph *G);
+
+	};
+
 }
 
-Transition::Transition(uint u, uint v, rational p) :
-		u(u), v(v), p(p) {
-}
 
-Transition::~Transition() {
-
-}
-
-
-
-bool TransitionComparator::operator()(const Transition& a,
-		const Transition& b) {
-	return a.u == b.u ? a.v < b.v : a.u < b.u;
-}
-
-}
+#endif //PROJECT_DIAMETER_H

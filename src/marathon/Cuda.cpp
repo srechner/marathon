@@ -1,7 +1,7 @@
 /*
- * Transition.cpp
+ * Cuda.cpp
  *
- * Created on: Jun 13, 2015
+ * Created on: Mar 23, 2016
  * Author: Steffen Rechner <steffen.rechner@informatik.uni-halle.de>
  *
  * This file is part of the marathon software.
@@ -23,28 +23,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#include "marathon/Cuda.h"
 
-#include "../../include/marathon/Transition.h"
-
-namespace marathon {
-
-Transition::Transition() :
-		u((uint) -1), v((uint) -1), p(0) {
+void marathon::cuda::init() {
+#ifdef CUDA
+	marathon::cuda::cudaInit();
+#endif
 }
 
-Transition::Transition(uint u, uint v, rational p) :
-		u(u), v(v), p(p) {
-}
-
-Transition::~Transition() {
-
-}
-
-
-
-bool TransitionComparator::operator()(const Transition& a,
-		const Transition& b) {
-	return a.u == b.u ? a.v < b.v : a.u < b.u;
-}
-
+void marathon::cuda::cleanup() {
+#ifdef CUDA
+	marathon::cuda::cudaFinalize();
+#endif
 }

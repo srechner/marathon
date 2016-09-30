@@ -1,8 +1,35 @@
+/*
+ * TransitionMatrix.cpp
+ *
+ * Created on: Nov 24, 2014
+ * Author: Steffen Rechner <steffen.rechner@informatik.uni-halle.de>
+ *
+ * This file is part of the marathon software.
+ *
+ * Copyright (c) 2016, Steffen Rechner
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is furnished
+ * to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 // system includes
 #include <iostream>
-#include <string>
 
 #include "marathon/marathon.h"
+#include "marathon/TransitionMatrixCBLAS.h"
+#include "marathon/TransitionMatrixCuBLAS.h"
 
 int main(int argc, char** argv) {
 
@@ -40,7 +67,7 @@ int main(int argc, char** argv) {
 	marathon::StateGraph* sg = new marathon::StateGraph(mc);
 
 	// print transition matrix
-	marathon::TransitionMatrix<double>* P = new marathon::tm::TransitionMatrixCBLAS<double>(sg);
+	marathon::TransitionMatrix<double>* P = new marathon::TransitionMatrixCBLAS<double>(sg);
 	std::cout << P << std::endl;
 
 	delete sg;
@@ -48,7 +75,7 @@ int main(int argc, char** argv) {
 	delete P;
 
 	// finalize library
-	marathon::finalize();
+	marathon::cleanup();
 
 	return 0;
 }

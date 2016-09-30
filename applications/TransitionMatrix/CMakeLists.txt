@@ -1,10 +1,28 @@
 project(TransitionMatrix)
 
-# compile binary
-add_executable(${PROJECT_NAME} TransitionMatrix.cpp)
+set(SOURCE_FILES
+        TransitionMatrix.cpp)
 
-# link against libraries
-target_link_libraries(${PROJECT_NAME} ${MANDATORY_LIBRARIES})
+# find required packages
+set(BLA_VENDOR Generic)
+find_package(BLAS)
 
-# install target
-install (TARGETS ${PROJECT_NAME} DESTINATION bin)
+# if all packages could be found
+if(BLAS_FOUND)
+
+    # compile binary
+    add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+
+    # link against libraries
+    target_link_libraries(${PROJECT_NAME}
+            marathon
+            ${BLAS_LIBRARIES}
+            ${MANDATORY_LIBRARIES}
+            )
+
+    # install target
+    install (TARGETS ${PROJECT_NAME} DESTINATION bin)
+
+else(BLAS_FOUND)
+    message("-- Warning: Can not build subproject '${PROJECT_NAME}' due to missing dependencies.")
+endif(BLAS_FOUND)

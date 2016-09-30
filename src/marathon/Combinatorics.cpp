@@ -1,34 +1,63 @@
 /*
  * Combinatorics.cpp
  *
- *  Created on: May 11, 2016
- *      Author: rechner
+ * Created on: May 11, 2016
+ * Author: Steffen Rechner <steffen.rechner@informatik.uni-halle.de>
+ *
+ * This file is part of the marathon software.
+ *
+ * Copyright (c) 2016, Steffen Rechner
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is furnished
+ * to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 #include "../../include/marathon/Combinatorics.h"
 
-namespace marathon {
-namespace combinatorics {
+int marathon::Combinatorics::_nrow;
+int marathon::Combinatorics::_ncol;
+marathon::integer* marathon::Combinatorics::_binom;
 
-int _nrow, _ncol;	// number of rows and columns in _bimom table
-rational* _binom;	// table with computed binomonial coefficients
+void marathon::Combinatorics::init() {
+	// init binomial coefficients
+	_nrow = 1;
+	_ncol = 1;
+	_binom = new integer[_nrow * _ncol];
+	_binom[0] = 1;
+}
 
-rational binom(const int n, const int k) {
+void marathon::Combinatorics::cleanup() {
+	delete[] _binom;
+}
+
+marathon::integer marathon::Combinatorics::binom(const int n, const int k) {
 
 	// binom(n,k) = binom(n, n-k)
 	if (k > n - k) {
 		return binom(n, n - k);
 	}
-	// invalid parameter?
+		// invalid parameter?
 	else if (k < 0 || n < 0) {
 		return 0;
 	}
-	// is the result already computed?
+		// is the result already computed?
 	else if (n < _nrow && k < _ncol) {
-		const rational res = _binom[n * _ncol + k];
+		const integer res = _binom[n * _ncol + k];
 		return res;
 	}
-	// if not? extend the table!
+		// if not? extend the table!
 	else {
 
 		// the new table sizes (at least +20% rows)
@@ -40,7 +69,7 @@ rational binom(const int n, const int k) {
 		//		<< nrow << "x" << ncol << std::endl;
 
 		// allocate 2d array
-		rational* tmp = new rational[ncol * nrow];
+		integer *tmp = new integer[ncol * nrow];
 
 		// copy the old values into the new table
 		for (int i = 0; i < _nrow; i++) {
@@ -78,7 +107,7 @@ rational binom(const int n, const int k) {
 			for (int j = _ncol; j < ncol; j++) {
 				// binom(i,j) = binom(i-1, j) + binom(i-1, j-1)
 				tmp[i * ncol + j] = tmp[(i - 1) * ncol + j]
-						+ tmp[(i - 1) * ncol + (j - 1)];
+				                    + tmp[(i - 1) * ncol + (j - 1)];
 			}
 		}
 
@@ -87,7 +116,7 @@ rational binom(const int n, const int k) {
 			for (int j = 1; j < ncol; j++) {
 				// binom(i,j) = binom(i-1, j) + binom(i-1, j-1)
 				tmp[i * ncol + j] = tmp[(i - 1) * ncol + j]
-						+ tmp[(i - 1) * ncol + (j - 1)];
+				                    + tmp[(i - 1) * ncol + (j - 1)];
 			}
 		}
 
@@ -108,13 +137,10 @@ rational binom(const int n, const int k) {
 	}
 }
 
-rational faculty(const int n) {
-	rational res = 1;
-	for(int i=1; i<=n; i++) {
-		res = res * rational(i);
+marathon::integer marathon::Combinatorics::factorial(const int n) {
+	integer res = 1;
+	for (int i = 1; i <= n; i++) {
+		res = res * integer(i);
 	}
 	return res;
-}
-
-}
 }

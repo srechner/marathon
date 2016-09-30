@@ -1,7 +1,7 @@
 /*
- * Transition.cpp
+ * MarkovChain.h
  *
- * Created on: Jun 13, 2015
+ * Created on: Sep 30, 2016
  * Author: Steffen Rechner <steffen.rechner@informatik.uni-halle.de>
  *
  * This file is part of the marathon software.
@@ -24,27 +24,34 @@
  * SOFTWARE.
  */
 
-#include "../../include/marathon/Transition.h"
+#ifndef MARATHON_MEMORY_H
+#define MARATHON_MEMORY_H
+
+#include <cstddef>
+#include <new>
 
 namespace marathon {
 
-Transition::Transition() :
-		u((uint) -1), v((uint) -1), p(0) {
+	template<class T>
+	T *alloc(size_t size) {
+
+		T *ptr;
+		try {
+			ptr = new T[size];
+		}
+		catch (std::bad_alloc) {
+			return nullptr;
+		}
+
+		return ptr;
+	}
+
+	template<class T>
+	void free(T *ptr) {
+		if (ptr != nullptr)
+			delete[] ptr;
+	}
+
 }
 
-Transition::Transition(uint u, uint v, rational p) :
-		u(u), v(v), p(p) {
-}
-
-Transition::~Transition() {
-
-}
-
-
-
-bool TransitionComparator::operator()(const Transition& a,
-		const Transition& b) {
-	return a.u == b.u ? a.v < b.v : a.u < b.u;
-}
-
-}
+#endif //MARATHON_MEMORY_H
