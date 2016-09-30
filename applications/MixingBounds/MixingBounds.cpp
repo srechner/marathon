@@ -79,8 +79,8 @@ int main(int argc, char **argv) {
                                               marathon::MixingTime::device_t::CPU_ONLY);
 
     // compute bounds
-    double lower_spectral = marathon::MixingTime::lowerSpectralBound(sg, eps);
-    double upper_spectral = marathon::MixingTime::upperSpectralBound(sg, eps);
+    double lower_spectral = marathon::MixingTime::lowerSpectralBound<double>(sg, eps);
+    double upper_spectral = marathon::MixingTime::upperSpectralBound<double>(sg, eps);
     double upper_congestion = marathon::MixingTime::upperPathCongestionBound(sg, *pcs, eps);
 
     // print information

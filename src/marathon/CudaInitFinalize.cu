@@ -35,6 +35,7 @@ namespace marathon {
 		// a handle for using cublas library
 		cublasHandle_t cublasHandle;
 		cublasXtHandle_t cublasXtHandle;
+        bool cuda_init = false;
 
 		extern bool cudaInit() {
 
@@ -44,6 +45,8 @@ namespace marathon {
 
 			if (error_id != cudaSuccess || deviceCount == 0)
 				return false;
+
+            cuda_init = true;
 
 			cublasCreate_v2(&cublasHandle);
 
@@ -65,10 +68,14 @@ namespace marathon {
 
 		extern void cudaFinalize() {
 
-			cublasDestroy_v2(cublasHandle);
-			cublasXtDestroy(cublasXtHandle);
+            if(cuda_init) {
+                cublasDestroy_v2(cublasHandle);
+                cublasXtDestroy(cublasXtHandle);
+                cuda_init = false;
+            }
 		}
 
 	}
 }
+
 
