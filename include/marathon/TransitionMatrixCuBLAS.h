@@ -27,12 +27,12 @@
 #ifndef INCLUDE_MARATHON_TRANSITIONMATRIXCUBLAS_H_
 #define INCLUDE_MARATHON_TRANSITIONMATRIXCUBLAS_H_
 
-#include "marathon.h"
-#include "TransitionMatrix.h"
 #include "TransitionMatrixCBLAS.h"
-#include "Cuda.h"
 
 #ifdef CUDA
+
+#include <cuda_runtime.h>
+#include <cublas_v2.h>
 
 namespace marathon {
 
@@ -40,13 +40,14 @@ namespace marathon {
 	 * Declare external functions.
 	 */
 	namespace cuda {
+
 		template<typename T>
 		extern void cudaVariationDistance(const T *data, const size_t n,
 		                                  const size_t ld, const T *pi, T *dist);
 
 		template<typename T>
 		extern T cudaTotalVariationDistance(const T *data, const size_t n,
-		                                          const size_t ld, const T *pi);
+		                                    const size_t ld, const T *pi);
 	}
 
 	template<typename T>
@@ -55,17 +56,24 @@ namespace marathon {
 	protected:
 
 		/**
+		 * Member Variables.
+		 */
+		cublasHandle_t handle;      // for matrix multiplication
+
+		/**
 		 * Copy the content of matrix P to this.
 		 */
 		virtual void copy(const TransitionMatrix<T> *P) {
 
 			const TransitionMatrixCuBLAS<T> *X =
 					(const TransitionMatrixCuBLAS<T> *) P;
-			this->n = X->n;
+			this->N = X->N;
 			this->ld = X->ld;
-			size_t pitch = this->ld * sizeof(T);
-			cuda::myCudaMemcpy2DDeviceToDevice(this->data, this->ld * sizeof(T), X->data,
-			                             X->ld * sizeof(T), this->n * sizeof(T), this->n);
+			this->pitch = X->pitch;
+			cudaMemcpy2D(this->data, this->ld * sizeof(T),
+			             X->data, X->ld * sizeof(T),
+			             this->N * sizeof(T), this->N,
+			             cudaMemcpyDeviceToDevice);
 		}
 
 		/**
@@ -78,13 +86,14 @@ namespace marathon {
 
 	public:
 
-		TransitionMatrixCuBLAS(const int n) {
-			this->n = n;
+		TransitionMatrixCuBLAS(const uint32_t N) {
 
+			cublasCreate_v2(&handle);
+
+			this->N = N;
 			// allocate aligned 2d memory
-			size_t pitch;
-			cuda::myCudaMallocPitch((void **) &this->data, &pitch, n * sizeof(T), n);
-			this->ld = pitch / sizeof(T);
+			cudaMallocPitch((void**) &this->data, &this->pitch, N * sizeof(T), N);
+			this->ld = (uint32_t) (this->pitch / sizeof(T));
 		}
 
 		TransitionMatrixCuBLAS(const StateGraph *sg) :
@@ -92,13 +101,15 @@ namespace marathon {
 
 			TransitionMatrixCBLAS<T> tmp(sg);
 
-			cuda::myCudaMemcpy2DHostToDevice(this->data, this->ld * sizeof(T),
-			                           tmp.getData(), tmp.getLeadDimension() * sizeof(T),
-			                           this->n * sizeof(T), this->n);
+			cudaMemcpy2D(this->data, this->pitch,
+			             tmp.getData(), tmp.getLeadDimension()*sizeof(T),
+			             this->N * sizeof(T), this->N,
+			             cudaMemcpyHostToDevice);
 		}
 
 		virtual ~TransitionMatrixCuBLAS() {
-			cuda::myCudaFree(this->data);
+			cudaFree(this->data);
+			cublasDestroy_v2(handle);
 		}
 
 		/**
@@ -106,22 +117,21 @@ namespace marathon {
 		 */
 		virtual void setEye() {
 
-			TransitionMatrixCBLAS<T> tmp(this->n);
+			TransitionMatrixCBLAS<T> tmp(this->N);
 			tmp.setEye();
 
-			cuda::myCudaMemcpy2DHostToDevice(this->data, this->ld * sizeof(T),
-			                           tmp.getData(), tmp.getLeadDimension() * sizeof(T),
-			                           this->n * sizeof(T), this->n);
+			cudaMemcpy2D(this->data, this->ld * sizeof(T),
+			             tmp.getData(), tmp.getLeadDimension() * sizeof(T),
+			             this->N * sizeof(T), this->N,
+			             cudaMemcpyHostToDevice);
 		}
 
 		/**
 		 * Overwrite the current matrix with zeroes.
 		 */
 		virtual void setZero() {
-
-			// call of external function
-			cuda::myCudaMemset2D(this->data, this->ld * sizeof(T), 0, this->n * sizeof(T),
-			               this->n);
+			cudaMemset2D(this->data, this->ld * sizeof(T), 0, this->N * sizeof(T),
+			             this->N);
 		}
 
 		/**
@@ -129,11 +139,12 @@ namespace marathon {
 		 */
 		virtual std::string to_string() const {
 
-			TransitionMatrixCBLAS<T> tmp(this->n);
+			TransitionMatrixCBLAS<T> tmp(this->N);
 
-			cuda::myCudaMemcpy2DDeviceToHost(tmp.getData(),
-			                           tmp.getLeadDimension() * sizeof(T), this->data,
-			                           this->ld * sizeof(T), this->n * sizeof(T), this->n);
+			cudaMemcpy2D(tmp.getData(),
+			             tmp.getLeadDimension() * sizeof(T), this->data,
+			             this->ld * sizeof(T), this->N * sizeof(T), this->N,
+			             cudaMemcpyDeviceToHost);
 
 			return tmp.to_string();
 		}
@@ -154,7 +165,7 @@ namespace marathon {
 		virtual void variationDistance(const T *pi, T *dist) const {
 
 			// call of external function
-			cuda::cudaVariationDistance(this->data, this->n, this->ld, pi, dist);
+			cuda::cudaVariationDistance(this->data, this->N, this->ld, pi, dist);
 		}
 
 		/**
@@ -164,9 +175,43 @@ namespace marathon {
 		virtual T totalVariationDistance(const T *pi) const {
 
 			// call of external function
-			return cuda::cudaTotalVariationDistance(this->data, this->n, this->ld, pi);
+			return cuda::cudaTotalVariationDistance(this->data, this->N, this->ld, pi);
 		}
 	};
+
+
+	// Template Specialization
+	template<>
+	void TransitionMatrixCuBLAS<float>::mult(
+			const TransitionMatrix<float> *A,
+			const TransitionMatrix<float> *B) {
+
+		const float alpha = 1.0;
+		const float beta = 0.0;
+
+		// use cublas
+		cublasSgemm_v2(handle, CUBLAS_OP_N, CUBLAS_OP_N, this->N, this->N,
+		               this->N, &alpha, B->getData(), A->getLeadDimension(), A->getData(),
+		               A->getLeadDimension(), &beta, this->getData(),
+		               this->getLeadDimension());
+	}
+
+	template<>
+	void TransitionMatrixCuBLAS<double>::mult(
+			const TransitionMatrix<double> *A,
+			const TransitionMatrix<double> *B) {
+
+		const double alpha = 1.0;
+		const double beta = 0.0;
+
+		// use cublas
+		cublasDgemm_v2(handle, CUBLAS_OP_N, CUBLAS_OP_N, this->N, this->N,
+		               this->N, &alpha, B->getData(), A->getLeadDimension(), A->getData(),
+		               A->getLeadDimension(), &beta, this->getData(),
+		               this->getLeadDimension());
+
+	}
+
 }
 
 #endif /* CUDA */

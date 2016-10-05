@@ -39,9 +39,10 @@ namespace marathon {
 
     protected:
 
-	    uint32_t n;        // number of rows and columns
+	    uint32_t N;         // number of rows and columns
 	    uint32_t ld;        // lead dimension (upper bound on n)
-        T *data;        // actual data
+        size_t pitch;     // pitch in bytes (pitch = ld * sizeof(T))
+        T *data;            // actual data
 
         /**
          * Return a pointer to a Transition matrix of an appropriate subtype.
@@ -57,8 +58,8 @@ namespace marathon {
         /**
          *  Return size of the matrix.
          */
-        uint32_t getSize() const {
-            return n;
+        uint32_t getDimension() const {
+            return N;
         }
 
         /**
@@ -105,7 +106,7 @@ namespace marathon {
          */
         void pow(const TransitionMatrix<T> *P, const int k) {
 
-            const int omega = P->n;
+            const int omega = P->N;
 
             // create temporary matrix of the same subtype as calling instance.
             TransitionMatrix<T> *tmp = generateSubTypeInstance(omega);
@@ -181,7 +182,7 @@ namespace marathon {
          *
          */
         void swap(TransitionMatrix<T> *P) {
-            std::swap(n, P->n);
+            std::swap(N, P->N);
             std::swap(ld, P->ld);
             std::swap(data, P->data);
         }

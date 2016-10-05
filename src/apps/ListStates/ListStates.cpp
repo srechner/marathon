@@ -1,7 +1,7 @@
 /*
- * Transition.h
+ * ListStates.cpp
  *
- * Created on: Jun 4, 2015
+ * Created on: Nov 24, 2015
  * Author: Steffen Rechner <steffen.rechner@informatik.uni-halle.de>
  *
  * This file is part of the marathon software.
@@ -23,46 +23,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TRANSITION_H_
-#define TRANSITION_H_
 
-#include <cstdlib>
-#include <vector>
+// system includes
+#include <iostream>
+#include <climits>
 
-#include "Rational.h"
+// marathon includes
+#include "marathon/marathon.h"
 
-namespace marathon {
+int main(int argc, char** argv) {
 
-	/**
-	 * Transition Arc Representation of State Graph
-	 */
-	class Transition {
+	if (argc != 3) {
+		std::cout << "usage: states <matching|bipgraph> <instance>"
+				<< std::endl;
+		return 1;
+	}
 
-	public:
+	// command line argument
+	int limit = INT_MAX;
+	std::string inst(argv[2]);
 
-		uint u, v;            // from, to
-		rational p;            // P(u,v)
+	// declare Markov Chain Object
+	marathon::MarkovChain* mc;
 
-		Transition() :
-				u((uint) -1), v((uint) -1), p(0) {
-		}
+	// check which chain is selected
+	if (strcmp(argv[1], "matching") == 0) {
+		mc = new marathon::matching::Broder86(inst);
+	} else if (strcmp(argv[1], "bipgraph") == 0) {
+		mc = new marathon::bipgraph::SwitchChain(inst);
+	} else {
+		std::cerr << "unknown mode: " << argv[1] << std::endl;
+		return 1;
+	}
 
-		Transition(uint u, uint v, rational p) :
-				u(u), v(v), p(p) {
-		}
+	// declare state graph object
+	marathon::StateGraph* sg = new marathon::StateGraph(mc);
 
-		virtual ~Transition() {
+	// output all states
+	for (const marathon::State* s : sg->getStates())
+		std::cout << *s << std::endl;
 
-		}
-	};
+	delete mc;
+	delete sg;
 
-	struct TransitionComparator {
-		bool operator()(const Transition &a, const Transition &b) {
-			return a.u == b.u ? a.v < b.v : a.u < b.u;
-		}
-	};
-
+	return 0;
 }
-
-#endif /* TRANSITION_H_ */
-

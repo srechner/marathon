@@ -28,21 +28,17 @@
 #define MARATHON_H_
 
 #include "config.h"
+#include "Random.h"
+#include "Combinatorics.h"
 #include "MarkovChain.h"
-#include "chain/Chains.h"
+#include "StateGraph.h"
 
-namespace marathon {
+// include chains regarding degree sequences
+#include "bipgraph/SwitchChain.h"
+#include "bipgraph/SwitchChainBerger.h"
 
-    /*!
-     * @brief The marathon library has to be initialized to use it.
-     */
-    void init();
-
-    /*!
-     * @brief It is better to close the library at the end.
-     */
-    void cleanup();
-
-}
+// include chains regarding matchings
+#include "matching/Broder86.h"
+#include "matching/JSV04.h"
 
 #endif /* MARATHON_H_ */

@@ -76,13 +76,13 @@ namespace marathon {
 		 */
 		template<typename T>
 		int totalMixingTime(const StateGraph *sg, const T eps,
-		                    device_t device) {
+		                    device_t device=CPU_ONLY) {
 
 			/* Variables */
 			const size_t omega = sg->getNumStates();    // number of states
-			TransitionMatrix<T> *P;                        // transition matrix of sg
+			TransitionMatrix<T> *P;                     // transition matrix of sg
 			TransitionMatrix<T> *tmp[3];                // working matrices
-			T *pi;                                        // stationary distribution
+			T *pi;                                      // stationary distribution
 
 			// check trivial cases
 			if (omega == 0)
@@ -96,54 +96,56 @@ namespace marathon {
 			for (int i = 0; i < omega; i++)
 				pi[i] = (sg->getWeight(i) / Z).convert_to<T>();
 
-			// decide with mode to use
-			switch (device) {
+			// try to allocate memory
+			try {
+				// decide with mode to use
+				switch (device) {
 
-				case device_t::CPU_ONLY:
-					// allocate memory
-					P = new TransitionMatrixCBLAS<T>(sg);
-					tmp[0] = new TransitionMatrixCBLAS<T>(omega);
-					tmp[1] = new TransitionMatrixCBLAS<T>(omega);
-					tmp[2] = new TransitionMatrixCBLAS<T>(omega);
-					break;
+					case device_t::CPU_ONLY:
+						// allocate memory
+						P = new TransitionMatrixCBLAS<T>(sg);
+						tmp[0] = new TransitionMatrixCBLAS<T>(omega);
+						tmp[1] = new TransitionMatrixCBLAS<T>(omega);
+						tmp[2] = new TransitionMatrixCBLAS<T>(omega);
+						break;
 
 #ifdef CUDA
-				case device_t::GPU_ONLY:
+					case device_t::GPU_ONLY:
 
-					// allocate memory
-					P = new TransitionMatrixCuBLAS<T>(sg);
-					tmp[0] = new TransitionMatrixCuBLAS<T>(omega);
-					tmp[1] = new TransitionMatrixCuBLAS<T>(omega);
-					tmp[2] = new TransitionMatrixCuBLAS<T>(omega);
+						// allocate memory
+						P = new TransitionMatrixCuBLAS<T>(sg);
+						tmp[0] = new TransitionMatrixCuBLAS<T>(omega);
+						tmp[1] = new TransitionMatrixCuBLAS<T>(omega);
+						tmp[2] = new TransitionMatrixCuBLAS<T>(omega);
 
-					// prepare stationary distribution in device memory
-					T *pi_d;
-					cuda::myCudaMalloc((void **) &pi_d, omega * sizeof(T));
-					cuda::myCudaMemcpyHostToDevice(pi_d, pi, omega * sizeof(T));
-					std::swap(pi_d, pi);
-					delete[] pi_d;
-					break;
+						// prepare stationary distribution in device memory
+						T *pi_d;
+						cudaMalloc((void **) &pi_d, omega * sizeof(T));
+						cudaMemcpy(pi_d, pi, omega * sizeof(T), cudaMemcpyHostToDevice);
+						std::swap(pi_d, pi);
+						delete[] pi_d;
+						break;
 
-				case device_t::HYBRID:
+					case device_t::HYBRID:
 
-					// allocate memory
-					P = new TransitionMatrixCuBLASXt<T>(sg);
-					tmp[0] = new TransitionMatrixCuBLASXt<T>(omega);
-					tmp[1] = new TransitionMatrixCuBLASXt<T>(omega);
-					tmp[2] = new TransitionMatrixCuBLASXt<T>(omega);
-					break;
+						// allocate memory
+						P = new TransitionMatrixCuBLASXt<T>(sg);
+						tmp[0] = new TransitionMatrixCuBLASXt<T>(omega);
+						tmp[1] = new TransitionMatrixCuBLASXt<T>(omega);
+						tmp[2] = new TransitionMatrixCuBLASXt<T>(omega);
+						break;
 #endif
 
-				default:
-					std::cerr << "marathon::TotalMixingTime: Error! unknown option: "
-					          << device << std::endl;
-					return 1;
+					default:
+						std::cerr << "marathon::TotalMixingTime: Error! unknown option: "
+						          << device << std::endl;
+						return -1;
+				}
 			}
-
-			// react to bad memory allocation
-			if (pi == nullptr || tmp[0] == nullptr || tmp[1] == nullptr
-			    || tmp[2] == nullptr)
+			catch(std::bad_alloc) {
+				// react to bad memory allocation
 				return -1;
+			}
 
 			// Search for mixing time
 			uint l = 0;
@@ -202,78 +204,13 @@ namespace marathon {
 
 #ifdef CUDA
 			if (device == GPU_ONLY)
-				cuda::myCudaFree(pi);
+				cudaFree(pi);
 			else
 #endif
 				delete[] pi;
 
 			return r;
 		}
-
-		/**
-		 * Computes upper congestion bound by canonical path method.
-		 * Path construction scheme can be given by function pointer.
-		 * @param sg A pointer to a state graph object.
-		 * @param constructPath An object of a path construction scheme class.
-		 * @param eps The distance to stationary distribution.
-		 * @return Maximum congestion of a path.
-		 */
-		/**
-		 * Implement Path Congestion functions.
-		 */
-		template<typename T>
-		T upperPathCongestionBound(const StateGraph *sg,
-		                           const PathConstructionScheme &pcs, T eps) {
-
-			const rational load = marathon::PathCongestion::pathCongestion(sg, pcs);
-			const rational pimin = sg->getMinWeight() / sg->getZ();
-
-			return load.convert_to<T>() * -log(pimin.convert_to<T>() * eps);
-		}
-
-		/**
-		 * Compute the lower spectral bound of the state graph.
-		 * @param sg A pointer to a state graph object.
-		 * @param eps The distance to stationary distribution.
-		 * @return A lower bound of the total mixing time.
-		 */
-		template<typename T>
-		T lowerSpectralBound(const StateGraph *sg, T eps) {
-
-			const double lambda = fabs(
-					::marathon::Eigenvalue::eigenvalue<T>(sg,
-					                                      ::marathon::Eigenvalue::eigenvalue_t::_2ndLargestMagnitude));
-
-			//if (lambda < std::numeric_limits<T>::epsilon())
-			//	lambda = 0.0;
-
-			return 0.5 * (lambda / (1.0 - lambda)) * -log(2.0 * eps);
-		}
-
-
-		/**
-		 * Compute the upper spectral bound of the state graph.
-		 * @param sg A pointer to a state graph object.
-		 * @param eps The distance to stationary distribution.
-		 * @return A lower bound of the total mixing time.
-		 */
-		template<typename T>
-		T upperSpectralBound(const StateGraph *sg, T eps) {
-
-			const double lambda = fabs(
-					marathon::Eigenvalue::eigenvalue<T>(sg,
-					                                    ::marathon::Eigenvalue::eigenvalue_t::_2ndLargestMagnitude));
-
-			//std::cout << lambda << std::endl;
-
-			//if (fabs(lambda) < std::numeric_limits<T>::epsilon())
-			//	return std::numeric_limits<T>::infinity();
-
-			const rational pimin = sg->getMinWeight() / sg->getZ();
-
-			return -log(eps * pimin.convert_to<double>()) / (1.0 - lambda);
-		}
-
 	}
 }
 

@@ -31,37 +31,89 @@
 
 #ifdef CUDA
 
+#include <cuda_runtime.h>
+#include <cublasXt.h>
+
 namespace marathon {
 
-		template<typename T>
-		class TransitionMatrixCuBLASXt : public TransitionMatrixCBLAS<T> {
+	template<typename T>
+	class TransitionMatrixCuBLASXt : public TransitionMatrixCBLAS<T> {
 
-		protected:
+	protected:
 
-		public:
+		void init_handle() {
 
-			TransitionMatrixCuBLASXt(const int n) :
-					TransitionMatrixCBLAS<T>(n) {
+			cublasXtCreate(&handle);
 
-			}
+			// determine the number of gpu's
+			int numDevices;
+			cudaGetDeviceCount(&numDevices);
 
-			TransitionMatrixCuBLASXt(const StateGraph *sg) :
-					TransitionMatrixCBLAS<T>(sg) {
-			}
+			// use all GPU's
+			int devices[numDevices];
+			for (int i = 0; i < numDevices; i++)
+				devices[i] = i;
 
-			virtual ~TransitionMatrixCuBLASXt() {
+			cublasXtDeviceSelect(handle, numDevices, devices);
+		}
 
-			}
+		// a handle for the cublasXt library
+		cublasXtHandle_t handle;
 
-			/**
-			 * Multiply A with B and write the result to this.
-			 * @param A A pointer to matrix A. Will not be changed.
-			 * @param B A pointer to matrix B. Will not be changed.
-			 */
-			virtual void mult(const TransitionMatrix <T> *A,
-							  const TransitionMatrix <T> *B);
+	public:
 
-		};
+		TransitionMatrixCuBLASXt(const int n) :
+				TransitionMatrixCBLAS<T>(n) {
+			init_handle();
+		}
+
+		TransitionMatrixCuBLASXt(const StateGraph *sg) :
+				TransitionMatrixCBLAS<T>(sg) {
+			init_handle();
+		}
+
+		virtual ~TransitionMatrixCuBLASXt() {
+			cublasXtDestroy(handle);
+		}
+
+		/**
+		 * Multiply A with B and write the result to this.
+		 * @param A A pointer to matrix A. Will not be changed.
+		 * @param B A pointer to matrix B. Will not be changed.
+		 */
+		virtual void mult(const TransitionMatrix <T> *A,
+		                  const TransitionMatrix <T> *B);
+
+	};
+
+	template<>
+	void TransitionMatrixCuBLASXt<float>::mult(const TransitionMatrix<float> *A,
+	                                           const TransitionMatrix<float> *B) {
+
+		const float alpha = 1.0;
+		const float beta = 0.0;
+
+		// use cublasXt
+		cublasXtSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, this->N, this->N,
+		              this->N, &alpha, B->getData(), A->getLeadDimension(), A->getData(),
+		              A->getLeadDimension(), &beta, this->getData(),
+		              this->getLeadDimension());
+	}
+
+	template<>
+	void TransitionMatrixCuBLASXt<double>::mult(const TransitionMatrix<double> *A,
+	                                            const TransitionMatrix<double> *B) {
+
+		const double alpha = 1.0;
+		const double beta = 0.0;
+
+		// use cblas
+		cublasXtDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, this->N, this->N,
+		              this->N, &alpha, B->getData(), A->getLeadDimension(), A->getData(),
+		              A->getLeadDimension(), &beta, this->getData(),
+		              this->getLeadDimension());
+
+	}
 }
 
 #endif /* CUDA */

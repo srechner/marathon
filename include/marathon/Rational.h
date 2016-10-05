@@ -33,7 +33,7 @@
 
 namespace marathon {
 
-//	typedef boost::multiprecision::cpp_rational rational;
+	//	typedef boost::multiprecision::cpp_rational rational;
 
 	/**
 	 * just a wrapper around boost rational data type
@@ -48,45 +48,89 @@ namespace marathon {
 		boost::multiprecision::cpp_rational _r;
 
 	public:
-		rational();
+		rational() :
+				_r(0) {
+		}
 
-		rational(const rational &o);
+		rational(const rational &o) :
+				_r(o._r) {
+		}
 
-		rational(boost::multiprecision::cpp_rational r);
+		rational(boost::multiprecision::cpp_rational r) :
+				_r(r) {
+		}
 
-		rational(long n);
+		rational(long n) {
+			_r = boost::multiprecision::cpp_rational(n);
+		}
 
-		rational(integer num, integer denom);
+		rational(long num, long denom) {
+			_r = boost::multiprecision::cpp_rational(num, denom);
+		}
 
-		rational(long num, long denom);
+		rational(integer num, integer denom) {
+			_r = boost::multiprecision::cpp_rational(num, denom);
+		}
 
-		void operator=(const rational &o);
+		bool operator==(const rational &o) const {
+			return _r == o._r;
+		}
 
-		bool operator==(const rational &o) const;
+		bool operator!=(const rational &o) const {
+			return _r != o._r;
+		}
 
-		bool operator!=(const rational &o) const;
+		void operator+=(const rational &o) {
+			_r += o._r;
+		}
 
-		void operator+=(const rational &o);
+		void operator-=(const rational &o) {
+			_r -= o._r;
+		}
 
-		void operator-=(const rational &o);
+		void operator*=(const rational &o) {
+			_r *= o._r;
+		}
 
-		void operator*=(const rational &o);
+		rational operator*(const rational &o) const {
+			boost::multiprecision::cpp_rational res = _r * o._r;
+			return rational(res);
+		}
 
-		void operator/=(const rational &o);
+		rational operator-(const rational &o) const {
+			boost::multiprecision::cpp_rational res = _r - o._r;
+			return rational(res);
+		}
 
-		rational operator*(const rational &o) const;
+		rational operator+(const rational &o) const {
+			boost::multiprecision::cpp_rational res = _r + o._r;
+			return rational(res);
+		}
 
-		rational operator-(const rational &o) const;
+		rational operator/(const rational &o) const {
+			boost::multiprecision::cpp_rational res = _r / o._r;
+			return rational(res);
+		}
 
-		rational operator+(const rational &o) const;
+		void operator/=(const rational &o) {
+			_r /= o._r;
+		}
 
-		rational operator/(const rational &o) const;
+		std::string to_string() const {
+			return _r.str();
+		}
 
-		bool operator<(const rational &o) const;
+		bool operator<(const rational &o) const {
+			return _r < o._r;
+		}
 
-		bool operator>(const rational &o) const;
+		bool operator>(const rational &o) const {
+			return _r > o._r;
+		}
 
-		std::string to_string() const;
+		void operator=(const rational &o) {
+			_r = o._r;
+		}
 
 		template<typename T>
 		T convert_to() const {
@@ -94,9 +138,11 @@ namespace marathon {
 		}
 	};
 
-
-	std::ostream &operator<<(std::ostream &out, const rational &r);
-
+	inline
+	std::ostream &operator<<(std::ostream &out, const rational &r) {
+		out << r.to_string();
+		return out;
+	}
 }
 
 #endif /* RATIONAL_H_ */

@@ -33,9 +33,10 @@
 #include <set>
 #include <random>
 
+#include "Combinatorics.h"
+#include "Random.h"
 #include "Rational.h"
 #include "State.h"
-#include "StateGraph.h"
 
 namespace marathon {
 
@@ -50,16 +51,26 @@ protected:
 
 public:
 
+	MarkovChain() {
+		Combinatorics::init();
+		Random::init();
+	}
+
 	/*
 	 * Standard Destructor
 	 */
-	virtual ~MarkovChain();
+	virtual ~MarkovChain() {
+		Combinatorics::cleanup();
+		Random::cleanup();
+	}
 
 
 	/**
 	 * Return a human readable name (identifier) of the Markov chain.
 	 */
-	std::string getName() const;
+	std::string getName() const {
+		return "[unknown]";
+	}
 
 	/* Virtual Function that has to be implemented by subclasses */
 
@@ -67,7 +78,12 @@ public:
 	 * Computes an arbitrary state and store it the state object s.
 	 * @return A pointer to a state object or nullptr if state space is empty.
 	 */
-	virtual State * computeArbitraryState() const;
+	virtual State * computeArbitraryState() const {
+		// dummy implementation
+		std::cout << "marathon::Exception: computeArbitraryState is not implemented!"
+		          << std::endl;
+		return nullptr;
+	}
 
 	/**
 	 *  Compute the set of adjacent states of s with corresponding proposal probability.
@@ -76,13 +92,28 @@ public:
 	 *  probabilities.
 	 */
 	virtual void computeNeighbours(const State* s,
-			std::vector<std::pair<State*, rational>>& neighbors) const ;
+			std::vector<std::pair<State*, rational>>& neighbors) const {
+		// dummy implementation
+		std::cout << "marathon::Exception: computeNeighbouts is not implemented!"
+		          << std::endl;
+	}
 
 	/**
 	 * Return the loop probability of state s.
 	 * @param s: The state whose loop probability is to determined.
 	 */
-	virtual rational loopProbability(const State* s) const;
+	virtual rational loopProbability(const State* s) const {
+		rational res(0);
+		std::vector<std::pair<State*, rational>> N;
+		this->computeNeighbours(s, N);
+		for (auto x : N) {
+			if (x.first->compare(s) == 0) {
+				res += x.second;
+			}
+			delete x.first;
+		}
+		return res;
+	}
 
 	/**
 	 *  Computes weights for each state.
@@ -91,14 +122,23 @@ public:
 	 *  have the same size as states and is filled with rationals.
 	 */
 	virtual void computeWeights(const std::vector<const State*>& states,
-			std::vector<rational>& weights);
+			std::vector<rational>& weights) {
+		weights.clear();
+		weights.reserve(states.size());
+		for (int i = 0; i < states.size(); i++)
+			weights.push_back(1);
+	}
 
 	/**
 	 * Apply a random transition to the state. Used to simulate a random walk.
 	 * @param s A pointer to a state, which is randomly modified by the method.
 	 * @param t The number of steps in the walk.
 	 */
-	virtual void randomize(State* s, const uint32_t t=1) const;
+	virtual void randomize(State* s, const uint32_t t=1) const {
+		// dummy implementation
+		std::cout << "marathon::Exception: randomize is not implemented!"
+		          << std::endl;
+	}
 
 };
 

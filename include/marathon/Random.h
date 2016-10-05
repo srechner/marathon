@@ -31,49 +31,67 @@
 
 namespace marathon {
 
-	class Random {
+	namespace Random {
 
-	private:
+		namespace detail {
+			static std::default_random_engine rng;        // Random Number Generator
+			static std::uniform_real_distribution<double> real_dist;
+			static std::uniform_int_distribution<int> int_dist;
+			static uint32_t num_clients = 0;
+		}
 
-		// declare friend functions
-		friend void marathon::init();
-		friend void marathon::cleanup();
-
-		static std::default_random_engine rng;        // Random Number Generator
-		static std::uniform_real_distribution<double> real_dist;
-		static std::uniform_int_distribution<int> int_dist;
-
-	public:
 
 		/**
 		 * Initialize the Random Component.
 		 */
 		static
-		void init();
+		void init() {
+			if (detail::num_clients == 0) {
+				std::random_device rd;
+				detail::rng.seed(rd());
+			}
+			detail::num_clients++;
+		}
 
 		/**
 		 * Cleanup the Random Component.
 		 */
 		static
-		void cleanup();
+		void cleanup() {
+			detail::num_clients--;
+			if(detail::num_clients== 0) {
+				// to notghin
+			}
+		}
 
 		/**
 		 * Return a random double of the intervall [0,1).
 		 */
 		static
-		double nextDouble();
+		double nextDouble() {
+			const double r = detail::real_dist(detail::rng);
+			return r;
+		}
 
 		/**
 		 * Return a random integer of the intervall [a,b).
 		 */
 		static
-		int nextInt(int a, int b);
+		int nextInt(int a, int b) {
+			const int N = b - a;
+			//const double r =  nextDouble();
+			const int res = a + detail::int_dist(detail::rng) % N;
+			//std::cout << "a=" << a << " b=" << b << " r=" << r << " N=" << N << " res=" << res << std::endl;
+			return res;
+		}
 
 		/**
 		 * Return a random integer of the intervall [0,b).
 		 */
 		static
-		int nextInt(int b);
+		int nextInt(int b) {
+			return nextInt(0, b);
+		}
 
 		/**
 		 * Randomly select k integers from the range [0..n).
@@ -82,8 +100,32 @@ namespace marathon {
 		 * @param selection: An integer array of size k where the selected number are stored.
 		 */
 		static
-		void select(int n, int k, int *selection);
+		void select(int n, int k, int *selection) {
 
+			/**************************************************************************
+			 * Generate Random Combination of k out of n numbers.
+			 * Use Selection Sampling (see Knuth - TAoCP Section 3.4.2 Algorithm S)
+			 *************************************************************************/
+
+			int t, m;
+			double U;
+
+			m = 0;
+			t = 0;
+
+			while (m < k) {
+
+				U = nextDouble();    // U is uniformly distributed between 0 and 1
+
+				// select t+1 with probability (n-m)/(N-t)
+				if ((n - t) * U < (k - m)) {
+					selection[m] = t;
+					m++;
+				}
+
+				t++;
+			}
+		}
 
 		/**
 		 * Shuffle the array, i.e. create a random permutation.
@@ -96,9 +138,7 @@ namespace marathon {
 				std::swap(data[i - 1], data[r]);
 			}
 		}
-
-	};
-
+	}
 };
 
 #endif /* INCLUDE_MARATHON_RANDOM_H_ */

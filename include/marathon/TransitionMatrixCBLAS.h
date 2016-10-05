@@ -28,6 +28,7 @@
 #define INCLUDE_MARATHON_TRANSITIONMATRIXCBLAS_H_
 
 #include "TransitionMatrix.h"
+#include <cblas.h>
 
 namespace marathon {
 
@@ -41,9 +42,9 @@ namespace marathon {
 		 */
 		virtual void copy(const TransitionMatrix<T> *P) {
 			const TransitionMatrixCBLAS<T> *X = (const TransitionMatrixCBLAS<T> *) P;
-			this->n = X->n;
+			this->N = X->N;
 			this->ld = X->ld;
-			memcpy(this->data, X->data, this->ld * this->n * sizeof(T));
+			memcpy(this->data, X->data, this->ld * this->N * sizeof(T));
 		}
 
 		/**
@@ -57,9 +58,9 @@ namespace marathon {
 	public:
 
 		TransitionMatrixCBLAS(const int n) {
-			this->n = n;
+			this->N = n;
 			this->ld = n;
-			this->data = new T[this->n * this->ld];
+			this->data = new T[this->N * this->ld];
 		}
 
 		TransitionMatrixCBLAS(const StateGraph *sg) :
@@ -81,7 +82,7 @@ namespace marathon {
 		 */
 		virtual void setEye() {
 			setZero();
-			for (int i = 0; i < this->n; i++) {
+			for (int i = 0; i < this->N; i++) {
 				this->data[i * this->ld + i] = 1;
 			}
 		}
@@ -90,7 +91,7 @@ namespace marathon {
 		 * Overwrite the current matrix with zeroes.
 		 */
 		virtual void setZero() {
-			size_t bytes = this->n * this->ld * sizeof(T);
+			size_t bytes = this->N * this->ld * sizeof(T);
 			memset(this->data, 0, bytes);
 		}
 
@@ -100,14 +101,14 @@ namespace marathon {
 		virtual std::string to_string() const {
 			std::stringstream ss;
 			//ss << "[ ";
-			for (size_t i = 0; i < this->n; i++) {
+			for (size_t i = 0; i < this->N; i++) {
 				ss << " ";
-				for (size_t j = 0; j < this->n - 1; j++) {
+				for (size_t j = 0; j < this->N - 1; j++) {
 					ss << std::setprecision(std::numeric_limits<T>::digits10) << std::fixed
 					   << this->data[i * this->ld + j] << " ";
 				}
 				ss << std::setprecision(std::numeric_limits<T>::digits10) << std::fixed
-				   << this->data[i * this->ld + this->n - 1];
+				   << this->data[i * this->ld + this->N - 1];
 
 				/*if (i < this->n - 1)
 					ss << ";\n";
@@ -135,10 +136,10 @@ namespace marathon {
 		 */
 		virtual void variationDistance(const T *pi, T *dist) const {
 
-#pragma omp parallel for if(this->n > 1000)
-			for (int i = 0; i < this->n; i++) {
+#pragma omp parallel for if(this->N > 1000)
+			for (int i = 0; i < this->N; i++) {
 				T sum = 0;
-				for (int j = 0; j < this->n; j++)
+				for (int j = 0; j < this->N; j++)
 					sum += fabs(this->data[i * this->ld + j] - pi[j]);
 				dist[i] = sum / 2.0;
 			}
@@ -149,15 +150,43 @@ namespace marathon {
 		 * @param pi A probability distribution.
 		 */
 		virtual T totalVariationDistance(const T *pi) const {
-			T *tmp = new T[this->n];
+			T *tmp = new T[this->N];
 			variationDistance(pi, tmp);
 			delete[] tmp;
-			return *std::max_element(tmp, tmp + this->n);
+			return *std::max_element(tmp, tmp + this->N);
 		}
 
 	};
 
 //typedef TransitionMatrixCBLAS TransitionMatrixCBLAS<double>;
+
+	template<>
+	void TransitionMatrixCBLAS<float>::mult(const TransitionMatrix<float>* A,
+	                                        const TransitionMatrix<float>* B) {
+
+		const float alpha = 1.0;
+		const float beta = 0.0;
+
+		// use cblas
+		cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, this->N, this->N,
+		            this->N, alpha, B->getData(), B->getLeadDimension(), A->getData(),
+		            A->getLeadDimension(), beta, this->data, this->ld);
+	}
+
+	template<>
+	void TransitionMatrixCBLAS<double>::mult(const TransitionMatrix<double>* A,
+	                                         const TransitionMatrix<double>* B) {
+
+		const double alpha = 1.0;
+		const double beta = 0.0;
+
+		// use cblas
+		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, this->N, this->N,
+		            this->N, alpha, B->getData(), B->getLeadDimension(), A->getData(),
+		            A->getLeadDimension(), beta, this->data, this->ld);
+
+	}
+
 }
 
 #endif /* INCLUDE_MARATHON_TRANSITIONMATRIXCBLAS_H_ */
