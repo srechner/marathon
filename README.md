@@ -1,58 +1,64 @@
-## marathon 0.4
+# marathon 1.0
 
-This C++ library is designed to support the analysis of Markov chain Monte Carlo methods. It provides functions for the analysis of so-called state graphs. For an introduction into its functionality, see its introductional [article](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0147935).
+This C++ library is designed to support the analysis of Markov chain Monte Carlo methods. 
+It provides functions for the construction and analysis of so-called state graphs. 
+For an introduction into its functionality, see its introductional 
+[article](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0147935).
 If you want to use this library for your work, please feel free to contact me and cite
 
-Steffen Rechner and Annabell Berger:
-marathon: An open source software library for the analysis of Markov-Chain Monte Carlo algorithms   , PLoS ONE 2016.
+Steffen Rechner and Annabell Berger. *marathon: An open source software library for the
+analysis of Markov-Chain Monte Carlo algorithms*. PLOS ONE **11** (2016). DOI: 10.1371/journal.pone.0147935.
 
-An API description can be found [here](./doc/marathon.pdf) (It's a start and will be gradually improved.)
+## Main Features ##
 
-### Installation:
+* Construction and analysis of a Markov chain's state graph. 
+This includes the calculation of the associated total mixing time or
+its lower and upper bounds.
 
-This library is developed and tested at Linux systems (primarily Ubuntu). However, it should be manageable to migrate the library to other operating systems.
+* Enumeration, uniform sampling, and counting of
+  * binary matrices with prescribed row and column sums,
+  * perfect matchings in bipartite graphs.
 
-The marathon software consists of a central library (header files) and a couple of applications that demonstrate how to use the library.
+
+## Installation:
+
+This library is developed and tested at Linux systems (primarily Ubuntu). 
+However, it should be manageable to migrate the library to other operating systems.
+
+The marathon software consists of a central library (header files) and a couple of  example applications that demonstrate how to use the library.
 Some parts of marathon depend on various third party libraries and can therefore only be built when all dependencies are fulfilled.
-Building the full library requires the following libraries:
- * `Boost` 
- * a BLAS implementation (e.g. `OpenBLAS`)
- * `Arpack++`
- * `SuperLU`
- * `Eigen`
- * `CUDA`
- * `Eigen`
+ * [Boost](www.boost.org) 
+ * [OpenBLAS](http://www.openblas.net/) (or another BLAS implemtation)
+ * [Armadillo](arma.sourceforge.net/)
+ * [Eigen](http://eigen.tuxfamily.org/)
  
-However, the CMAKE installation script will automatically identify and build the components that can be build on your system. 
+The CMake installation script will automatically identify and build the components that can be build on your system. 
 
-This instruction shows how to build the library and run the [MixingBounds](./src/apps/MixingBounds/) example at a fresh Ubuntu 16.04 system.
+This instruction shows how to build the library and run the [transitionMatrix](./examples/transitionMatrix/) example at a fresh Ubuntu 16.04 system.
 
-1. Install packages.
+1. Install package requirements.
 
-        sudo apt-get install git cmake g++ libboost-all-dev libblas-dev libarpack++2-dev libsuperlu-dev
+        sudo apt-get install git cmake g++ libboost-all-dev libblas-dev libarmadillo-dev libeigen3-dev
 
-2. Build the software.
+2. Build examples.
 
         git clone https://github.com/srechner/marathon.git
         cd marathon
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME ..
+        cmake ..
         make
         
-3. Install (optional).
+4. Run an example. 
 
-        make install
-
-4. Run an application.
-
-        MixingBounds swapBip "2,1,1;1,2,1" 0.001
-
-   The output should look like:
-
-        number of states:          5
-        number of transition arcs: 21
-        total mixing time:         72
-        lower spectral bound:      34.1803
-        upper spectral bound:      102.206
-        upper congestion bound:    183.971
+        ./examples/transitionMatrix/transtitionMatrix classical-switch "4,4,2,1;3,3,3,1,1" 
+        
+    The output should look like:
+        
+          19/20  1/60  1/60  1/60  0  0
+          1/60  19/20  0  0  1/60  1/60
+          1/60  0  19/20  1/60  1/60  0
+          1/60  0  1/60  19/20  0  1/60
+          0  1/60  1/60  0  19/20  1/60
+          0  1/60  0  1/60  1/60  19/20
+        
