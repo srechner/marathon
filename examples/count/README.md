@@ -10,7 +10,7 @@ This example demonstrates how to use `counter` classes to calculate the number o
 
     count TYPE INSTANCE
     
-The `INSTANCE` description depends on the associated problem `TYPE`, which must be substituted by one of the following strings.
+The `INSTANCE` format depends on the associated problem `TYPE`, which must be substituted by one of the following strings.
 
     'matching':
          Count the number of perfect and near perfect matchings in the bipartite
