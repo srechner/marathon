@@ -1,6 +1,6 @@
 # count
 
-This example demonstrates how to use `counter` classes to calculate the number of the following combinatorial objects.
+This example demonstrates how to use `Counter` classes to calculate the number of the following combinatorial objects.
 
 * Binary matrices with prescribed row and column sums
 * Binary matrices whose row and column sums lie in prescribed intervals
