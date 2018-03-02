@@ -13,7 +13,7 @@ The parameter `METHOD` must be substituted by one of the following:
 * `simple`: Use the first Markov chain defined by 
   > Steffen Rechner, Linda Strowick, and Matthias Müller-Hannemann. Uniform sampling of bipartite graphs with degrees in prescribed intervals. Journal of Complex Networks (2017).
                 
- * `informed`: Use the second Markov chain defined by 
+* `informed`: Use the second Markov chain defined by 
   > Steffen Rechner, Linda Strowick, and Matthias Müller-Hannemann. Uniform sampling of bipartite graphs with degrees in prescribed intervals. Journal of Complex Networks (2017).
 
 If `METHOD` is `simple` or `informed`, the optional parameter
