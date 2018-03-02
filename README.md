@@ -20,7 +20,7 @@ its lower and upper bounds.
   * perfect matchings in bipartite graphs.
 
 
-## Installation:
+## Installation
 
 This library is developed and tested at Linux systems (primarily Ubuntu). 
 However, it should be manageable to migrate the library to other operating systems.
