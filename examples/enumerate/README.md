@@ -5,7 +5,7 @@ This example demonstrates how to use  an `Enumerator` class to list the set of b
 
     Usage: enumerate INSTANCE
 
-The parameter INSTANCE is a string of the form `(l-u)*;(l-u)*`.
+The parameter `INSTANCE` is a string of the form `(l-u)*;(l-u)*`.
 
 The semicolon separates the row sums from the column sums. The i-th pair on the
 left side of the semicolon defines lower and upper bounds on the sum of row i.
