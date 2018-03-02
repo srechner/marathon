@@ -13,6 +13,7 @@ This example demonstrates how to use `Counter` classes to calculate the number o
 The `INSTANCE` format depends on the associated problem `TYPE`, which must be substituted by one of the following strings.
 
 * `matching`: Count the number of perfect and near perfect matchings in the bipartite graph `G=(U,V,E)` that is specified by the `INSTANCE` encoding. 
+
   An `INSTANCE` has the form `([0|1]^n)^n`, where n is a positive integer. Such a 0-1 string is interpreted as the n times n bi-adjacency matrix `M = (m_ij)` of a bipartite graph `G=(U,V,E)` with `|U|=|V|`, such that `m_ij = 1`, if and only if `(i,j)` is in `E`.
 
   For example, the input string  '110101011' corresponds to
@@ -24,7 +25,9 @@ The `INSTANCE` format depends on the associated problem `TYPE`, which must be su
                                  v1  v2  v3
 
 * `fixed`: Count the number of binary matrices whose row and column sums match
-   prescribed integers. An `INSTANCE` has the form `r(,r)*;c(,c)*`, 
+   prescribed integers. 
+   
+   An `INSTANCE` has the form `r(,r)*;c(,c)*`, 
    where `r` and `c` are positive integers. While the i-th occurrence of `r`
    defines the sum of row i, the j-th occurrence of `c` is the sum of 
    column j.  
@@ -37,9 +40,10 @@ The `INSTANCE` format depends on the associated problem `TYPE`, which must be su
 
 * `interval`:
   Count the number of binary matrices whose row and column sums lie in
-  the intervals prescribed by the encoded `INSTANCE`. The parameter
-  `INSTANCE` is a string of the form `l-u(,l-u)*;l-u(,l-u)*`. 
+  the intervals prescribed by the encoded `INSTANCE`. 
   
+  The parameter
+  `INSTANCE` is a string of the form `l-u(,l-u)*;l-u(,l-u)*`. 
   The semicolon
   separates the row sums from the column sums. The i-th pair on the left
   side of the semicolon prescribes a lower and upper bound on the sum of
