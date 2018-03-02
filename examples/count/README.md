@@ -29,7 +29,7 @@ The `INSTANCE` format depends on the associated problem `TYPE`, which must be su
    defines the sum of row i, the j-th occurrence of `c` is the sum of 
    column j.  
   
-   For example, the instance `2,2,2;1,2,1,2` corresponds to the
+   For example, the instance `2,2,2;1,2,1,2` corresponds to the vector pair
 
             row sums:    (2,2,2)
             column sums: (1,2,1,2)
@@ -47,7 +47,7 @@ The `INSTANCE` format depends on the associated problem `TYPE`, which must be su
   defines the sum of column j. For convenience, a pair `l-u` can be
   replaced by an integer `l` if `l=u`.
   
-  For example, the string "1-2,2,2-3;0-2,0-1,1-1,1-3" corresponds to
+  For example, the string `1-2,2,2-3;0-2,0-1,1-1,1-3` corresponds to the
 
             lower bounds on row sums:    (1,2,2)
             upper bounds on row sums:    (2,2,3)
