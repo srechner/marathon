@@ -10,7 +10,7 @@ The parameter `INSTANCE` is a string of the form `(l-u)*;(l-u)*`.
 The semicolon separates the row sums from the column sums. The i-th pair on the
 left side of the semicolon defines lower and upper bounds on the sum of row i.
 In contrast, the j-th pair on the right side of the semicolon defines the sum
-of column j. For convenience, a token `l-u` can be replaced by an integer `l` if `l` equals `u`.
+of column j. For convenience, a pair `l-u` can be replaced by an integer `l` if `l` equals `u`.
 
 For example, the string `1-2,2,2-3;0-2,0-1,1-1,1-3` corresponds to
 
