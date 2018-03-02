@@ -8,21 +8,18 @@ This example demonstrates how to construct the transition matrix of a specified 
     
 The parameter `CHAIN` must be substituted by one of the following strings: 
 
-    'classical-switch':
-       Markov chain defined by 'Kannan et al. Simple Markov-chain  algorithms
-       for generating bipartite graphs and tournaments. Random Structures and
-       Algorithms 14 (1997), 293–308'.
+* `classical-switch`: Use the Markov chain defined in
+  > Kannan et al. Simple Markov-chain  algorithms for generating bipartite graphs and tournaments. Random Structures and Algorithms 14 (1997), 293–308.
        
-    'edge-switch':
-       Variant of the Markov-chain suggested by 'Kannan et al.' based on an
-       informed edge selection at the cost of a larger memory consumption.
-              
-    'curveball':
-       Markov chain defined by 'Strona et al. A fast and unbiased procedure to
-       randomize ecological binary matrices with fixed row and column totals.
-       Nature communications 5 (2014).'
+* `edge-switch`: Use a variant of the Markov chain defined in 
+  > Kannan et al. Simple Markov-chain  algorithms for generating bipartite graphs and tournaments. Random Structures and Algorithms 14 (1997), 293–308.
+  
+  The transition rules of this Markov chain are based on a more informed edge selection at the cost of a large memory consumption.
+  
+* `curveball`: Use the Markov chain defined in
+  > Strona et al. A fast and unbiased procedure to randomize ecological binary matrices with fixed row and column totals.        Nature communications 5 (2014).
 
-An `INSTANCE` has the form `r,r,...,r;c,c,...,c`, where `r` and `c` are positive integers. 
+An `INSTANCE` has the form `r(,r)*;c(,c)*`, where `r` and `c` are positive integers. 
 While the i-th occurrence of `r` defines the sum of row i, the j-th
 occurrence of `c` is the sum of column j. 
 
