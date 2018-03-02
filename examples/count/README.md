@@ -31,10 +31,10 @@ The `INSTANCE` format depends on the associated problem `TYPE`, which must be su
 
     'fixed':
          Count the number of binary matrices whose row and column sums match the
-         prescribed integers. An INSTANCE of this problem TYPE must have the
-         form "r*;c*", where the i-th r defines the sum of row i, and the j-th
-         occurrence of c is the sum of column j. For example, the instance
-         "2,2,2;1,2,1,2" corresponds to the
+         prescribed integers. An `INSTANCE` has the form `r,r,...,r;c,c,...,c`, 
+         where `r` and `c` are positive integers. While the i-th occurrence of `r`
+         defines the sum of row i, the j-th occurrence of `c` is the sum of 
+         column j.  For example, the instance `2,2,2;1,2,1,2` corresponds to the
 
             row sums:    (2,2,2)
             column sums: (1,2,1,2)
