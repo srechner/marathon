@@ -2,7 +2,7 @@
 
 This C++ library is designed to support the analysis of Markov chain Monte Carlo sampling methods. 
 It provides functions for the construction and analysis of so-called state graphs. 
-An introduction into its functionality is presented [here](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0147935).
+An introduction into its functionality and into the kind of experiment that can be performed with our software are presented in an [article](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0147935) published in PLOS ONE.
 If you want to use this library for your work, please cite
 
 Steffen Rechner and Annabell Berger. *marathon: An open source software library for the
