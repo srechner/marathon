@@ -23,11 +23,13 @@ The `INSTANCE` format depends on the associated problem `TYPE`, which must be su
                  0 1 1           |/ \ / \|
                                  v1  v2  v3
 
- * `fixed`: Count the number of binary matrices whose row and column sums match
-  prescribed integers. An `INSTANCE` has the form `r(,r)*;c(,c)*`, 
-  where `r` and `c` are positive integers. While the i-th occurrence of `r`
-  defines the sum of row i, the j-th occurrence of `c` is the sum of 
-  column j.  For example, the instance `2,2,2;1,2,1,2` corresponds to the
+* `fixed`: Count the number of binary matrices whose row and column sums match
+   prescribed integers. An `INSTANCE` has the form `r(,r)*;c(,c)*`, 
+   where `r` and `c` are positive integers. While the i-th occurrence of `r`
+   defines the sum of row i, the j-th occurrence of `c` is the sum of 
+   column j.  
+  
+   For example, the instance `2,2,2;1,2,1,2` corresponds to the
 
             row sums:    (2,2,2)
             column sums: (1,2,1,2)
