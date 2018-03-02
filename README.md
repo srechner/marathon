@@ -1,4 +1,4 @@
-# marathon 1.0
+# marathon
 
 This C++ library is designed to support the analysis of Markov chain Monte Carlo sampling methods. 
 It provides functions for the construction and analysis of so-called state graphs. 
