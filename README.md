@@ -5,8 +5,8 @@ It provides functions for the construction and analysis of so-called state graph
 An introduction into its functionality and into the kind of experiment that can be performed with our software are presented in an [article](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0147935) published in PLOS ONE.
 If you want to use this library for your work, please cite
 
-Steffen Rechner and Annabell Berger. *marathon: An open source software library for the
-analysis of Markov-Chain Monte Carlo algorithms*. PLOS ONE **11** (2016). DOI: 10.1371/journal.pone.0147935.
+> Steffen Rechner and Annabell Berger. *marathon: An open source software library for the
+analysis of Markov-Chain Monte Carlo algorithms*. PLOS ONE **11** (2016). DOI:10.1371/journal.pone.0147935.
 
 ## Main Features ##
 
