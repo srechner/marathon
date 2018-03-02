@@ -1,23 +1,23 @@
 # marathon 1.0
 
-This C++ library is designed to support the analysis of Markov chain Monte Carlo methods. 
+This C++ library is designed to support the analysis of Markov chain Monte Carlo sampling methods. 
 It provides functions for the construction and analysis of so-called state graphs. 
 For an introduction into its functionality, see its introductional 
 [article](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0147935).
-If you want to use this library for your work, please feel free to contact me and cite
+If you want to use this library for your work, please cite
 
 Steffen Rechner and Annabell Berger. *marathon: An open source software library for the
 analysis of Markov-Chain Monte Carlo algorithms*. PLOS ONE **11** (2016). DOI: 10.1371/journal.pone.0147935.
 
 ## Main Features ##
 
-* Construction and analysis of a Markov chain's state graph. 
-This includes the calculation of the associated total mixing time or
-its lower and upper bounds.
+The main application of this library is the construction and analysis of a Markov chain's state graph. From this state graph, several properties can be calculated that are hard to find analytically. In particular, the software can calculate the mixing time of the associated Markov chain.
 
-* Enumeration, uniform sampling, and counting of
-  * binary matrices with prescribed row and column sums,
-  * perfect matchings in bipartite graphs.
+Next to the analysis of state graphs, the library contains efficient algorithms for the random generation, enumeration, and counting of the following combinatorial objects
+
+* Binary matrices with prescribed row and column sums,
+* Binary matrices whose row and column sums lie in prescribed intervals,
+* Perfect and near-perfect matchings in bipartite graphs.
 
 
 ## Installation
