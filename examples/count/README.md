@@ -2,15 +2,15 @@
 
 This example demonstrates how to use `counter` classes to calculate the number of the following combinatorial objects.
 
-* binary matrices with prescribed row and column sums
-* binary matrices whose row and column sums lie in prescribed intervals
-* perfect and near-perfect matchings in bipartite graphs
+* Binary matrices with prescribed row and column sums
+* Binary matrices whose row and column sums lie in prescribed intervals
+* Perfect and near-perfect matchings in bipartite graphs
 
 ## Usage
 
     count TYPE INSTANCE
     
-The `INSTANCE` description depends on the `TYPE` of sampling problem, which must be substituted by one of the following strings.
+The `INSTANCE` description depends on the associated problem `TYPE`, which must be substituted by one of the following strings.
 
     'matching':
          Count the number of perfect and near perfect matchings in the bipartite
