@@ -62,3 +62,13 @@ This instruction shows how to build the library and run the [transitionMatrix](.
           0  1/60  1/60  0  19/20  1/60
           0  1/60  0  1/60  1/60  19/20
         
+## Usage 
+
+There are several examples that demonstrate how our library can be used.
+
+ * [sample](./examples/sample/): Construct uniformly distributed binary matrices with bounded row and column sums.
+ * [count](./examples/count/): Calculate the number of objects.
+ * [enumerate](./examples/enumerate/): Enumerate the set of binary matrices with bounded row and column sums.
+ * [transitionMatrix](./examples/transitionMatrix/): Construct the transition matrix of a Markov chain. 
+ * [totalMixingTime](./examples/totalMixingTime/): Calculate the total mixing time of a Markov chain.
+ * [spectralBound](./examples/spectralBound/): Calculate the lower and upper spectral bound on the total mixing time of a Markov chain.
