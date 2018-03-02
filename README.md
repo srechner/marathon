@@ -11,14 +11,13 @@ analysis of Markov-Chain Monte Carlo algorithms*. PLOS ONE **11** (2016). DOI: 1
 
 ## Main Features ##
 
-The main application of this library is the construction and analysis of a Markov chain's state graph. From this state graph, several properties can be calculated that are hard to find analytically. In particular, the software can calculate the mixing time of the associated Markov chain.
+The main application of this library is the construction and analysis of a Markov chain's state graph. From such a state graph, several properties can be calculated that would otherwise be hard to find analytically. In particular, the software can calculate the mixing time of the associated Markov chain.
 
 Next to the analysis of state graphs, the library contains efficient algorithms for the random generation, enumeration, and counting of the following combinatorial objects
 
 * Binary matrices with prescribed row and column sums,
 * Binary matrices whose row and column sums lie in prescribed intervals,
 * Perfect and near-perfect matchings in bipartite graphs.
-
 
 ## Installation
 
@@ -62,7 +61,7 @@ This instruction shows how to build the library and run the [transitionMatrix](.
           0  1/60  1/60  0  19/20  1/60
           0  1/60  0  1/60  1/60  19/20
         
-## Usage 
+## Getting started 
 
 There are several examples that demonstrate how our library can be used.
 
