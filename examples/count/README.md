@@ -38,7 +38,7 @@ The `INSTANCE` format depends on the associated problem `TYPE`, which must be su
 * `interval`:
   Count the number of binary matrices whose row and column sums lie in
   the intervals prescribed by the encoded `INSTANCE`. The parameter
-  `INSTANCE` is a string of the form "l-u(,l-u)*;l-u(,l-u)*". 
+  `INSTANCE` is a string of the form `l-u(,l-u)*;l-u(,l-u)*`. 
   
   The semicolon
   separates the row sums from the column sums. The i-th pair on the left
