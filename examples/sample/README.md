@@ -11,10 +11,10 @@ The parameter `METHOD` must be substituted by one of the following:
 * `exact`: Use an exact sampling algorithm (not based on MCMC).
 
 * `simple`: Use the first Markov chain defined by 
-  > Steffen Rechner, Linda Strowick, and Matthias Müller-Hannemann. Uniform sampling of bipartite graphs with degrees in prescribed intervals. Journal of Complex Networks (2017).
+  > Steffen Rechner, Linda Strowick, and Matthias Müller-Hannemann. Uniform sampling of bipartite graphs with degrees in prescribed intervals. Journal of Complex Networks (2017). doi:10.1093/comnet/cnx059.
                 
 * `informed`: Use the second Markov chain defined by 
-  > Steffen Rechner, Linda Strowick, and Matthias Müller-Hannemann. Uniform sampling of bipartite graphs with degrees in prescribed intervals. Journal of Complex Networks (2017).
+  > Steffen Rechner, Linda Strowick, and Matthias Müller-Hannemann. Uniform sampling of bipartite graphs with degrees in prescribed intervals. Journal of Complex Networks (2017). doi:10.1093/comnet/cnx059.
 
 If `METHOD` is `simple` or `informed`, the optional parameter
 
