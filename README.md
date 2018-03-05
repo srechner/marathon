@@ -25,7 +25,7 @@ Some parts of marathon depend on various third party libraries and can therefore
 
  * [Boost](www.boost.org) 
  * [OpenBLAS](http://www.openblas.net/) (or another BLAS implemtation)
- * [Armadillo](arma.sourceforge.net/)
+ * [Armadillo](http://arma.sourceforge.net/)
  * [Eigen](http://eigen.tuxfamily.org/)
  
 
