@@ -20,11 +20,8 @@ Next to the analysis of state graphs, the library contains efficient algorithms 
 
 ## Installation
 
-This library is developed and tested at Linux systems (primarily Ubuntu). 
-However, it should be manageable to migrate the library to other operating systems.
-
 The marathon software consists of a central library (header files) and a couple of  example applications that demonstrate how to use the library.
-Some parts of marathon depend on various third party libraries and can therefore only be built when all dependencies are fulfilled. The CMake installation script will automatically identify and compile buildable components. The software is built on the following thrid party libraries.
+Some parts of marathon depend on various third party libraries and can therefore only be built when all dependencies are fulfilled. The CMake installation script will automatically identify and compile buildable components. The software is built on the following third party libraries.
 
  * [Boost](www.boost.org) 
  * [OpenBLAS](http://www.openblas.net/) (or another BLAS implemtation)
