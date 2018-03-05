@@ -50,7 +50,6 @@ set(HEADER_FILES
         ${PROJECT_SOURCE_DIR}/include/marathon/binary_matrix/fixed_margin/curveball.h
         ${PROJECT_SOURCE_DIR}/include/marathon/binary_matrix/fixed_margin/canonical_path_kannan.h
         ${PROJECT_SOURCE_DIR}/include/marathon/binary_matrix/fixed_margin/switch_chain.h
-        ${PROJECT_SOURCE_DIR}/include/marathon/binary_matrix/fixed_margin/switch_chain_canonical.h
         ${PROJECT_SOURCE_DIR}/include/marathon/binary_matrix/fixed_margin/edge_switch_chain.h
         ${PROJECT_SOURCE_DIR}/include/marathon/binary_matrix/fixed_margin/switch_chain_intelligent.h
         ${PROJECT_SOURCE_DIR}/include/marathon/binary_matrix/interval_margin/count.h
