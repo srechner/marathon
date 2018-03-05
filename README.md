@@ -33,7 +33,7 @@ This instruction shows how to build the library and run the [transitionMatrix](.
 
 1. Install package requirements.
 
-        sudo apt-get install git cmake g++ libboost-all-dev libblas-dev libarmadillo-dev libeigen3-dev
+        sudo apt-get install git cmake g++ libboost-all-dev libblas-dev libarmadillo-dev libeigen3-dev libgmp-dev
 
 2. Download software and build examples.
 
