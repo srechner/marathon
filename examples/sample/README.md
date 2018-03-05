@@ -4,7 +4,7 @@ This example demonstrates how to use `RandomGenerator` classes to produce unifor
 
 ## Usage
 
-    sample METHOD NUMBER [OPTION] INSTANCE
+    sample -m METHOD -N NUMBER [-s STEPS] INSTANCE
     
 The parameter `METHOD` must be substituted by one of the following:
 
