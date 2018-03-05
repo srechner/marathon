@@ -26,206 +26,238 @@
 #define INCLUDE_MARATHON_BASIC_RANDOM_H_
 
 #include <marathon/integer.h>
-#include <boost/random.hpp>
-#include <boost/random/random_device.hpp>
-#include <boost/multiprecision/gmp.hpp>
-#include <boost/multiprecision/cpp_int.hpp>
 
 namespace marathon {
 
-	/**
-	 * Basic Random Functions.
-	 */
-	class BasicRandom {
+    /**
+     * Basic Random Functions.
+     */
+    class BasicRandom {
 
-	private:
+    private:
 
-		static std::mutex m;
-		static std::random_device rd;         // Seed with a real random value, if available
-        static boost::random::mt19937 rng_init;	// BasicRandom Number Generator
+        static std::mutex m;
+        static std::mt19937 rng_init;            // pseudo random number generator
+        static std::random_device rd;           // hardware random number generator (expensive)
 
-		boost::random::mt19937 rng;	   		   // BasicRandom Number Generator
-		boost::random::uniform_real_distribution<double> real_dist;
-		boost::random::uniform_int_distribution<int> int_dist;
+        std::mt19937 rng;                        // random number generator for this object
+        std::uniform_real_distribution<double> real_dist;
+        std::uniform_int_distribution<int> int_dist;
 
-	public:
+    public:
 
-		/**
-		 * Create a Random Generator Object.
-		 */
-		BasicRandom() {
-			m.lock();
+        /**
+         * Create a Random Generator Object.
+         */
+        BasicRandom() {
+            m.lock();
             rng.seed(rng_init());
-			m.unlock();
-		}
+            m.unlock();
+        }
 
-		/**
-		 * Return a random double of the intervall [0,1).
-		  */
-		double nextDouble() {
-			const double r = real_dist(rng);
-			return r;
-		}
+        /**
+         * Return a uniformly distributed real number from the interval [0,1).
+          */
+        double nextDouble() {
+            const double r = real_dist(rng);
+            return r;
+        }
 
-		/**
-		  * Return a random integer of the intervall [a,b).
-		  */
-		int nextInt(int a, int b) {
-			const int N = b - a;
-			//const double r =  nextDouble();
-			const int res = a + (int_dist(rng) % N);
-			//std::cout << "a=" << a << " b=" << b << " r=" << r << " N=" << N << " res=" << res << std::endl;
-			return res;
-		}
+        /**
+          * Return a uniformly distributed integer from the interval [a,b).
+          */
+        int nextInt(int a, int b) {
+            const int N = b - a;
+            //const double r =  nextDouble();
+            const int res = a + (int_dist(rng) % N);
+            //std::cout << "a=" << a << " b=" << b << " r=" << r << " N=" << N << " res=" << res << std::endl;
+            return res;
+        }
 
-		/**
-		 * Return a random integer of the intervall [0,b).
-		 */
-		int nextInt(int b) {
-			const int r = nextInt(0, b);
-			return r;
-		}
+        /**
+         * Return a uniformly distributed integer from the interval [0,b).
+         */
+        int nextInt(int b) {
+            const int r = nextInt(0, b);
+            return r;
+        }
 
-		/**
-		 * Return a random integer of the intervall [0,b).
-		 */
-		Integer nextInteger(Integer b) {
-			const boost::random::uniform_int_distribution<Integer> bigint_dist(0, b-1);
-			auto r = bigint_dist(rng);
-			return r;
-		}
+        /**
+         * Return a uniformly distributed integer from the interval [0,b).
+         */
+        Integer nextInt(const Integer &b) {
 
-		/**
-		 * Randomly select k integers from the range [0..n).
-		 * @param dst: An integer array of size k where the selected number are stored.
-		 * @param n: The number of integers to choose from.
-		 * @param k: The number of integers to choose.
-		 */
-		void select(int *dst, const int n, const int k) {
+            // check trivial cases
+            if (b <= 1)
+                return 0;
 
-			assert(k <= n);
+            // determine number of bits to represent an integer in [0,b)
+            const int k = msb(b) + 1;
 
-			/**************************************************************************
-			 * Generate Random Combination of k out of n numbers.
-			 * Use Selection Sampling (see Knuth - TAoCP Section 3.4.2 Algorithm S)
-			 *************************************************************************/
+            Integer res(0); // will be returned
 
-			int t, m;
-			double U;
+            // create random integer with k bits until a number smaller than b is found.
+            // the expected number of iterations is less than two.
+            do {
 
-			m = 0;
-			t = 0;
+                // create a random integer with k bits
+                res = 0;
 
-			while (m < k) {
+                const int c = 30;
+                const int cc = 1 << c;
 
-				U = nextDouble();    // U is uniformly distributed between 0 and 1
+                // create k random bits in batches of size c
+                int i = 0;
+                while (i + c < k) {
+                    const int u = nextInt(cc);
+                    res = (res * cc) + u;
+                    i += c;
+                }
 
-				// select t+1 with probability (n-m)/(N-t)
-				if ((n - t) * U < (k - m)) {
-					dst[m] = t;
-					m++;
-				}
+                // the remaining batch has a size of d <= c
+                const int d = k - i;
+                const int dd = 1 << d;
+                const int u = nextInt(dd);
+                res = (res * dd) + u;
 
-				t++;
-			}
-		}
+            } while (res >= b);
 
-
-		/**
-		 * Select a subset of the set { src[0], src[1], ..., src[n-1] } of size k uniformly at random.
-		 * Each subset has a probability of 1/(binom(n,k)).
-		 * @tparam T Type of the objects.
-		 * @param dst Destination array of size k.
-		 * @param src Source array of size n.
-		 * @param n The number of objects to choose from.
-		 * @param k The number of objects to choose.
-		 */
-		template<class T>
-		void select(T *dst, const T *src, const int n, const int k) {
-
-			/**************************************************************************
-			 * Generate Random Combination of k out of n numbers.
-			 * Use Selection Sampling (see Knuth - TAoCP Section 3.4.2 Algorithm S)
-			 *************************************************************************/
-
-			size_t t, m;
-			double U;
-
-			m = 0;
-			t = 0;
-
-			while (m < k) {
-
-				U = nextDouble();    // U is uniformly distributed between 0 and 1
-
-				// select t+1 with probability (n-m)/(N-t)
-				if ((n - t) * U < (k - m)) {
-					dst[m] = src[t];
-					m++;
-				}
-
-				t++;
-			}
-		}
-
-		/**
-		 * Shuffle the array, i.e. create a random permutation.
-		 */
-		template<class T>
-		void shuffle(T *data, int size) {
-			for (int i = size; i > 1; i--) {
-				int r = nextInt(i);
-				std::swap(data[i - 1], data[r]);
-			}
-		}
+            return res;
+        }
 
 
-		/**
-		 * Select a subset of the set { src[0], src[1], ..., src[n-1] } uniformly at random.
-		 * Each subset is selected with probability 1/(2^n).
-		 * @param dst Destination array of size n.
-		 * @param src Source array of size n.
-		 * @param n Number of elements.
-		 * @return Size of the random subset.
-		 */
-		template<class T>
-		int subset(T *dst, const T *src, const int n) {
+        /**
+         * Randomly select k integers from the range [0..n).
+         * @param dst: An integer array of size k where the selected number are stored.
+         * @param n: The number of integers to choose from.
+         * @param k: The number of integers to choose.
+         */
+        void select(int *dst, const int n, const int k) {
 
-			int sz = 0;        // size of the subset
-			int i = 0;         // index of the current element
+            assert(k <= n);
 
-			const int k = 30;     // k random bits are generated in one step
+            /**************************************************************************
+             * Generate Random Combination of k out of n numbers.
+             * Use Selection Sampling (see Knuth - TAoCP Section 3.4.2 Algorithm S)
+             *************************************************************************/
 
-			// for each element of src
-			while (i < n) {
+            int t, m;
+            double U;
 
-				// the number of bits generated in each step
-				int e = std::min(k, n - i);
+            m = 0;
+            t = 0;
 
-				// create a random integer with e bits
-				int x = nextInt(1 << e);      // 0 <= x < 2^e
+            while (m < k) {
 
-				// for each bit
-				for (int l = 0; l < e; l++) {
+                U = nextDouble();    // U is uniformly distributed between 0 and 1
 
-					// if x mod 2 == 1
-					if (x & 1) {
-						// subset will contain src[i]
-						dst[sz] = src[i];
-						sz++;
-					}
-					x >>= 1;                // x = x/2
-					i++;
-				}
-			}
+                // select t+1 with probability (n-m)/(N-t)
+                if ((n - t) * U < (k - m)) {
+                    dst[m] = t;
+                    m++;
+                }
 
-			return sz;
-		}
-	};
+                t++;
+            }
+        }
+
+
+        /**
+         * Select a subset of the set { src[0], src[1], ..., src[n-1] } of size k uniformly at random.
+         * Each subset has a probability of 1/(binom(n,k)).
+         * @tparam T Type of the objects.
+         * @param dst Destination array of size k.
+         * @param src Source array of size n.
+         * @param n The number of objects to choose from.
+         * @param k The number of objects to choose.
+         */
+        template<class T>
+        void select(T *dst, const T *src, const int n, const int k) {
+
+            /**************************************************************************
+             * Generate Random Combination of k out of n numbers.
+             * Use Selection Sampling (see Knuth - TAoCP Section 3.4.2 Algorithm S)
+             *************************************************************************/
+
+            size_t t, m;
+            double U;
+
+            m = 0;
+            t = 0;
+
+            while (m < k) {
+
+                U = nextDouble();    // U is uniformly distributed between 0 and 1
+
+                // select t+1 with probability (n-m)/(N-t)
+                if ((n - t) * U < (k - m)) {
+                    dst[m] = src[t];
+                    m++;
+                }
+
+                t++;
+            }
+        }
+
+        /**
+         * Shuffle the array, i.e. create a random permutation.
+         */
+        template<class T>
+        void shuffle(T *data, int size) {
+            for (int i = size; i > 1; i--) {
+                int r = nextInt(i);
+                std::swap(data[i - 1], data[r]);
+            }
+        }
+
+
+        /**
+         * Select a subset of the set { src[0], src[1], ..., src[n-1] } uniformly at random.
+         * Each subset is selected with probability 1/(2^n).
+         * @param dst Destination array of size n.
+         * @param src Source array of size n.
+         * @param n Number of elements.
+         * @return Size of the random subset.
+         */
+        template<class T>
+        int subset(T *dst, const T *src, const int n) {
+
+            int sz = 0;        // size of the subset
+            int i = 0;         // index of the current element
+
+            const int k = 30;     // k random bits are generated in one step
+
+            // for each element of src
+            while (i < n) {
+
+                // the number of bits generated in each step
+                int e = std::min(k, n - i);
+
+                // create a random integer with e bits
+                int x = nextInt(1 << e);      // 0 <= x < 2^e
+
+                // for each bit
+                for (int l = 0; l < e; l++) {
+
+                    // if x mod 2 == 1
+                    if (x & 1) {
+                        // subset will contain src[i]
+                        dst[sz] = src[i];
+                        sz++;
+                    }
+                    x >>= 1;                // x = x/2
+                    i++;
+                }
+            }
+
+            return sz;
+        }
+    };
 };
 
+// initialize random devices
 std::mutex marathon::BasicRandom::m;
 std::random_device marathon::BasicRandom::rd;
-boost::mt19937 marathon::BasicRandom::rng_init(rd());
+std::mt19937 marathon::BasicRandom::rng_init(rd());
 
 #endif /* INCLUDE_MARATHON_BASIC_RANDOM_H_ */

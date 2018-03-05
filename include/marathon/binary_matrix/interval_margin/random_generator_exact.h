@@ -413,7 +413,7 @@ namespace marathon {
                     group_columns(columns, groups);
 
                     // select a random number in range [0,num_matrices)
-                    _target = _rg.nextInteger(_num_matrices);
+                    _target = _rg.nextInt(_num_matrices);
 
                     //std::cout << "num_matrices=" << _num_matrices << " target=" << _target << std::endl;
 

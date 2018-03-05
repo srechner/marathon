@@ -378,7 +378,7 @@ namespace marathon {
                     _mul = 1;
 
                     // select a random number in range [0,num_matrices)
-                    _target = _rg.nextInteger(_num_matrices);
+                    _target = _rg.nextInt(_num_matrices);
 
                     // select the binary matrix with number target by traversing the enumeration tree
                     exact_sample_recursive(

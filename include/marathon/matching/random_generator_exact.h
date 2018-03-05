@@ -159,7 +159,7 @@ namespace marathon {
                 }
 
                 // determine random number
-                const Integer target = rg.nextInteger(Z);
+                const Integer target = rg.nextInt(Z);
 
                 //std::cout << "Z=" << Z << std::endl;
                 //std::cout << "target=" << target << std::endl;
@@ -231,7 +231,7 @@ namespace marathon {
                 if(k == Nuv.size()) {
                     // draw a perfect matching uniformy at random
                     const Integer Z = countPerfect();
-                    const Integer target = rg.nextInteger(Z);
+                    const Integer target = rg.nextInt(Z);
                     exact_sample_recursive(0, -1, -1, target);
                     return match;
                 }
@@ -248,7 +248,7 @@ namespace marathon {
                     // draw a near-perfect matching uniformy at random from the set
                     // of near-perfect matchings with u and v being unmatch
                     const Integer Z = countNearPerfect(u,v);
-                    const Integer target = rg.nextInteger(Z);
+                    const Integer target = rg.nextInt(Z);
                     exact_sample_recursive(0, u, v, target);
                     return match;
                 }
