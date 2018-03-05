@@ -26,7 +26,7 @@
 #define MARATHON_MATCHING_RANDOM_GENERATOR_EXACT_H
 
 // marathon includes
-#include "marathon/basic_random.h"
+#include "marathon/random_device.h"
 #include "marathon/random_generator.h"
 #include "marathon/matching/enumerate.h"
 
@@ -57,7 +57,7 @@ namespace marathon {
 
             const distribution_t dist;
 
-            marathon::BasicRandom rg;               // random generator
+            marathon::RandomDevice rg;               // random generator
             std::vector<std::pair<int,int>> Nuv;    // list of node pairs with non-empty sample sets
             marathon::Integer Z;                    // total number of samples
             BipartiteMatching* match;               // will be returned

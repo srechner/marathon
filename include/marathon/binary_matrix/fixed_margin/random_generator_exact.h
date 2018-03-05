@@ -26,7 +26,7 @@
 #define MARATHON_BINARY_MATRIX_FIXED_MARGIN_RANDOM_GENERATOR_EXACT_H
 
 // marathon includes
-#include "marathon/basic_random.h"
+#include "marathon/random_device.h"
 #include "marathon/binary_matrix/random_generator.h"
 #include "marathon/binary_matrix/fixed_margin/count.h"
 
@@ -56,7 +56,7 @@ namespace marathon {
                 int *_colsum_last;          // last position of each value of colsum
 
                 // class members modified during execution
-                BasicRandom _rg;                 // BasicRandom Generator
+                RandomDevice _rg;                 // RandomDevice Generator
                 int *_aux;                  // auxiliary array
                 Integer _mul;               // multiplier used to avoid division
                 Integer _target;            // we want to select the matrix with this number

@@ -22,18 +22,18 @@
  * SOFTWARE.
  */
 
-#ifndef INCLUDE_MARATHON_BASIC_RANDOM_H_
-#define INCLUDE_MARATHON_BASIC_RANDOM_H_
+#ifndef INCLUDE_MARATHON_RANDOM_DEVICE_H_
+#define INCLUDE_MARATHON_RANDOM_DEVICE_H_
 
-#include <random>
 #include <marathon/integer.h>
+#include <random>
 
 namespace marathon {
 
     /**
      * Basic Random Functions.
      */
-    class BasicRandom {
+    class RandomDevice {
 
     private:
 
@@ -50,7 +50,7 @@ namespace marathon {
         /**
          * Create a Random Generator Object.
          */
-        BasicRandom() {
+        RandomDevice() {
             m.lock();
             rng.seed(rng_init());
             m.unlock();
@@ -60,37 +60,28 @@ namespace marathon {
          * Return a uniformly distributed real number from the interval [0,1).
           */
         double nextDouble() {
-            const double r = real_dist(rng);
-            return r;
-        }
-
-        /**
-          * Return a uniformly distributed integer from the interval [a,b).
-          */
-        int nextInt(int a, int b) {
-            const int N = b - a;
-            //const double r =  nextDouble();
-            const int res = a + (int_dist(rng) % N);
-            //std::cout << "a=" << a << " b=" << b << " r=" << r << " N=" << N << " res=" << res << std::endl;
-            return res;
+            return real_dist(rng);
         }
 
         /**
          * Return a uniformly distributed integer from the interval [0,b).
          */
         int nextInt(int b) {
-            const int r = nextInt(0, b);
-            return r;
+            return int_dist(rng) % b;
         }
+
+        /**
+          * Return a uniformly distributed integer from the interval [a,b).
+          */
+        int nextInt(int a, int b) {
+            return a + nextInt(b-a);
+        }
+
 
         /**
          * Return a uniformly distributed integer from the interval [0,b).
          */
         Integer nextInt(const Integer &b) {
-
-            // check trivial cases
-            if (b <= 1)
-                return 0;
 
             // determine number of bits to represent an integer in [0,b)
             const int k = msb(b) + 1;
@@ -111,7 +102,7 @@ namespace marathon {
                 int i = 0;
                 while (i + c < k) {
                     const int u = nextInt(cc);
-                    res = (res * cc) + u;
+                    res = (res * Integer(cc)) + Integer(u);
                     i += c;
                 }
 
@@ -119,7 +110,7 @@ namespace marathon {
                 const int d = k - i;
                 const int dd = 1 << d;
                 const int u = nextInt(dd);
-                res = (res * dd) + u;
+                res = (res * Integer(dd)) + Integer(u);
 
             } while (res >= b);
 
@@ -257,8 +248,8 @@ namespace marathon {
 };
 
 // initialize random devices
-std::mutex marathon::BasicRandom::m;
-std::random_device marathon::BasicRandom::rd;
-std::mt19937 marathon::BasicRandom::rng_init(rd());
+std::mutex marathon::RandomDevice::m;
+std::random_device marathon::RandomDevice::rd;
+std::mt19937 marathon::RandomDevice::rng_init(rd());
 
-#endif /* INCLUDE_MARATHON_BASIC_RANDOM_H_ */
+#endif /* INCLUDE_MARATHON_RANDOM_DEVICE_H_ */

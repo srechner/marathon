@@ -26,7 +26,7 @@
 #ifndef MARATHON_FIXED_MARGIN_REALIZATION_H
 #define MARATHON_FIXED_MARGIN_REALIZATION_H
 
-#include "marathon/basic_random.h"
+#include "marathon/random_device.h"
 #include "marathon/binary_matrix/binary_matrix.h"
 #include "marathon/binary_matrix/common.h"
 #include "instance.h"
@@ -355,7 +355,7 @@ namespace marathon {
                 BinaryMatrix *bip = new BinaryMatrix(nrow, ncol);
 
                 // RNG
-                marathon::BasicRandom r;
+                marathon::RandomDevice r;
 
                 // determine first and last occurrence of each degree
                 int *row_first = new int[ncol + 1];

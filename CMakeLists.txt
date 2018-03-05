@@ -21,7 +21,7 @@ set(HEADER_FILES
         ${PROJECT_SOURCE_DIR}/include/marathon/markov_chain.h
         ${PROJECT_SOURCE_DIR}/include/marathon/path_congestion.h
         ${PROJECT_SOURCE_DIR}/include/marathon/path_construction_scheme.h
-        ${PROJECT_SOURCE_DIR}/include/marathon/basic_random.h
+        ${PROJECT_SOURCE_DIR}/include/marathon/random_device.h
         ${PROJECT_SOURCE_DIR}/include/marathon/rational.h
         ${PROJECT_SOURCE_DIR}/include/marathon/state.h
         ${PROJECT_SOURCE_DIR}/include/marathon/count.h

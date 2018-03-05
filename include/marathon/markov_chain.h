@@ -32,7 +32,7 @@
 #include <random>
 
 #include "marathon/integer.h"
-#include "basic_random.h"
+#include "random_device.h"
 #include "rational.h"
 #include "state.h"
 
@@ -49,7 +49,7 @@ namespace marathon {
 		State *currentState = nullptr;
 
 		// random generator used for randomization
-		marathon::BasicRandom rg;
+		marathon::RandomDevice rg;
 
 	public:
 

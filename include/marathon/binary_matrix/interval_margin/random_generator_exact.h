@@ -26,7 +26,7 @@
 #define MARATHON_BINARY_MATRIX_INTERVAL_MARGIN_RANDOM_GENERATOR_EXACT_H
 
 // marathon includes
-#include "marathon/basic_random.h"
+#include "marathon/random_device.h"
 #include "marathon/binary_matrix/random_generator.h"
 #include "marathon/binary_matrix/interval_margin/count.h"
 #include "marathon/binary_matrix/fixed_margin/random_generator_exact.h"
@@ -47,7 +47,7 @@ namespace marathon {
                 Integer _num_matrices;   // total number of matrices
                 Integer _target;         // we want to select the matrix with number target
                 Integer _mul;            // to avoid division
-                BasicRandom _rg;              // random generator
+                RandomDevice _rg;              // random generator
                 BinaryMatrix *_bin;      // binary matrix
 
                 /**
