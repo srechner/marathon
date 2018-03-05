@@ -226,4 +226,18 @@ namespace marathon {
 
 }
 
+// overload standard hash function of Integer objects
+namespace std {
+	template<>
+	struct hash<marathon::Integer> {
+		size_t operator()(const marathon::Integer &val) const {
+            // export into 64-bit unsigned values, most significant bit first:
+            std::vector<unsigned long> v;
+            export_bits(val, std::back_inserter(v), 64);
+            return boost::hash_range(v.begin(), v.end());
+		}
+	};
+}
+
+
 #endif //MARATHON_INTEGER_H
