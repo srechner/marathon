@@ -50,7 +50,7 @@ void print_help_message() {
     std::cout << "Calculate the lower and upper spectral bounds on the total mixing time of a\n";
     std::cout << "specified Markov CHAIN on a given INSTANCE.\n";
     std::cout << std::endl;
-    std::cout << "The parameter CHAIN must be one of the following: " << std::endl;
+    std::cout << "The parameter CHAIN must be replaced by one of the following: " << std::endl;
     std::cout << "  'classical-switch':" << std::endl;
     std::cout << "       Markov chain defined by 'Kannan et al. Simple Markov-chain  algorithms" << std::endl;
     std::cout << "       for generating bipartite graphs and tournaments. Random Structures and" << std::endl;
@@ -64,8 +64,8 @@ void print_help_message() {
     std::cout << "       Nature communications 5 (2014).'" << std::endl;
     std::cout << std::endl;
     std::cout << "EPSILON must be a floating point number in the open interval (0,1).\n" << std::endl;
-    std::cout << "The parameter INSTANCE is a string-encoded input instance of the form \"r*;c*\"." << std::endl;
-    std::cout << "While the i-th r defines the sum of row i, the j-th c is the sum of column j." << std::endl;
+    std::cout << "The parameter INSTANCE is a string of the form \"r(,r)*;c(,c)*\". While the i-th" << std::endl;
+    std::cout << "occurrence of r defines the sum of row i, the j-th c is the sum of column j." << std::endl;
     std::cout << "For example, the instance \"2,2,2;1,2,1,2\" corresponds to the" << std::endl;
     std::cout << std::endl;
     std::cout << "        row sums:    (2,2,2)" << std::endl;

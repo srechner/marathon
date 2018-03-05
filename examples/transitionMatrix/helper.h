@@ -60,8 +60,8 @@ void print_help_message() {
     std::cout << "       randomize ecological binary matrices with fixed row and column totals." << std::endl;
     std::cout << "       Nature communications 5 (2014).'" << std::endl;
     std::cout << std::endl;
-    std::cout << "The parameter INSTANCE is a string-encoded input instance of the form \"r*;c*\"." << std::endl;
-    std::cout << "While the i-th r defines the sum of row i, the j-th c is the sum of column j." << std::endl;
+    std::cout << "The parameter INSTANCE is a string of the form \"r(,r)*;c(,c)*\". While the i-th" << std::endl;
+    std::cout << "occurrence of r defines the sum of row i, the j-th c is the sum of column j." << std::endl;
     std::cout << "For example, the instance \"2,2,2;1,2,1,2\" corresponds to the" << std::endl;
     std::cout << std::endl;
     std::cout << "        row sums:    (2,2,2)" << std::endl;
