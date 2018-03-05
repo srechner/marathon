@@ -35,7 +35,7 @@ This instruction shows how to build the library and run the [transitionMatrix](.
 
         sudo apt-get install git cmake g++ libboost-all-dev libblas-dev libarmadillo-dev libeigen3-dev
 
-2. Build examples.
+2. Download software and build examples.
 
         git clone https://github.com/srechner/marathon.git
         cd marathon
