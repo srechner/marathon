@@ -85,7 +85,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 # find boost headers
-find_package(Boost REQUIRED)
+find_package(Boost 1.60 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 # find boost serialization

@@ -23,14 +23,14 @@ Next to the analysis of state graphs, the library contains efficient algorithms 
 The marathon software consists of a central library (header files) and a couple of  example applications that demonstrate how to use the library.
 Some parts of marathon depend on various third party libraries and can therefore only be built when all dependencies are fulfilled. The CMake installation script will automatically identify and compile buildable components. The software is built on the following third party libraries.
 
- * [Boost](www.boost.org) 
+ * [Boost](www.boost.org) in version 1.60 or larger
  * [GMP](https://gmplib.org/)
  * [OpenBLAS](http://www.openblas.net/) (or another BLAS implemtation)
  * [Armadillo](http://arma.sourceforge.net/)
  * [Eigen](http://eigen.tuxfamily.org/)
  
 
-This instruction shows how to build the library and run the [transitionMatrix](./examples/transitionMatrix/) example at a fresh Ubuntu 16.04 system.
+This instruction shows how to build the library and run the [transitionMatrix](./examples/transitionMatrix/) example at a fresh Ubuntu system.
 
 1. Install package requirements.
 
