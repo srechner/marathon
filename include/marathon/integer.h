@@ -24,8 +24,9 @@
 #ifndef MARATHON_INTEGER_H
 #define MARATHON_INTEGER_H
 
-#include <boost/multiprecision/cpp_int.hpp>
+#include <vector>
 #include <mutex>
+#include <boost/multiprecision/cpp_int.hpp>
 
 namespace marathon {
 

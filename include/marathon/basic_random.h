@@ -25,6 +25,7 @@
 #ifndef INCLUDE_MARATHON_BASIC_RANDOM_H_
 #define INCLUDE_MARATHON_BASIC_RANDOM_H_
 
+#include <random>
 #include <marathon/integer.h>
 
 namespace marathon {
