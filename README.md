@@ -24,6 +24,7 @@ The marathon software consists of a central library (header files) and a couple 
 Some parts of marathon depend on various third party libraries and can therefore only be built when all dependencies are fulfilled. The CMake installation script will automatically identify and compile buildable components. The software is built on the following third party libraries.
 
  * [Boost](www.boost.org) 
+ * [GMP](https://gmplib.org/)
  * [OpenBLAS](http://www.openblas.net/) (or another BLAS implemtation)
  * [Armadillo](http://arma.sourceforge.net/)
  * [Eigen](http://eigen.tuxfamily.org/)
