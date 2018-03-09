@@ -97,10 +97,10 @@ namespace marathon {
                                       << t->to << ")=" << stat_u * puv << std::endl;
                             std::cerr << "stat(" << t->to << ")*P(" << t->to << ","
                                       << t->from << ")=" << stat_v * pvu << std::endl;
-                        }
 
-                        if (stat_u * puv != stat_v * pvu)
                             return false;
+
+                        }
                     }
                 }
             }
@@ -206,9 +206,10 @@ namespace marathon {
 
             // do the proposal probabilites sum up to one?
             if (sum != Rational(1)) {
-                std::cerr
-                        << "marathon::StateGraph::expandState: Error: Sum of proposal probabilities of state "
-                        << i << "(" << s << ") is " << sum << "!= 1!" << std::endl;
+                std::stringstream ss;
+                ss << "Expection in marathon::StateGraph::expandState: Sum of transition probabilities of state "
+                   << i << "(" << s << ") is " << sum << "!= 1!";
+                throw std::runtime_error(ss.str());
             }
         }
 
@@ -348,9 +349,9 @@ namespace marathon {
          */
         Rational getMinWeight() const {
             Rational min_weight = getWeight(0);
-            for(int i=1; i<states.size(); i++) {
+            for (int i = 1; i < states.size(); i++) {
                 Rational wi = getWeight(i);
-                if(wi < min_weight)
+                if (wi < min_weight)
                     min_weight = wi;
             }
             return min_weight;
@@ -361,7 +362,7 @@ namespace marathon {
          */
         Rational getNormalizingConstant() const {
             Rational Z = 0;
-            for (const State* s : states)
+            for (const State *s : states)
                 Z += mc->getWeight(s);
             return Z;
         }

@@ -45,6 +45,13 @@ namespace marathon {
          */
         virtual const State *next() = 0;
 
+
+        /**
+         * Create a copy of the random generator.
+         * @return A random generator that is identical to the current one.
+         */
+        virtual RandomGenerator* copy() const = 0;
+
     };
 }
 

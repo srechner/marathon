@@ -449,6 +449,15 @@ namespace marathon {
                     return _bin;
 
                 }
+
+                /**
+                 * Create an independent copy of the random generator.
+                 * @return Copy of this random generator.
+                 */
+                RandomGeneratorExact* copy() const {
+                    // todo: improve performance by avoiding the redundant construction of auxiliary tables
+                    return new RandomGeneratorExact(_seq);
+                }
             };
         }
     }

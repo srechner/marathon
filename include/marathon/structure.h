@@ -56,7 +56,7 @@ namespace marathon {
             s.pop();
 
             // for all adjacent states
-            for (auto t : G->getOutArcs(i)) {
+            for (const auto& t : G->getOutArcs(i)) {
 
                 int j = t->to;               // j is adjacent to i
 
@@ -191,7 +191,7 @@ namespace marathon {
             }
 
             // for all outgoing arcs (v,w)
-            for(auto t : sg->getOutArcs(v)) {
+            for(const auto& t : sg->getOutArcs(v)) {
                 const int w = t->to;
                 if(!visited[w]) {
                     visited[w] = true;

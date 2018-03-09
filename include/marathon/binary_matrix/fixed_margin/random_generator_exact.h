@@ -56,7 +56,7 @@ namespace marathon {
                 int *_colsum_last;          // last position of each value of colsum
 
                 // class members modified during execution
-                RandomDevice _rg;                 // RandomDevice Generator
+                RandomDevice _rg;           // RandomDevice Generator
                 int *_aux;                  // auxiliary array
                 Integer _mul;               // multiplier used to avoid division
                 Integer _target;            // we want to select the matrix with this number
@@ -402,6 +402,16 @@ namespace marathon {
                     delete[] colsum_conj;
 
                     return _bin;
+                }
+
+
+                /**
+                 * Create an independent copy of an existing random generator.
+                 * @return Copy of this random generator.
+                 */
+                RandomGeneratorExact* copy() const {
+                    // todo: improve performance by avoiding the redundant construction of auxiliary tables
+                    return new RandomGeneratorExact(_inst);
                 }
             };
         }

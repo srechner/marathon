@@ -106,7 +106,7 @@ namespace marathon {
         // determine minimum and maximum
         T2 min, max;
         min = max = hist_temp.begin()->first;
-        for (auto kv : hist_temp) {
+        for (const auto& kv : hist_temp) {
             if (kv.first < min)
                 min = kv.first;
             if (kv.first > max)
@@ -122,7 +122,7 @@ namespace marathon {
         std::vector<T2> vec0(k);
         std::vector<T2> vec1(k);
 
-        for (auto p : hist_temp) {
+        for (const auto& p : hist_temp) {
 
             // calculate bin in which p must be inserted
             const int bin_id = (p.first - min) * k / z;

@@ -84,8 +84,7 @@ namespace marathon {
             }
 
             if (k != n) {
-                std::cerr << "Graph doesn't have a perfect matching!" << std::endl;
-                return nullptr;
+                throw std::runtime_error("Bipartite graph doesn't have a perfect matching!");
             }
             else {
                 return new BipartiteMatching(n, k / 2, -1, -1, &mates[0]);

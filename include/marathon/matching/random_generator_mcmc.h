@@ -42,6 +42,12 @@ namespace marathon {
         class RandomGeneratorMCMC :
                 public marathon::RandomGenerator {
 
+        public:
+
+            enum chain_t {
+                broder, jsv04
+            };
+
         private:
 
             MarkovChain *mc;
@@ -50,14 +56,31 @@ namespace marathon {
         public:
 
             RandomGeneratorMCMC(
-                    marathon::matching::MarkovChain *mc,
+                    const SparseBipartiteGraph& g,
+                    const chain_t method,
                     const int steps
-            ) : mc((marathon::matching::MarkovChain*) mc->copy()), steps(steps) {
+            ) : steps(steps) {
+                switch(method) {
+                    case broder:
+                        mc = new Broder86(g);
+                        break;
+                    case jsv04:
+                        mc = new JSVChain(g);
+                        break;
+                }
+            }
+
+            /**
+             * Create a random generator as the copy of another one.
+             * @param rg Random generator.
+             */
+            RandomGeneratorMCMC(const RandomGeneratorMCMC &rg) :
+                    mc(rg.mc->copy()), steps(rg.steps) {
 
             }
 
             virtual ~RandomGeneratorMCMC() {
-
+                delete mc;
             }
 
             /**
@@ -69,7 +92,15 @@ namespace marathon {
             const BipartiteMatching *next() override {
 
                 // apply random walk
-                return (const BipartiteMatching*) mc->randomize(steps);
+                return (const BipartiteMatching *) mc->randomize(steps);
+            }
+
+            /**
+             * Create an independent copy of the random generator.
+             * @return Copy of this random generator.
+             */
+            RandomGeneratorMCMC *copy() const override {
+                return new RandomGeneratorMCMC(*this);
             }
         };
     }

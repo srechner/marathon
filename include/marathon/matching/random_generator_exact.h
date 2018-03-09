@@ -315,6 +315,14 @@ namespace marathon {
                 }
 
             }
+
+            /**
+             * Return an independent copy of the random generator.
+             * @return Copy of the random generator.
+             */
+            RandomGeneratorExact* copy() const override {
+                return new RandomGeneratorExact(*this);
+            }
         };
     }
 }

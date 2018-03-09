@@ -48,12 +48,6 @@ namespace marathon {
             class RandomGeneratorMCMC :
                     public marathon::binary_matrix::RandomGenerator {
 
-            private:
-
-                // Markov chain
-                MarkovChain *mc;
-                int steps;
-
             public:
 
                 /**
@@ -63,22 +57,28 @@ namespace marathon {
                     classical_switch, edge_switch, curveball
                 };
 
+            private:
+
+                marathon::binary_matrix::fixed_margin::MarkovChain *mc;
+                int steps;
+
+            public:
 
                 /**
                  * Create a generator for binary matrices with prescribed row sums and column sums.
                  * This generator uses a Markov chain Monte Carlo approach to create random samples.
                  * @param margin Row and column sums.
-                 * @param chain Markov chain specifier.
+                 * @param method Markov chain specifier.
                  * @param steps Length of the random walk
                  */
                 RandomGeneratorMCMC(
                         const Instance &margin,
-                        const chain_t chain,
+                        const chain_t method,
                         const int steps
                 ) : steps(steps) {
 
                     // create Markov chain object
-                    switch(chain) {
+                    switch (method) {
                         case classical_switch:
                             mc = new SwitchChain(margin);
                             break;
@@ -89,6 +89,14 @@ namespace marathon {
                             mc = new Curveball(margin);
                             break;
                     }
+                }
+
+                /**
+                 * Create a random generator as the copy of another one.
+                 * @param rg Random generator.
+                 */
+                RandomGeneratorMCMC(const RandomGeneratorMCMC &rg)
+                        : mc(rg.mc->copy()), steps(rg.steps) {
                 }
 
 
@@ -105,9 +113,16 @@ namespace marathon {
                  * @return Random binary matrix.
                  */
                 const BinaryMatrix *next() override {
-
                     // apply random walk of length <steps>
                     return mc->randomize(steps);
+                }
+
+                /**
+                 * Create a copy of the random generator object.
+                 * @return
+                 */
+                RandomGeneratorMCMC *copy() const {
+                    return new RandomGeneratorMCMC(*this);
                 }
             };
         }

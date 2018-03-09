@@ -46,8 +46,8 @@ namespace marathon {
 
         private:
 
-            const int _nrow, _ncol;         // number of rows and columns
-            boost::dynamic_bitset<> _M;     // the matrix is stored as a single row in a bitset.
+            int _nrow, _ncol;               // number of rows and columns
+            boost::dynamic_bitset<> _bits;  // the matrix is stored as a single row in a bitset.
 
             /**
              * Return the internal index p of the element (i,j).
@@ -57,8 +57,8 @@ namespace marathon {
              */
             int coord_transform(const int i, const int j) const {
                 const int p = i * _ncol + j;
-                assert(p < _M.size());
-                /*if (p >= _M.size()) {
+                assert(p < _bits.size());
+                /*if (p >= _bits.size()) {
                     std::stringstream ss;
                     ss << "marathon::Exception: Invalid Matrix Element: ( " << i << "," << j << ")";
                     throw std::runtime_error(ss.str());
@@ -69,6 +69,13 @@ namespace marathon {
         public:
 
             /**
+             * Create a binary matrix of size 0 times 0.
+             */
+            BinaryMatrix() : _nrow(0), _ncol(0) {
+
+            }
+
+            /**
              * Create a new binary matrix with nrow rows and ncol columns.
              * If given, initialize the binary matrix with the values stored in bits.
              * @param nrow Number of rows.
@@ -77,8 +84,9 @@ namespace marathon {
             BinaryMatrix(
                     const int nrow,
                     const int ncol
-            ) : _nrow(nrow), _ncol(ncol) {
-                _M = boost::dynamic_bitset<>(nrow * ncol);
+            ) : _nrow(nrow), _ncol(ncol),
+                _bits(boost::dynamic_bitset<>((size_t) (nrow * ncol))) {
+
             }
 
             /**
@@ -96,7 +104,7 @@ namespace marathon {
                     BinaryMatrix(nrow, ncol) {
 
                 for (int i = 0; i < nrow * ncol; i++) {
-                    _M.set(i, bits[i]);
+                    _bits.set(i, bits[i]);
                 }
             }
 
@@ -110,11 +118,13 @@ namespace marathon {
                     BinaryMatrix(nrow, ncol) {
                 for (int i = 0; i < nrow * ncol; i++) {
                     if (str[i] == '0')
-                        _M.set(i, 0);
+                        _bits.set(i, 0);
                     else if (str[i] == '1')
-                        _M.set(i, 1);
+                        _bits.set(i, 1);
                     else {
-                        std::cerr << "Error! Unexpected symbol: " << str[i] << std::endl;
+                        std::stringstream ss;
+                        ss << "Error! Unexpected symbol: " << str[i];
+                        throw std::runtime_error(ss.str());
                     }
 
                 }
@@ -126,33 +136,48 @@ namespace marathon {
              */
             BinaryMatrix(const BinaryMatrix &s) :
                     _nrow(s._nrow), _ncol(s._ncol) {
-                _M = boost::dynamic_bitset<>(s._M);
+                _bits = boost::dynamic_bitset<>(s._bits);
+            }
+
+            /**
+             * Move constructor.
+             * @param m Binary matrix (rvalue reference).
+             */
+            BinaryMatrix(BinaryMatrix &&m) :
+                    _nrow(std::move(m._nrow)),
+                    _ncol(std::move(m._ncol)),
+                    _bits(std::move(m._bits)) {
             }
 
             virtual ~BinaryMatrix() {
 
             }
 
-            const boost::dynamic_bitset<>& getBitset() const {
-                return _M;
-            }
-
-            size_t getTotal() const {
-                return _M.count();
+            const boost::dynamic_bitset<> &getBitset() const {
+                return _bits;
             }
 
             /**
+             * Return the number of nonzero entries.
+             * @return Number of nonzero entries.
+             */
+            size_t getTotal() const {
+                return _bits.count();
+            }
+
+            /**
+             * Return the number of rows.
              * @return Return the number of rows.
              */
             size_t getNumRows() const {
-                return _nrow;
+                return (size_t) _nrow;
             }
 
             /**
              * @return Return the number of columns.
              */
             size_t getNumCols() const {
-                return _ncol;
+                return (size_t) _ncol;
             }
 
             /**
@@ -163,7 +188,7 @@ namespace marathon {
              */
             int get(const int i, const int j) const {
                 const int p = coord_transform(i, j);
-                return _M[p] ? 1 : 0;
+                return _bits[p] ? 1 : 0;
             }
 
             /**
@@ -174,14 +199,14 @@ namespace marathon {
              */
             void set(const int i, const int j, const bool b) {
                 const int p = coord_transform(i, j);
-                _M[p] = b;
+                _bits[p] = b;
             }
 
             /**
              * Set all elements to zero.
              */
             void clear() {
-                _M.reset();
+                _bits.reset();
             }
 
             /**
@@ -191,24 +216,24 @@ namespace marathon {
              */
             void flip(const int i, const int j) {
                 const int p = coord_transform(i, j);
-                _M[p].flip();
+                _bits[p].flip();
             }
 
             /**
-             * Return a fingerprint of the binary matrix used for hashing.
-             * @return Hash Value of this matrix.
+             * Return a fingerprint of the binary matrix.
+             * @return Hash value of this matrix.
              */
             size_t hashValue() const override {
-                return boost::hash_value(_M.m_bits);
+                return boost::hash_value(_bits.m_bits);
             }
 
             /**
-             * Elementwise comparison of this matrix with the matrix in s.
-             * @param x Pointer to a binary matrix.
+             * Compare operator.
+             * @param x State pointer that will be interpreted as a binary matrix pointer.
              * @return 0, if x is identical to this matrix, 1 or -1, otherwise.
              */
             int compare(const State *x) const override {
-                const BinaryMatrix *d = (const BinaryMatrix *) x;
+                auto d = (const BinaryMatrix *) x;
                 if (operator==(*d))
                     return 0;
                 else {
@@ -224,8 +249,8 @@ namespace marathon {
              */
             std::string toString() const override {
                 std::stringstream ss;
-                for (unsigned int i = 0; i < _M.size(); i++)
-                    ss << _M[i];
+                for (unsigned int i = 0; i < _bits.size(); i++)
+                    ss << _bits[i];
                 return ss.str();
             }
 
@@ -236,9 +261,9 @@ namespace marathon {
              */
             std::string fancyString() const {
                 std::stringstream ss;
-                for(int i=0; i<_nrow; i++) {
-                    for(int j=0; j<_ncol; j++) {
-                        ss << "  " << get(i,j);
+                for (int i = 0; i < _nrow; i++) {
+                    for (int j = 0; j < _ncol; j++) {
+                        ss << "  " << get(i, j);
                     }
                     ss << std::endl;
                 }
@@ -265,10 +290,10 @@ namespace marathon {
              */
             bool isCheckerBoardUnit(const int i, const int j, const int k, const int l) const {
 
-                bool a = get(i, j);
-                bool b = get(i, l);
-                bool c = get(k, j);
-                bool d = get(k, l);
+                const int a = get(i, j);
+                const int b = get(i, l);
+                const int c = get(k, j);
+                const int d = get(k, l);
 
                 return (a == d) && (b == c) && (a == !b);
             }
@@ -295,7 +320,7 @@ namespace marathon {
             bool operator<(const BinaryMatrix &s) const {
                 return getNumRows() == s.getNumRows()
                        && getNumCols() == s.getNumCols()
-                       && _M < s._M;
+                       && _bits < s._bits;
             }
 
             /**
@@ -307,7 +332,33 @@ namespace marathon {
             bool operator==(const BinaryMatrix &s) const {
                 return getNumRows() == s.getNumRows()
                        && getNumCols() == s.getNumCols()
-                       && _M == s._M;
+                       && _bits == s._bits;
+            }
+
+            /**
+             * Assignment operator.
+             * @param m Binary matrix. (lvalue reference.)
+             * @return Binary matrix as a copy of m.
+             */
+            BinaryMatrix &operator=(const BinaryMatrix &m) {
+                if (this != &m) {
+                    _nrow = m._nrow;
+                    _ncol = m._ncol;
+                    _bits = boost::dynamic_bitset<>(m._bits);
+                }
+                return *this;
+
+            }
+
+            /**
+             * Assignment operator.
+             * @param m Binary matrix. (rvalue reference.)
+             * @return Binary matrix as a copy of m. In contrast, m will be destroyed.
+             */
+            BinaryMatrix& operator=(BinaryMatrix&& m) {
+                _nrow = m._nrow;
+                _ncol = m._ncol;
+                _bits = std::move(m._bits);
             }
 
         };

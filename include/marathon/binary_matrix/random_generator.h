@@ -46,6 +46,12 @@ namespace marathon {
              */
             virtual const BinaryMatrix *next() override = 0;
 
+            /**
+             * Create an independent copy of the random generator.
+             * @return Copy of this random generator.
+             */
+            virtual RandomGenerator* copy() const override = 0;
+
         };
     }
 }

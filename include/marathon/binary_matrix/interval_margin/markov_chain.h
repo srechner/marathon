@@ -146,6 +146,12 @@ namespace marathon {
                 virtual const BinaryMatrix *randomize(int steps) override {
                     return (BinaryMatrix*) marathon::MarkovChain::randomize(steps);
                 };
+
+                /**
+                 * Create a copy of the Markov chain object.
+                 * @return Copy of the Markov chain.
+                 */
+                virtual MarkovChain* copy() const override = 0;
             };
         }
     }

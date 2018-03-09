@@ -46,12 +46,14 @@ namespace marathon {
 			protected:
 
 				// invariant class members
+				const Instance _inst;	// instance description
 				const int _nrow;        // number of rows
 				const int _ncol;        // number of columns
 				int *_rowsum;           // sequence of row sums
 				int *_colsum_conj;      // conjugated sequence of column sums
 				bool _realizable;       // is sequence realizable at all?
 
+				// class members that will be altered during the execution
 				boost::unordered_map<marathon::Integer, marathon::Integer> tmp;
 
 				/**
@@ -221,7 +223,10 @@ namespace marathon {
 				 * with exactly prescribed margins.
 				 * @param seq Margin of row and column sums.
 				 */
-				Counter(const Instance &seq) : _nrow(seq.getNumRows()), _ncol(seq.getNumCols()) {
+				Counter(const Instance &seq) :
+				        _inst(seq),
+						_nrow(seq.getNumRows()),
+						_ncol(seq.getNumCols()) {
 
 					/**
 					 * Idea by Miller and Harrison:

@@ -159,7 +159,7 @@ namespace marathon {
                         const State *x,
                         const std::function<void(const State *, const marathon::Rational &)> &process
                 ) const override {
-                    std::cerr << "adjacentStates method not reasonable for this Markov chain" << std::endl;
+                    throw std::runtime_error("Error! Method adjacentStates is not reasonable for time-inhomogeneous Markov chains.");
                 }
 
                 /**

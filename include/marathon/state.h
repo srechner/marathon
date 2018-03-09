@@ -43,21 +43,19 @@ public:
 	}
 
 	/**
-	 * Make a copy of s.
+	 * Create a deep copy of the state.
 	 */
 	virtual State* copy() const = 0;
 
 	/**
-	 * Virtual Hash Function for State Type.
+	 * Return a hash function of the state.
 	 */
 	virtual size_t hashValue() const = 0;
 
 	/**
-	 * Compare this and s by structural properties.
-	 *
-	 * If this<s : return -1.
-	 * If this==s: return 0.
-	 * If this>s : return 1.
+	 * Compare the state with another state.
+	 * @param s State pointer.
+	 * @return Zero, if this==s. Negative value, if this<s. Positive value if s<this.
 	 */
 	virtual int compare(const State* s) const = 0;
 
@@ -67,7 +65,7 @@ public:
 	virtual std::string toString() const = 0;
 
 	/**
-	 * To output into streams.
+	 * Output into streams.
 	 */
 	friend inline std::ostream& operator<<(std::ostream& out, const State& s) {
 		out << s.toString();
@@ -75,7 +73,7 @@ public:
 	}
 
 	/**
-	 * To output into streams.
+	 * Output into streams.
 	 */
 	friend inline std::ostream& operator<<(std::ostream& out, const State* s) {
 		out << s->toString();

@@ -116,6 +116,12 @@ namespace marathon {
                 return (const BipartiteMatching*) currentState;
             }
 
+            /**
+             * Create an independent copy of the Markov chain.
+             * @return Copy of this Markov chain.
+             */
+            virtual marathon::matching::MarkovChain* copy() const override = 0;
+
         };
     }
 }

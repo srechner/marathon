@@ -124,7 +124,7 @@ namespace marathon {
              * Create a copy of this MarkovChain.
              * @return
              */
-            virtual ::marathon::MarkovChain *copy() const {
+            virtual ::marathon::matching::MarkovChain *copy() const {
                 return new ::marathon::matching::JSVChain(*this);
             }
 

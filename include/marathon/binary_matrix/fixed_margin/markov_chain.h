@@ -115,6 +115,16 @@ namespace marathon {
                         inst(Instance(m)) {
                 }
 
+                /**
+                 * Create a Markov chain instance as a copy of another one.
+                 * @param mc Markov chain object.
+                 */
+                explicit MarkovChain(const MarkovChain &mc) :
+                        ::marathon::MarkovChain(mc.getCurrentState()),
+                        inst(mc.inst) {
+
+                }
+
 
                 /**
                  * Return the instance
@@ -129,8 +139,8 @@ namespace marathon {
                  * Return the current state of the Markov chain.
                  * @return
                  */
-                virtual const BinaryMatrix* getCurrentState() const override {
-                    return (BinaryMatrix*) currentState;
+                virtual const BinaryMatrix *getCurrentState() const override {
+                    return (BinaryMatrix *) currentState;
                 }
 
                 /**
@@ -139,9 +149,14 @@ namespace marathon {
                  * @return The current state after randomization.
                  */
                 virtual const BinaryMatrix *randomize(int steps) override {
-                    return (BinaryMatrix*) marathon::MarkovChain::randomize(steps);
+                    return (BinaryMatrix *) marathon::MarkovChain::randomize(steps);
                 }
 
+                /**
+                 * Create a copy of the Markov chain object.
+                 * @return Copy of the Markov chain.
+                 */
+                virtual MarkovChain* copy() const override = 0;
             };
         }
     }

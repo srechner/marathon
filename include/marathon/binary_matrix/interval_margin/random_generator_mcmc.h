@@ -90,6 +90,15 @@ namespace marathon {
 
                 }
 
+                /**
+                 * Create a random generator as a copy of another one.
+                 * @param rg Random generator.
+                 */
+                RandomGeneratorMCMC(const RandomGeneratorMCMC& rg) :
+                        mc(rg.mc->copy()), steps(rg.steps) {
+
+                }
+
                 virtual ~RandomGeneratorMCMC() {
                     delete mc;
                 }
@@ -104,6 +113,14 @@ namespace marathon {
 
                     // apply random walk
                     return mc->randomize(steps);
+                }
+
+                /**
+                 * Create an independent copy of the random generator.
+                 * @return Copy of this random generator.
+                 */
+                RandomGeneratorMCMC* copy() const {
+                    return new RandomGeneratorMCMC(*this);
                 }
             };
         }

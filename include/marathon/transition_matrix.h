@@ -160,7 +160,6 @@ namespace marathon {
          * @param T Pointer to transition matrix.
          */
         virtual void copy(const TransitionMatrix *P) {
-            printf("generic copy\n");
             for (size_t i = 0; i < getDimension(); i++) {
                 for (size_t j = 0; j < getDimension(); j++) {
                     set(i, j, P->get(i, j));
@@ -175,8 +174,6 @@ namespace marathon {
          */
         virtual void mult(const TransitionMatrix<T> *A,
                           const TransitionMatrix<T> *B) {
-
-            printf("generic mult\n");
 #pragma omp parallel for
             for (size_t i = 0; i < N; i++) {
                 for (size_t j = 0; j < N; j++) {

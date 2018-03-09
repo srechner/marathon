@@ -22,10 +22,11 @@
  * SOFTWARE.
  */
 
-#ifndef INCLUDE_MARATHON_RANDOM_DEVICE_H_
-#define INCLUDE_MARATHON_RANDOM_DEVICE_H_
+#ifndef INCLUDE_MARATHON_BASIC_RANDOM_H_
+#define INCLUDE_MARATHON_BASIC_RANDOM_H_
 
 #include <marathon/integer.h>
+
 #include <random>
 
 namespace marathon {
@@ -252,4 +253,4 @@ std::mutex marathon::RandomDevice::m;
 std::random_device marathon::RandomDevice::rd;
 std::mt19937 marathon::RandomDevice::rng_init(rd());
 
-#endif /* INCLUDE_MARATHON_RANDOM_DEVICE_H_ */
+#endif /* INCLUDE_MARATHON_BASIC_RANDOM_H_ */

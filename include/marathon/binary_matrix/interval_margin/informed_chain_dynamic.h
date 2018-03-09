@@ -145,7 +145,7 @@ namespace marathon {
                   * A copy of state s is used from now on as current State.
                   * @param s State pointer that is used to create the current state.
                   */
-                void setCurrentState(const State *s) {
+                void setCurrentState(const State *s) override {
                     InformedChain::setCurrentState(s);
                     reset();
                 }
@@ -160,7 +160,7 @@ namespace marathon {
                         const State *x,
                         const std::function<void(const State *, const marathon::Rational &)> &process
                 ) const override {
-                    std::cerr << "adjacentStates method not reasonable for this Markov chain" << std::endl;
+                    throw std::runtime_error("Error! Method adjacentStates is not reasonable for time-inhomogeneous Markov chains.");
                 }
 
                 /**

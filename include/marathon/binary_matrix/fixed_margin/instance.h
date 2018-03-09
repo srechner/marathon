@@ -30,6 +30,8 @@
 #include <mutex>
 #include <boost/unordered_map.hpp>
 
+#include "../binary_matrix.h"
+
 namespace marathon {
     namespace binary_matrix {
         namespace fixed_margin {

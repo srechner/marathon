@@ -227,5 +227,4 @@ namespace marathon {
 
 }
 
-
 #endif //MARATHON_INTEGER_H
