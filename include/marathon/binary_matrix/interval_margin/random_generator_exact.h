@@ -330,9 +330,9 @@ namespace marathon {
 
 #ifdef USE_BOOST_SERIALIZATION
                 /**
-				 * Create a random generator based on the information previously dumped to file.
-				 * @param ifs Input file stream.
-				 */
+                 * Create a random generator based on the information previously dumped to file.
+                 * @param ifs Input file stream.
+                 */
                 explicit RandomGeneratorExact(std::ifstream &ifs)
                         : Counter(ifs) {
                     _bin = new BinaryMatrix(_nrow, _ncol);
@@ -352,12 +352,12 @@ namespace marathon {
                  * (exactly!) uniform.
 				 * @return Random binary matrix.
 				 */
-                const BinaryMatrix *next() override {
+                const BinaryMatrix &next() override {
 
                     //std::cout << "=========================" << std::endl;
 
                     if (_num_matrices == 0)
-                        return nullptr;
+                        throw std::runtime_error("Error! Four-tuple of integer vectors is not realizable!");
 
                     int *rowsum_lower = new int[_nrow];
                     int *rowsum_upper = new int[_nrow];
@@ -446,7 +446,7 @@ namespace marathon {
                     delete[] colsum_index;
                     delete[] colsum_upper_conj;
 
-                    return _bin;
+                    return *_bin;
 
                 }
 
@@ -454,9 +454,9 @@ namespace marathon {
                  * Create an independent copy of the random generator.
                  * @return Copy of this random generator.
                  */
-                RandomGeneratorExact* copy() const {
+                std::unique_ptr<marathon::RandomGenerator> copy() const {
                     // todo: improve performance by avoiding the redundant construction of auxiliary tables
-                    return new RandomGeneratorExact(_seq);
+                    return std::make_unique<RandomGeneratorExact>(_seq);
                 }
             };
         }

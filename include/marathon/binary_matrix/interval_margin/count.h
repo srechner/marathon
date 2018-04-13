@@ -415,10 +415,10 @@ namespace marathon {
 				 * sums lie in the prescribed intervals.
 				 * @param seq Four-Tuple of integer vectors.
 				 */
-                Counter(const Instance &seq) :
-                        _seq(seq),
-                        _nrow((int) seq.rowsum_upper.size()),
-                        _ncol((int) seq.colsum_lower.size()) {
+                Counter(Instance seq) :
+                        _seq(std::move(seq)),
+                        _nrow((int) _seq.rowsum_upper.size()),
+                        _ncol((int) _seq.colsum_lower.size()) {
 
                 }
 
@@ -463,10 +463,6 @@ namespace marathon {
                     ia >> _tmp;
                 }
 #endif
-
-                virtual ~Counter() {
-
-                }
 
                 /**
                  * Count the number of binary matrices whose row and column sums lie in the

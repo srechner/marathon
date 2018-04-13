@@ -40,18 +40,18 @@ namespace marathon {
 
     protected:
 
-        const MarkovChain *mc;      // markov chain
-        const StateGraph *sg;       // state graph
-        const size_t omega;         // number of states
-        const T *stationary;        // stationary distribution
+        const MarkovChain &mc;              // markov chain
+        const StateGraph &sg;               // state graph
+        const size_t omega;                 // number of states
+        const std::vector<T> stationary;    // stationary distribution
 
-        T *initStationary() const {
+        std::vector<T> initStationary() const {
 
             // construct stationary distribution as array
-            T *pi = new T[omega];
-            const Rational Z = sg->getNormalizingConstant();
+            std::vector<T> pi(omega);
+            const Rational Z = sg.getNormalizingConstant();
             for (size_t i = 0; i < omega; i++)
-                pi[i] = (sg->getWeight(i) / Z).convert_to<T>();
+                pi[i] = (sg.getWeight(i) / Z).convert_to<T>();
             return pi;
         }
 
@@ -61,18 +61,13 @@ namespace marathon {
          * Calculate a Mixing Time Calculator.
          * @param sg State Graph.
          */
-        explicit MixingTimeCalculator(const StateGraph *sg) :
-                mc(sg->getMarkovChain()),
+        explicit MixingTimeCalculator(const StateGraph &sg) :
+                mc(sg.getMarkovChain()),
                 sg(sg),
-                omega(sg->getNumStates()),
+                omega(sg.getNumStates()),
                 stationary(initStationary()) {
 
         }
-
-        virtual ~MixingTimeCalculator() {
-            delete[] stationary;
-        }
-
 
         /**
          * Determine the mixing time of state graph sg while starting with a probability vector p_start.
@@ -81,26 +76,22 @@ namespace marathon {
          * @param eps Threshold parameter.
          * @return The minimal number of steps t such that ||P^t * p_start - pi|| < eps.
          */
-        int mixingTime(const T *p_start, const double eps) {
+        uint mixingTime(const std::vector<T> &p_start, double eps) {
 
             // check trivial cases
             if (omega == 0)
-                return -1;
+                throw std::runtime_error("Error! Empty state space!");
             else if (omega == 1)
                 return 0;
 
             // store a single row of the transition matrices P^t and P^t+1
-            T *curr = new T[omega];
-            T *next = new T[omega];
-
-            // copy the start distribution
-            for (size_t i = 0; i < omega; i++)
-                curr[i] = p_start[i];
+            std::vector<T> curr(p_start);
+            std::vector<T> next(omega);
 
             uint32_t t = 0;     // the exponent of P^t
 
             // d is variation distance between P^t[i,] and pi
-            T d = variationDistance<T>(curr, stationary, omega);
+            T d = variationDistance<T>(curr, stationary);
 
             while (d >= eps) {
 
@@ -111,7 +102,7 @@ namespace marathon {
                     T x(0);
 
                     // for each transition (i,j)
-                    for (Transition *kj : sg->getInArcs(j)) {
+                    for (Transition *kj : sg.getInArcs(j)) {
 
                         const size_t k = kj->from;
                         const Rational pkj = kj->weight;
@@ -124,13 +115,10 @@ namespace marathon {
 
                 std::swap(next, curr);
 
-                d = variationDistance<T>(curr, stationary, omega);
+                d = variationDistance<T>(curr, stationary);
                 //printf("%i: %f\n", t, d);
                 t++;
             }
-
-            delete[] curr;
-            delete[] next;
 
             return t;
         }
@@ -143,22 +131,16 @@ namespace marathon {
          * @param eps Threshold parameter.
          * @return The minimal number of steps t such that ||P^t[i,] - pi|| < eps.
          */
-        int mixingTime(const int i, const double eps) {
+        uint mixingTime(const size_t i, const double eps) {
 
             if (omega == 0 || i < 0 || i >= omega)
-                return -1;
+                throw std::runtime_error("Error! Invalid state index!");
 
             // p_start is initialized as the i-th row of the unit matrix
-            T *p_start = new T[omega];
-            for (size_t j = 0; j < omega; j++)
-                p_start[j] = T(0);
+            std::vector<T> p_start(omega, 0);
             p_start[i] = T(1);
 
-            int t = mixingTime(p_start, eps);
-
-            delete[] p_start;
-
-            return t;
+            return mixingTime(p_start, eps);
         }
 
 
@@ -169,22 +151,22 @@ namespace marathon {
          * @param eps Distance to stationary distribution.
          * @return The smallest number of steps t until max_{i=begin..end-1}(||P^t_i-pi|| < eps)
          */
-        int mixingTime(const int begin, const int end, const double eps) {
+        uint mixingTime(size_t begin, size_t end, double eps) {
 
             // check trivial cases
             if (omega == 0)
-                return -1;
+                throw std::runtime_error("Error! State space is empty!");
             else if (omega == 1)
                 return 0;
 
-            int t_max = 0;
+            uint t_max = 0;
 
             // for each row of the transition matrix P
 #pragma omp parallel for
-            for (int i = std::max(begin, 0); i < std::min(end, (int) omega); i++) {
+            for (size_t i = std::max(begin, 0lu); i < std::min(end, omega); i++) {
 
                 // determine mixing time while starting with state i
-                int t = mixingTime(i, eps);
+                uint t = mixingTime(i, eps);
 
 #pragma omp critical
                 t_max = std::max(t, t_max);
@@ -205,8 +187,8 @@ namespace marathon {
          * @param eps Distance to stationary distribution.
          * @return The smallest number of steps t until max_{i=1..omega}(||P^t_i-pi|| < eps)
          */
-        int totalMixingTime(const double eps) {
-            return mixingTime(0, sg->getNumStates(), eps);
+        uint totalMixingTime(const double eps) {
+            return mixingTime(0, sg.getNumStates(), eps);
         }
 
 
@@ -223,7 +205,7 @@ namespace marathon {
          * @param eps The distance to stationary distribution.
          * @return
          */
-        int totalMixingTimeDense(const double eps) {
+        uint totalMixingTimeDense(const double eps) {
 
             /**********************************************************************
              * This implementation searches the total mixing time of mc by a two
@@ -241,93 +223,50 @@ namespace marathon {
              * matrices.
              *********************************************************************/
 
-            /* Variables */
-            TransitionMatrix<T> *P = nullptr;                     // transition matrix of sg
-            TransitionMatrix<T> *tmp[3] = {nullptr, nullptr, nullptr}; // working matrices
-
             // check trivial cases
             if (omega == 0)
-                return -1;
+                throw std::runtime_error("Error! Empty state space!");
             else if (omega == 1)
                 return 0;
 
-            // try to allocate memory
-            try {
-                // allocate memory
-                P = new TransitionMatrix<T>(sg);
-                tmp[0] = new TransitionMatrix<T>(omega);
-                tmp[1] = new TransitionMatrix<T>(omega);
-                tmp[2] = new TransitionMatrix<T>(omega);
-            }
-            catch (std::bad_alloc) {
-                if (P != nullptr)
-                    delete P;
-                if (tmp[0] != nullptr)
-                    delete P;
-                if (tmp[1] != nullptr)
-                    delete P;
-                if (tmp[2] != nullptr)
-                    delete P;
-                // react to bad memory allocation
-                return -1;
+            const TransitionMatrix<T> P(sg);    // transition matrix
+
+            // Phase 1: Search for smallest k such that ||P^(2^k) - pi|| < eps
+            uint k = 0;
+            TransitionMatrix<T> A(P);           // invariant A = P^(2^k)
+
+            while (totalVariationDistance(A, stationary) >= eps) {
+                A = A * A;                      // A = P^(2^(k+1))
+                k++;                            // invariant restored
             }
 
-            // Search for mixing time
-            uint l = 0;
-            uint r = 1;
+            if (k == 0)
+                return 1;
 
-            // tmp[0] = P
-            tmp[0]->copy(P);
+            // it holds: ||P^(2^k) - pi|| < eps <= ||P^(2^(k-1)) - pi||
 
-            // First Phase: Square tmp[0] until dist(tmp[0], pi) < eps
-            T d = totalVariationDistance(tmp[0], stationary);
+            uint l = 1u << (k - 1);       // l = 2^(k-1)
+            uint u = 1u << k;             // u = 2^k
 
-            while (d >= eps) {
-                tmp[1]->mult(tmp[0], tmp[0]);           // tmp[1] gets tmp[0]*tmp[0]
-                tmp[0]->swap(tmp[1]);                   // tmp[0] gets tmp[1]
-                d = totalVariationDistance(tmp[0], stationary);
-                //std::cout << "l=" << l << " r=" << r << " d=" << d << std::endl;
-                l = r;
-                r *= 2;
-                if (r >= 100000000) {
-                    l = r = UINT_MAX;
-                    break;
-                }
-            }
+            // Phase 2: Binary search
 
-            /*
-             * State of the variables:
-             *
-             * tmp[0] = P^r
-             * tmp[1] = P^l
-             *
-             * dist(tmp[1], pi) <= eps < dist(tmp[0], pi)
-             */
+            // invariant: ||P^u - pi|| < eps <= ||P^l - pi||
+            while (u - l > 1) {
 
-            // Second Phase: Binary Search
-            // Invariant: tmp[1] = P^l
-            while (l < r - 1) {
-                uint m = (l + r) / 2;
+                uint m = (l + u) / 2;
 
-                tmp[2]->pow(P, m - l, tmp[0]);  // tmp[2] gets P^(m-l)
-                tmp[0]->mult(tmp[1], tmp[2]);   // tmp[0] gets P^l * P^(m-l) = P^m
-                d = totalVariationDistance(tmp[0], stationary);
+                A = P.pow(m);                   // A = P^m
 
-                if (d >= eps) {
-                    l = m;
-                    tmp[0]->swap(tmp[1]);
+                T d = totalVariationDistance(A, stationary);
+
+                if (d < eps) {
+                    u = m;
                 } else {
-                    r = m;
+                    l = m;
                 }
             }
 
-            // free memory
-            delete P;
-            delete tmp[0];
-            delete tmp[1];
-            delete tmp[2];
-
-            return r;
+            return u;
         }
     };
 }

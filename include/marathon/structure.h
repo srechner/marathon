@@ -82,8 +82,8 @@ namespace marathon {
      * contributes one to the length of a path. For each length l for l in 0..diameter(G),
      * the number of shortest paths of G is stored in the vector count[l].
      */
-    void pathLengthHistogram(std::vector<long> &count, const StateGraph *G) {
-        int n = G->getNumStates();
+    void pathLengthHistogram(std::vector<long> &count, const StateGraph &G) {
+        int n = G.getNumStates();
 
         // cnt[i] is number of times a length of i is observed
         long *cnt = new long[n + 1];
@@ -116,7 +116,7 @@ namespace marathon {
                     int v = q.front();
 
                     // iterate over neighbours of v
-                    for (Transition *t : G->getOutArcs(v)) {
+                    for (Transition *t : G.getOutArcs(v)) {
 
                         int l = len[v] + 1;
 
@@ -167,11 +167,11 @@ namespace marathon {
      * @param to Node index.
      * @return Length of shortest path.
      */
-    int distance(const StateGraph* sg, const int from, const int to) {
+    int distance(const StateGraph& sg, const int from, const int to) {
 
         // run bfs
         std::queue< std::pair<int,int> > q;
-        std::vector<bool> visited(sg->getNumStates());
+        std::vector<bool> visited(sg.getNumStates());
 
         // insert start vertex with distance 0
         q.push(std::make_pair(from, 0));
@@ -191,7 +191,7 @@ namespace marathon {
             }
 
             // for all outgoing arcs (v,w)
-            for(const auto& t : sg->getOutArcs(v)) {
+            for(const auto& t : sg.getOutArcs(v)) {
                 const int w = t->to;
                 if(!visited[w]) {
                     visited[w] = true;
@@ -208,7 +208,7 @@ namespace marathon {
      * Computes the diameter of the graph, i.e. the maximal length of a shortest path
      * between some nodes of the graph. Each arc has a length of 1.
      */
-    int diameter(const StateGraph *G) {
+    int diameter(const StateGraph &G) {
         std::vector<long> count;
         pathLengthHistogram(count, G);
         return count.size() - 1;

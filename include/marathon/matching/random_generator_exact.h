@@ -58,15 +58,15 @@ namespace marathon {
             const distribution_t dist;
 
             marathon::RandomDevice rg;               // random generator
-            std::vector<std::pair<int,int>> Nuv;    // list of node pairs with non-empty sample sets
-            marathon::Integer Z;                    // total number of samples
-            BipartiteMatching* match;               // will be returned
+            std::vector<std::pair<int, int>> Nuv;    // list of node pairs with non-empty sample sets
+            marathon::Integer Z;                     // total number of samples
+            BipartiteMatching match;                 // will be returned
 
             void exact_sample_recursive(
-                    const int u,
-                    const int unmatched1,
-                    const int unmatched2,
-                    const Integer& target
+                    const size_t u,
+                    const size_t unmatched1,
+                    const size_t unmatched2,
+                    const Integer &target
             ) {
 
                 //std::cout << "u=" << u << " unmatched=" << unmatched1 << " unmatched2=" << unmatched2 << " target=" << target << std::endl;
@@ -75,9 +75,9 @@ namespace marathon {
                 if (u == _n) {
 
                     // prepare matching
-                    if(unmatched1 != -1) {
-                        match->mates[unmatched1] = -1;
-                        match->mates[unmatched2] = -1;
+                    if (unmatched1 != SIZE_MAX) {
+                        match.mates[unmatched1] = SIZE_MAX;
+                        match.mates[unmatched2] = SIZE_MAX;
                     }
 
                     // stop recursion
@@ -85,7 +85,7 @@ namespace marathon {
                 }
 
                 // if node u is already matched (are marked as permanently unmatched)
-                if (match->isMatched(u)) {
+                if (match.isMatched(u)) {
                     exact_sample_recursive(u + 1, unmatched1, unmatched2, target);
                     return;
                 }
@@ -95,54 +95,48 @@ namespace marathon {
                 marathon::Integer skipped(0);
 
                 // iterate over all adjacent nodes
-                std::vector<int> neighbors;
-                _g.getNeighbors(u, neighbors);
-
-                /*std::cout << "neighbors of " << u << ":";
-                for(int k=0; k<neighbors.size(); k++)
-                    std::cout << " " << neighbors[k];
-                std::cout << std::endl;*/
+                std::vector<size_t> neighbors = _g.getNeighbors(u);
 
                 // Each choice of k results in a number of val(k) matchings.
                 // We seek the smallest k such that val(0)+val(1)+...+val(k) > target
-                int k = 0;
-                for (;k<neighbors.size(); k++) {
+                size_t k = 0;
+                for (; k < neighbors.size(); k++) {
 
-                    const int v = neighbors[k];
+                    const size_t v = neighbors[k];
 
-                    if (!match->isMatched(v)) {
+                    if (!match.isMatched(v)) {
 
                         // add edge (u,v) to matching
-                        match->mates[u] = v;
-                        match->mates[v] = u;
-                        match->k++;
+                        match.mates[u] = v;
+                        match.mates[v] = u;
+                        match._edges++;
 
                         // count the number of matrices that result from this choice
-                        Integer val = count_recursive(*match, u+1);
+                        Integer val = count_recursive(match, u + 1);
 
                         //std::cout << "k=" << k << ": val=" << val << std::endl;
 
                         // found the right sub-tree?
-                        if(skipped + val > target) {
+                        if (skipped + val > target) {
                             break;
                         }
 
                         skipped += val;
 
                         // undo changes
-                        match->mates[u] = -1;
-                        match->mates[v] = -1;
-                        match->k--;
+                        match.mates[u] = SIZE_MAX;
+                        match.mates[v] = SIZE_MAX;
+                        match._edges--;
                     }
                 }
 
                 //std::cout << "k=" << k << " neighbors.size()=" << neighbors.size() << std::endl;
                 assert(k < neighbors.size());
 
-                const int v = neighbors[k];
+                const size_t v = neighbors[k];
 
                 // reduce the target by the number of elements skipped and continue sampling
-                exact_sample_recursive(u+1, unmatched1, unmatched2, target-skipped);
+                exact_sample_recursive(u + 1, unmatched1, unmatched2, target - skipped);
             }
 
 
@@ -150,12 +144,12 @@ namespace marathon {
              * Return a uniformly distributed random sample.
              * @return
              */
-            const BipartiteMatching *next_uniform() {
+            const BipartiteMatching &next_uniform() {
 
                 // prepare Matching
-                match->k = 0;
-                for(int i=0; i<2*_n; i++) {
-                    match->mates[i] = -1;
+                match._edges = 0;
+                for (size_t i = 0; i < 2 * _n; i++) {
+                    match.mates[i] = SIZE_MAX;
                 }
 
                 // determine random number
@@ -168,48 +162,46 @@ namespace marathon {
 
                 // count perfect matchings
                 Integer val;
-                bool found = load_from_table(*match, val);
+                bool found = load_from_table(match, val);
                 assert(val);
 
                 //std::cout << "num perfect = " << val << std::endl;
 
                 // if target is an index of a perfect matching
-                if(skipped + val > target) {
-                    exact_sample_recursive(0, -1, -1, target);
+                if (skipped + val > target) {
+                    exact_sample_recursive(0, SIZE_MAX, SIZE_MAX, target);
                     return match;
                 }
 
                 skipped += val;
 
                 // target is an index of a near-perfect matching
-                for(int u=0; u<_n; u++) {
-                    for(int v = _n; v < 2*_n; v++) {
+                for (size_t u = 0; u < _n; u++) {
+                    for (size_t v = _n; v < 2 * _n; v++) {
 
                         // mark (u,v) as permanently unmatched
-                        match->mates[u] = -2;
-                        match->mates[v] = -2;
+                        match.mates[u] = SIZE_MAX - 1;
+                        match.mates[v] = SIZE_MAX - 1;
 
-                        found = load_from_table(*match, val);
+                        found = load_from_table(match, val);
                         assert(found);
 
                         //std::cout << "unmatched u=" << u << " v=" << v << ": " << match->toString() << ": skipped=" << skipped << " val=" << val << std::endl;
 
                         // if target is an index of a perfect matching
-                        if(skipped + val > target) {
-                            exact_sample_recursive(0, u, v, target-skipped);
+                        if (skipped + val > target) {
+                            exact_sample_recursive(0, u, v, target - skipped);
                             return match;
                         }
 
                         skipped += val;
 
                         // undo marking
-                        match->mates[u] = -1;
-                        match->mates[v] = -1;
+                        match.mates[u] = SIZE_MAX;
+                        match.mates[v] = SIZE_MAX;
 
                     }
                 }
-
-                return nullptr; // should not happen
             }
 
             /**
@@ -217,43 +209,40 @@ namespace marathon {
              * defined by Jerrum et al. 2004.
              * @return
              */
-            const BipartiteMatching *next_jsv04() {
+            const BipartiteMatching &next_jsv04() {
 
                 // prepare Matching
-                match->k = 0;
-                for(int i=0; i<2*_n; i++) {
-                    match->mates[i] = -1;
+                match._edges = 0;
+                for (size_t i = 0; i < 2 * _n; i++) {
+                    match.mates[i] = SIZE_MAX;
                 }
 
                 // First select one of (Nuv.size()+1) subsets of samples uniformly at random
-                int k = rg.nextInt((int) Nuv.size()+1);
+                int k = rg.nextInt(Nuv.size() + 1);
 
-                if(k == Nuv.size()) {
+                if (k == Nuv.size()) {
                     // draw a perfect matching uniformy at random
                     const Integer Z = countPerfect();
                     const Integer target = rg.nextInt(Z);
-                    exact_sample_recursive(0, -1, -1, target);
+                    exact_sample_recursive(0, SIZE_MAX, SIZE_MAX, target);
                     return match;
-                }
-                else {
+                } else {
 
                     // determine unmatched nodes
                     int u = Nuv[k].first;
                     int v = Nuv[k].second;
 
                     // prepare matching
-                    match->mates[u] = -2;
-                    match->mates[v] = -2;
+                    match.mates[u] = SIZE_MAX - 1;
+                    match.mates[v] = SIZE_MAX - 1;
 
                     // draw a near-perfect matching uniformy at random from the set
                     // of near-perfect matchings with u and v being unmatch
-                    const Integer Z = countNearPerfect(u,v);
+                    const Integer Z = countNearPerfect(u, v);
                     const Integer target = rg.nextInt(Z);
                     exact_sample_recursive(0, u, v, target);
                     return match;
                 }
-
-                return nullptr; // should not happen
             }
 
 
@@ -266,46 +255,33 @@ namespace marathon {
              * @param dist Specifies from which distribution samples are produced. Allowed values are: uniform, jsv04
              */
             RandomGeneratorExact(
-                    const SparseBipartiteGraph &g,
-                    const distribution_t dist = uniform
-            ) : Counter(g), dist(dist) {
+                    SparseBipartiteGraph g,
+                    distribution_t dist = uniform
+            ) : Counter(std::move(g)), dist(dist) {
 
                 // todo: use binary search
 
-                match = new BipartiteMatching(g.getNumberOfNodes());
+                match = BipartiteMatching(_g.getNumberOfNodes());
                 Z = count();
 
                 // create list of non-empty near-perfect matching sets
-                for(int u=0; u<_n; u++) {
-                    for(int v = _n; v<2*_n; v++) {
-                        Integer x = countNearPerfect(u,v);
-                        if(x > 0) {
-                            Nuv.push_back(std::make_pair(u,v));
+                for (size_t u = 0; u < _n; u++) {
+                    for (size_t v = _n; v < 2 * _n; v++) {
+                        Integer x = countNearPerfect(u, v);
+                        if (x > 0) {
+                            Nuv.push_back(std::make_pair(u, v));
                         }
                     }
                 }
             }
 
             /**
-             * Create a random generator as a copy of another one.
-             * @param rg Another random generator.
-             */
-            RandomGeneratorExact(const RandomGeneratorExact& rge) :
-                    Counter(rge), dist(rge.dist), Nuv(rge.Nuv), Z(rge.Z) {
-                match = new BipartiteMatching(rge._g.getNumberOfNodes());
-            }
-
-            virtual ~RandomGeneratorExact() {
-                delete match;
-            }
-
-            /**
              * Return a random perfect or near-perfect matching.
              * @return Random binary matrix.
              */
-            const BipartiteMatching *next() override {
+            const BipartiteMatching &next() override {
 
-                switch(dist) {
+                switch (dist) {
                     case uniform:
                         return next_uniform();
                     case jsv04:
@@ -320,8 +296,8 @@ namespace marathon {
              * Return an independent copy of the random generator.
              * @return Copy of the random generator.
              */
-            RandomGeneratorExact* copy() const override {
-                return new RandomGeneratorExact(*this);
+            std::unique_ptr<RandomGenerator> copy() const override {
+                return std::make_unique<RandomGeneratorExact>(*this);
             }
         };
     }

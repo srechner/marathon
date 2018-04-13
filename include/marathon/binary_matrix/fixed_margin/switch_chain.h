@@ -47,7 +47,7 @@ namespace marathon {
                 /**
                  * Create a Markov chain for the given instance.
                  */
-                explicit SwitchChain(const Instance &seq) : MarkovChain(seq) {
+                explicit SwitchChain(Instance seq) : MarkovChain(std::move(seq)) {
 
                 }
 
@@ -57,8 +57,8 @@ namespace marathon {
                  * @param inst Row and Column sums.
                  * @param bin BinaryMatrix used as initial state.
                  */
-                SwitchChain(const Instance &inst, const BinaryMatrix &bin)
-                        : MarkovChain(inst, bin) {
+                SwitchChain(Instance inst, BinaryMatrix bin)
+                        : MarkovChain(std::move(inst), std::move(bin)) {
 
                 }
 
@@ -79,7 +79,7 @@ namespace marathon {
                 SwitchChain(
                         const std::vector<int> &rowsum,
                         const std::vector<int> &colsum
-                ) : SwitchChain(&rowsum[0], &colsum[0], rowsum.size(), colsum.size()) {
+                ) : MarkovChain(rowsum, colsum) {
 
                 }
 
@@ -93,8 +93,8 @@ namespace marathon {
                 SwitchChain(
                         const int *rowsum,
                         const int *colsum,
-                        const int nrow,
-                        const int ncol
+                        size_t nrow,
+                        size_t ncol
                 ) : MarkovChain(rowsum, colsum, nrow, ncol) {
 
                 }
@@ -106,15 +106,15 @@ namespace marathon {
                  * @param process Function object evaluated for each adjacent state.
                  */
                 void adjacentStates(
-                        const State *x,
-                        const std::function<void(const State*, const marathon::Rational &)> &process
+                        const State &x,
+                        const std::function<void(const State &, const marathon::Rational &)> &process
                 ) const override {
 
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
+                    const size_t nrow = _inst.getNumRows();
+                    const size_t ncol = _inst.getNumCols();
 
                     // create a copy of x
-                    BinaryMatrix s(*((const BinaryMatrix *) x));
+                    BinaryMatrix s(static_cast<const BinaryMatrix &> (x));
 
                     // each state has proposal prob. of p
                     const Rational p(4, nrow * (nrow - 1) * ncol * (ncol - 1));
@@ -154,7 +154,7 @@ namespace marathon {
                                         s.flipSubmatrix(i, j, k, l);
 
                                         // process adjacent state
-                                        process(&s, p);
+                                        process(s, p);
 
                                         // undo modifications
                                         s.flipSubmatrix(i, j, k, l);
@@ -168,7 +168,7 @@ namespace marathon {
                         }
                     }
                     // create loop
-                    process(&s, loop);
+                    process(s, loop);
                 }
 
                 /**
@@ -176,10 +176,8 @@ namespace marathon {
                  */
                 virtual void step() override {
 
-                    const int nrow = inst.getNumRows();
-                    const int ncol = inst.getNumCols();
-
-                    BinaryMatrix *s = (BinaryMatrix *) currentState;
+                    const int nrow = (int) _inst.getNumRows();
+                    const int ncol = (int) _inst.getNumCols();
 
                     // select four random integers i,j,k,l
 
@@ -196,8 +194,8 @@ namespace marathon {
                         l = rg.nextInt(ncol);
 
                     // if i,j,k,l makes a switchable cycle
-                    if (s->isCheckerBoardUnit(i, j, k, l)) {
-                        s->flipSubmatrix(i, j, k, l);      // switch the cycle
+                    if (currentState.isCheckerBoardUnit(i, j, k, l)) {
+                        currentState.flipSubmatrix(i, j, k, l);      // switch the cycle
                     }
                 }
 
@@ -205,9 +203,8 @@ namespace marathon {
                  * Create a copy of this MarkovChain.
                  * @return
                  */
-                virtual SwitchChain *copy() const override {
-                    auto s = (BinaryMatrix*) getCurrentState();
-                    return new SwitchChain(inst, *s);
+                virtual std::unique_ptr<marathon::MarkovChain> copy() const override {
+                    return std::make_unique<SwitchChain>(_inst, currentState);
                 }
             };
         }

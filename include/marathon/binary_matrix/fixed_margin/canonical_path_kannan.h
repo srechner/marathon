@@ -187,24 +187,22 @@ namespace marathon {
 
             public:
 
-                virtual void construct(const StateGraph *sg, const int s, const int t,
-                                       std::list<int> &path) const {
+                virtual std::list<int> construct(const StateGraph &sg, const int s, const int t) const override {
 
 #ifdef DEBUG
                     std::cout << "from=" << sg->getState(s) << std::endl;
     std::cout << "to  =" << sg->getState(t) << std::endl;
 #endif
 
-                    // start with from
-                    path.push_back(s);
+                    std::list<int> path;
+                    path.push_back(s);  // start with from
 
                     // continously modify u
-                    BinaryMatrix u = *((BinaryMatrix *) sg->getState(s));
-                    BinaryMatrix v = *((const BinaryMatrix *) sg->getState(t));
+                    BinaryMatrix u(static_cast<const BinaryMatrix &>(sg.getState(s)));
+                    BinaryMatrix v(static_cast<const BinaryMatrix &>(sg.getState(t)));
 
                     std::list<std::vector<int>> cycles;
-                    std::list<std::vector<int> >::iterator
-                            it;
+                    std::list<std::vector<int> >::iterator it;
 
                     int i, l;
                     // decompose symmetric difference of u and v into cycles
@@ -263,7 +261,7 @@ namespace marathon {
                             v1 -= u.getNumRows();
                             v2 -= u.getNumRows();
 
-                            if(u.isCheckerBoardUnit(u1, v1, u2, v2))
+                            if (u.isCheckerBoardUnit(u1, v1, u2, v2))
                                 break;
 
                             i++;
@@ -299,7 +297,7 @@ namespace marathon {
 
                         assert(u.isCheckerBoardUnit(u1, v1, u2, v2));
                         u.flipSubmatrix(u1, v1, u2, v2);
-                        int x = sg->indexOf(&u);
+                        int x = sg.indexOf(u);
                         assert(x != -1);
                         path.push_back(x);
 
@@ -332,7 +330,7 @@ namespace marathon {
                             v2 -= u.getNumRows();
 
                             u.flipSubmatrix(u1, v1, u2, v2);
-                            int x = sg->indexOf(&u);
+                            int x = sg.indexOf(u);
                             assert(x != -1);
                             path.push_back(x);
                         }
@@ -351,6 +349,8 @@ namespace marathon {
                             cycles.push_front(cycle);
                         }
                     }
+
+                    return path;
                 }
 
             };

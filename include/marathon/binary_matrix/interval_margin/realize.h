@@ -394,18 +394,17 @@ namespace marathon {
                         res.colsum[j] = cols[j].lower;
 
                     // create conjugate sequence of column sums
-                    int *colsum_conj = new int[nrow];
-                    marathon::binary_matrix::conjugate(colsum_conj, &res.colsum[0], nrow, ncol);
+                    std::vector<int> colsum_conj = conjugate(res.colsum, nrow);
 
                     // create conjugate sequence to upper row sums
-                    int *rowsum_upper_conj = new int[ncol];
-                    marathon::binary_matrix::conjugate(rowsum_upper_conj, &margin.rowsum_upper[0], ncol, nrow);
+                    std::vector<int> rowsum_upper_conj = conjugate(margin.rowsum_upper, ncol);
 
                     // at this point there is a binary matrix whose column sums are described by colsum
-                    assert(marathon::binary_matrix::isDominating(colsum_conj, &margin.rowsum_lower[0], nrow));
-                    assert(marathon::binary_matrix::isDominating(rowsum_upper_conj, &res.colsum[0], ncol));
+                    assert(marathon::binary_matrix::isDominating(colsum_conj, margin.rowsum_lower));
+                    assert(marathon::binary_matrix::isDominating(rowsum_upper_conj, res.colsum));
                     assert(marathon::binary_matrix::interval_margin::isRealizable(
-                            &margin.rowsum_lower[0], &margin.rowsum_upper[0], &res.colsum[0], &res.colsum[0], nrow, ncol));
+                            &margin.rowsum_lower[0], &margin.rowsum_upper[0], &res.colsum[0], &res.colsum[0], nrow,
+                            ncol));
 
                     /**************************************************************************
                      * Step Two: Rise the lower row sums
@@ -472,8 +471,6 @@ namespace marathon {
 
                     // clean up
                     delete[] rowsum_lower_first;
-                    delete[] rowsum_upper_conj;
-                    delete[] colsum_conj;
                     delete[] colsum_lower_conj;
                     delete[] colsum_lower_first;
                     delete[] rows;
@@ -489,21 +486,18 @@ namespace marathon {
              * prescribed the lower and upper sums.
              * @param margin Lower and upper bounds on row and Column sums.
              */
-            marathon::binary_matrix::BinaryMatrix *
-            realize_fast(const Instance& margin) {
+            marathon::binary_matrix::BinaryMatrix
+            realize_fast(const Instance &margin) {
 
                 // check realizability
                 if (!isRealizable(margin))
-                    return nullptr;
+                    throw std::runtime_error("Error! Four-tuple of integer vectors is not realisable!");
 
                 // transform four-tuple into a bi-graphical pair of integer vectors
                 auto bigraphical = detail::construct_bigraphical(margin);
 
                 // determine a realization
-                auto bin = marathon::binary_matrix::fixed_margin::realize(bigraphical);
-                assert(bin != nullptr);
-
-                return bin;
+                return marathon::binary_matrix::fixed_margin::realize(bigraphical);
             }
 
             /**
@@ -515,7 +509,7 @@ namespace marathon {
              * @param colsum_lower Lower bounds on each column sum.
              * @param colsum_upper Upper bounds on each column sum.
              */
-            marathon::binary_matrix::BinaryMatrix *
+            marathon::binary_matrix::BinaryMatrix
             realize_fast(
                     const int *rowsum_lower,
                     const int *rowsum_upper,
@@ -532,19 +526,18 @@ namespace marathon {
              * Construct a random binary matrix whose margins lie in prescribed intervals.
              * @param margin Lower and upper bounds on row and column sums.
              */
-            marathon::binary_matrix::BinaryMatrix *
+            marathon::binary_matrix::BinaryMatrix
             realize_fast_random(const Instance &margin) {
 
                 // check realizability
                 if (!isRealizable(margin))
-                    return nullptr;
+                    throw std::runtime_error("Error! Four-tuple of integer vectors is not realisable!");
 
                 // transform four-tuple into a bi-graphical pair of integer vectors
                 auto bigraphical = detail::construct_bigraphical(margin);
 
                 // determine a random realization
                 auto bin = marathon::binary_matrix::fixed_margin::realize_random(bigraphical);
-                assert(bin != nullptr);
 
                 return bin;
 
@@ -559,7 +552,7 @@ namespace marathon {
              * @param colsum_lower Lower bounds on each column sum.
              * @param colsum_upper Upper bounds on each column sum.
              */
-            marathon::binary_matrix::BinaryMatrix *
+            marathon::binary_matrix::BinaryMatrix
             realize_fast_random(
                     const int *rowsum_lower,
                     const int *rowsum_upper,
@@ -568,9 +561,9 @@ namespace marathon {
                     const int nrow,
                     const int ncol
             ) {
-                return realize_fast_random(Instance(rowsum_lower, rowsum_upper, colsum_lower, colsum_upper, nrow, ncol));
+                return realize_fast_random(
+                        Instance(rowsum_lower, rowsum_upper, colsum_lower, colsum_upper, nrow, ncol));
             }
-
 
 
             /**
@@ -585,14 +578,14 @@ namespace marathon {
              * @param ncol The number of columns.
              */
             inline
-            marathon::binary_matrix::BinaryMatrix *
+            marathon::binary_matrix::BinaryMatrix
             realize_slow(const Instance &seq) {
 
                 const int nrow = seq.rowsum_upper.size();
                 const int ncol = seq.colsum_lower.size();
 
                 if (!isRealizable(seq))
-                    return nullptr;
+                    throw std::runtime_error("Error! Four-tuple of integer vectors is not realizable!");
 
                 /**************************************************************************
                  * Transform the lower column sum and the upper row sum to a realizable
@@ -656,7 +649,7 @@ namespace marathon {
                 /**************************************************************
                  * Realize mofified sequence via H-H-algorithm.
                  *************************************************************/
-                marathon::binary_matrix::BinaryMatrix *bin_tmp =
+                marathon::binary_matrix::BinaryMatrix bin_tmp =
                         marathon::binary_matrix::fixed_margin::realize(
                                 my_rowsum_lower,
                                 my_colsum_lower,
@@ -667,17 +660,15 @@ namespace marathon {
                 /**************************************************************
                  * Re-shuffle rows and columns to original order.
                  *************************************************************/
-                marathon::binary_matrix::BinaryMatrix *bin
-                        = new marathon::binary_matrix::BinaryMatrix(nrow, ncol);
+                marathon::binary_matrix::BinaryMatrix bin(nrow, ncol);
                 for (int i = 0; i < nrow; i++) {
                     for (int j = 0; j < ncol; j++) {
                         int a = row_order[i].index;
                         int b = col_order[j].index;
-                        bin->set(a, b, bin_tmp->get(i, j));
+                        bin.set(a, b, bin_tmp.get(i, j));
                     }
                 }
 
-                delete bin_tmp;
                 delete[] my_rowsum_lower;
                 delete[] my_rowsum_upper;
                 delete[] my_colsum_lower;
@@ -699,7 +690,7 @@ namespace marathon {
              * @param ncol The number of columns.
              */
             inline
-            marathon::binary_matrix::BinaryMatrix *
+            marathon::binary_matrix::BinaryMatrix
             realize_slow(
                     const int *rowsum_lower,
                     const int *rowsum_upper,
@@ -722,7 +713,7 @@ namespace marathon {
              * @param colsum_upper Upper bounds on each column sum.
              */
             inline
-            marathon::binary_matrix::BinaryMatrix *
+            marathon::binary_matrix::BinaryMatrix
             realize_slow(
                     const std::vector<int> &rowsum_lower,
                     const std::vector<int> &rowsum_upper,

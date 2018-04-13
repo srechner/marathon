@@ -35,31 +35,29 @@ namespace marathon {
     namespace binary_matrix {
         namespace fixed_margin {
 
+
             /**
              * Returns false, if sequence of row and column sums can be decomposed
              * into smaller sequences. Otherwise, return true.
              * @param rowsum Sequence of row sums.
              * @param colsum Sequence of column sums.
-             * @param nrow Number of rows.
-             * @param ncol Number of columns.
              * @return
              */
             inline
             bool isPrimitive(
-                    const int *rowsum,
-                    const int *colsum,
-                    const int nrow,
-                    const int ncol
+                    const std::vector<int> &rowsum,
+                    const std::vector<int> &colsum
             ) {
 
+                const size_t nrow = rowsum.size();
+                const size_t ncol = colsum.size();
+
                 // compute conjugated row sums
-                int *rowsum_conjugated = new int[ncol];
-                conjugate(rowsum_conjugated, rowsum, ncol, nrow);
+                std::vector<int> rowsum_conjugated = conjugate(rowsum, ncol);
 
                 // descendingly sort column sums
-                int *colsum_sorted = new int[ncol];
-                memcpy(colsum_sorted, colsum, ncol * sizeof(int));
-                std::sort(colsum_sorted, colsum_sorted + ncol, [](const int a, const int b) { return a > b; });
+                std::vector<int> colsum_sorted(colsum);
+                std::sort(colsum_sorted.begin(), colsum_sorted.end(), [](int a, int b) { return a > b; });
 
                 bool reducible = false;
 
@@ -75,20 +73,15 @@ namespace marathon {
                     }
                 }
 
-                delete[] rowsum_conjugated;
-                delete[] colsum_sorted;
-
                 if (reducible)
                     return false;
 
                 // compute conjugated column sums
-                int *colsum_conjugated = new int[nrow];
-                conjugate(colsum_conjugated, colsum, nrow, ncol);
+                std::vector<int> colsum_conjugated = conjugate(colsum, nrow);
 
                 // descendingly sort row sums
-                int *rowsum_sorted = new int[nrow];
-                memcpy(rowsum_sorted, rowsum, nrow * sizeof(int));
-                std::sort(rowsum_sorted, rowsum_sorted + nrow, [](const int a, const int b) { return a > b; });
+                std::vector<int> rowsum_sorted(rowsum);
+                std::sort(rowsum_sorted.begin(), rowsum_sorted.end(), [](int a, int b) { return a > b; });
 
                 // check dominance criterion
                 S1 = 0;
@@ -102,10 +95,28 @@ namespace marathon {
                     }
                 }
 
-                delete[] colsum_conjugated;
-                delete[] rowsum_sorted;
-
                 return !reducible;
+            }
+
+            /**
+             * Returns false, if sequence of row and column sums can be decomposed
+             * into smaller sequences. Otherwise, return true.
+             * @param rowsum Sequence of row sums.
+             * @param colsum Sequence of column sums.
+             * @param nrow Number of rows.
+             * @param ncol Number of columns.
+             * @return
+             */
+            inline
+            bool isPrimitive(
+                    const int *rowsum,
+                    const int *colsum,
+                    size_t nrow,
+                    size_t ncol
+            ) {
+                std::vector<int> rows(rowsum, rowsum + nrow);
+                std::vector<int> cols(colsum, colsum + ncol);
+                return isPrimitive(rows, cols);
             }
 
             /**
@@ -128,7 +139,7 @@ namespace marathon {
                  */
                 void decompose_recursive(
                         const Instance &seq,
-                        const std::function<void( const Instance &)> &f,
+                        const std::function<void(const Instance &)> &f,
                         bool k1_may_exist,
                         bool k2_may_exist
                 ) {
@@ -144,8 +155,7 @@ namespace marathon {
                         // try to find critical point k1
 
                         // build conjugate sequence
-                        int *colsum_conjugate = new int[nrow];
-                        conjugate(colsum_conjugate, &seq.colsum[0], nrow, ncol);
+                        std::vector<int> colsum_conjugate = conjugate(seq.colsum, nrow);
 
                         // determine critical point k1
                         int rowsum_sum = 0;
@@ -181,15 +191,12 @@ namespace marathon {
                             decompose_recursive(seq, f, false, k2_may_exist);
                         }
 
-                        delete[] colsum_conjugate;
-
                     } else if (k2_may_exist) {
 
                         // try to find critical point k2
 
                         // build conjugate sequence
-                        int *rowsum_conjugate = new int[ncol];
-                        conjugate(rowsum_conjugate, &seq.rowsum[0], ncol, nrow);
+                        std::vector<int> rowsum_conjugate = conjugate(seq.rowsum, ncol);
 
                         // determine critical point k2
                         int colsum_sum = 0;
@@ -220,16 +227,12 @@ namespace marathon {
 
                             decompose_recursive(sub1, f, true, false);
                             decompose_recursive(sub2, f, true, true);
-                        }
-                        else { // critical point k2 does not exist
+                        } else { // critical point k2 does not exist
 
                             decompose_recursive(seq, f, false, false);
                         }
 
-                        delete[] rowsum_conjugate;
-
-                    }
-                    else { // seq is primitive
+                    } else { // seq is primitive
                         f(seq); // process sequence
                     }
                 }
@@ -244,9 +247,9 @@ namespace marathon {
                  */
                 void decompose_recursive(
                         const Instance &seq,
-                        const std::function<void( const Instance &
+                        const std::function<void(const Instance &
 
-                )> &f) {
+                        )> &f) {
 
                     const int nrow = (int) seq.getNumRows();
                     const int ncol = (int) seq.getNumCols();
@@ -390,7 +393,7 @@ namespace marathon {
                   * @param f Function to be called for each primtive.
                   */
                 inline
-                void decompose(const std::function<void( const Instance &)> &f) {
+                void decompose(const std::function<void(const Instance &)> &f) {
 
                     if (!_realizable)
                         return;

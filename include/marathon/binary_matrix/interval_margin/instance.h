@@ -61,7 +61,7 @@ namespace marathon {
                  * @param ncol Number of columns
                  * @return
                  */
-                Instance(const int nrow, const int ncol) {
+                Instance(size_t nrow, size_t ncol) {
                     rowsum_lower.resize(nrow);
                     rowsum_upper.resize(nrow);
                     colsum_lower.resize(ncol);
@@ -83,25 +83,25 @@ namespace marathon {
                  * @return
                  */
                 Instance(
-                        const std::vector<int>& rowsum_lower,
-                        const std::vector<int>& rowsum_upper,
-                        const std::vector<int>& colsum_lower,
-                        const std::vector<int>& colsum_upper
-                ) : rowsum_lower(rowsum_lower),
-                    rowsum_upper(rowsum_upper),
-                    colsum_lower(colsum_lower),
-                    colsum_upper(colsum_upper) {
+                        std::vector<int> rowsum_lower,
+                        std::vector<int> rowsum_upper,
+                        std::vector<int> colsum_lower,
+                        std::vector<int> colsum_upper
+                ) : rowsum_lower(std::move(rowsum_lower)),
+                    rowsum_upper(std::move(rowsum_upper)),
+                    colsum_lower(std::move(colsum_lower)),
+                    colsum_upper(std::move(colsum_upper)) {
 
-                    const int nrow = rowsum_lower.size();
-                    const int ncol = colsum_lower.size();
+                    const size_t nrow = rowsum_lower.size();
+                    const size_t ncol = colsum_lower.size();
 
                     rowindex.resize(nrow);
                     colindex.resize(ncol);
 
-                    for(int i=0; i<nrow; i++)
-                        rowindex[i] = i;
-                    for(int j=0; j<ncol; j++)
-                        colindex[j] = j;
+                    for (size_t i = 0; i < nrow; i++)
+                        rowindex[i] = (int) i;
+                    for (size_t j = 0; j < ncol; j++)
+                        colindex[j] = (int) j;
                 }
 
                 /**
@@ -119,8 +119,8 @@ namespace marathon {
                         const int *rowsum_upper,
                         const int *colsum_lower,
                         const int *colsum_upper,
-                        const int nrow,
-                        const int ncol
+                        size_t nrow,
+                        size_t ncol
                 ) : rowsum_lower(rowsum_lower, rowsum_lower + nrow),
                     rowsum_upper(rowsum_upper, rowsum_upper + nrow),
                     colsum_lower(colsum_lower, colsum_lower + ncol),
@@ -134,21 +134,6 @@ namespace marathon {
                     for (int j = 0; j < ncol; j++)
                         colindex[j] = j;
                 }
-
-                /**
-                 * Define margins for a matrix of size nrow times ncol.
-                 * @param m Margins that will be copied.
-                 * @return
-                 */
-                Instance(const Instance &m)
-                        : rowsum_lower(m.rowsum_lower),
-                          rowsum_upper(m.rowsum_upper),
-                          colsum_lower(m.colsum_lower),
-                          colsum_upper(m.colsum_upper),
-                          rowindex(m.rowindex),
-                          colindex(m.colindex) {
-                }
-
 
                 /**
                  * Define margins for a matrix of size nrow times ncol.
@@ -217,7 +202,7 @@ namespace marathon {
                                 current_vec_upper = &colsum_upper;
                                 break;
                             default:
-                                throw std::runtime_error("Expection: malformed instance encoding!");
+                                throw std::runtime_error("Error! Malformed instance encoding!");
                         }
                         k++;
                     }
@@ -225,8 +210,8 @@ namespace marathon {
                     current_vec_lower->push_back(currentLower);
                     current_vec_upper->push_back(currentUpper == -1 ? currentLower : currentUpper);
 
-                    const int nrow = rowsum_lower.size();
-                    const int ncol = colsum_lower.size();
+                    const size_t nrow = rowsum_lower.size();
+                    const size_t ncol = colsum_lower.size();
 
                     rowindex.resize(nrow);
                     colindex.resize(ncol);
@@ -262,8 +247,8 @@ namespace marathon {
                  */
                 const std::string toString() const {
 
-                    const int nrow = rowsum_lower.size();
-                    const int ncol = colsum_lower.size();
+                    const size_t nrow = rowsum_lower.size();
+                    const size_t ncol = colsum_lower.size();
 
                     std::stringstream ss;
                     ss << "rowindex              =";
@@ -298,7 +283,7 @@ namespace marathon {
                  * @param s State object.
                  * @return True, if s is valid or False, otherwise.
                  */
-                bool isValid(const BinaryMatrix& bin) const {
+                bool isValid(const BinaryMatrix &bin) const {
 
                     const int nrow = (int) rowsum_lower.size();
                     const int ncol = (int) colsum_lower.size();
@@ -342,7 +327,6 @@ namespace marathon {
 
                     return valid;
                 }
-
             };
         }
     }
@@ -352,24 +336,24 @@ namespace marathon {
 /* Special Instances Hardcoded */
 
 const marathon::binary_matrix::interval_margin::Instance darwin_margin_p1(
-        {14,13,14,10,12,2,10,1,10,11,6,2,17},
-        {15,14,15,11,13,3,11,2,11,12,7,3,18},
-        {4,4,11,10,10,8, 9,10,8, 9,3,10,4,7, 9,3,3},
-        {5,5,12,11,11,9,10,11,9,10,4,11,5,8,10,4,4}
+        {14, 13, 14, 10, 12, 2, 10, 1, 10, 11, 6, 2, 17},
+        {15, 14, 15, 11, 13, 3, 11, 2, 11, 12, 7, 3, 18},
+        {4, 4, 11, 10, 10, 8, 9, 10, 8, 9, 3, 10, 4, 7, 9, 3, 3},
+        {5, 5, 12, 11, 11, 9, 10, 11, 9, 10, 4, 11, 5, 8, 10, 4, 4}
 );
 
 const marathon::binary_matrix::interval_margin::Instance darwin_margin_pm1(
-        {13,12,13, 9,11,1, 9,0, 9,10,5,1,16},
-        {15,14,15,11,13,3,11,2,11,12,7,3,18},
-        {3,3,10, 9, 9,7, 8, 9,7, 8,2, 9,3,6, 8,2,2},
-        {5,5,12,11,11,9,10,11,9,10,4,11,5,8,10,4,4}
+        {13, 12, 13, 9, 11, 1, 9, 0, 9, 10, 5, 1, 16},
+        {15, 14, 15, 11, 13, 3, 11, 2, 11, 12, 7, 3, 18},
+        {3, 3, 10, 9, 9, 7, 8, 9, 7, 8, 2, 9, 3, 6, 8, 2, 2},
+        {5, 5, 12, 11, 11, 9, 10, 11, 9, 10, 4, 11, 5, 8, 10, 4, 4}
 );
 
 const marathon::binary_matrix::interval_margin::Instance darwin_margin_pm2(
-        {12,11,12, 8,10,0, 8,0, 8, 9,4,0,15},
-        {16,15,16,12,14,4,12,3,12,13,8,4,19},
-        {2,2, 9, 8, 8, 6, 7, 8, 6, 7,1, 8,2,5, 7,1,1},
-        {6,6,13,12,12,10,11,12,10,11,5,12,6,9,11,5,5}
+        {12, 11, 12, 8, 10, 0, 8, 0, 8, 9, 4, 0, 15},
+        {16, 15, 16, 12, 14, 4, 12, 3, 12, 13, 8, 4, 19},
+        {2, 2, 9, 8, 8, 6, 7, 8, 6, 7, 1, 8, 2, 5, 7, 1, 1},
+        {6, 6, 13, 12, 12, 10, 11, 12, 10, 11, 5, 12, 6, 9, 11, 5, 5}
 );
 
 #endif //MARATHON_BINARY_MATRIX_INTERVAL_MARGIN_MARGIN_H

@@ -42,8 +42,8 @@ namespace marathon {
 
         private:
 
-            // random generators
-            std::vector<marathon::binary_matrix::RandomGenerator *> vec;
+            // vector of random generators
+            std::vector<std::unique_ptr<marathon::binary_matrix::RandomGenerator>> vec;
 
         public:
 
@@ -57,16 +57,10 @@ namespace marathon {
                 // create T random generators
                 vec.reserve(T);
                 for (int i = 0; i < T; i++) {
-                    vec.push_back((marathon::binary_matrix::RandomGenerator *) rg.copy());
+                    auto x = static_cast<marathon::binary_matrix::RandomGenerator *>(rg.copy().release());
+                    vec.push_back(std::unique_ptr<marathon::binary_matrix::RandomGenerator>(x));
                 }
             }
-
-            ~SamplingEngine() {
-                for (int i = 0; i < vec.size(); i++) {
-                    delete vec[i];
-                }
-            }
-
 
             /**
              * Evaluate the function  a large number of samples
@@ -79,7 +73,7 @@ namespace marathon {
             std::vector<T>
             sample(
                     const int number,
-                    const std::function<T( const BinaryMatrix &)> fun
+                    const std::function<T(const BinaryMatrix &)> fun
             ) {
 
                 std::vector<T> samples(number);
@@ -99,7 +93,7 @@ namespace marathon {
 
                         // create random samples
                         for (int j = begin; j < end; j++) {
-                            samples[j] = fun(*(vec[i]->next()));
+                            samples[j] = fun(vec[i]->next());
                         }
 
                     }));

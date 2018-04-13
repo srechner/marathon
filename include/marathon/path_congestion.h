@@ -41,8 +41,8 @@ namespace marathon {
 
     protected:
 
-        const StateGraph *sg;               // State Graph
-        const PathConstructionScheme *pcs;  // Path construction scheme
+        const StateGraph &sg;               // State Graph
+        const PathConstructionScheme &pcs;  // Path construction scheme
         const size_t omega;                 // number of states
         const Rational pimin;               // minimal stationary distribution
         Rational load;                      // maximal congestion
@@ -59,7 +59,7 @@ namespace marathon {
          */
         Rational pathCongestion() {
 
-            const MarkovChain *mc = sg->getMarkovChain();
+            const MarkovChain &mc = sg.getMarkovChain();
 
             Rational max_congestion(0);
             std::unordered_map<std::pair<int, int>, Rational, pair_hash> congestion;
@@ -68,7 +68,7 @@ namespace marathon {
                 return Rational(0);
 
             // calculate normalizing constant
-            Rational Z = sg->getNormalizingConstant();
+            Rational Z = sg.getNormalizingConstant();
 
 #ifndef DEBUG
 #pragma omp parallel
@@ -76,7 +76,6 @@ namespace marathon {
             {
                 typename std::unordered_map<std::pair<int, int>, Rational, pair_hash> local_congestion;
                 typename std::unordered_map<std::pair<int, int>, Rational, pair_hash>::iterator c_it;
-                std::list<int> path;
                 typename std::list<int>::const_iterator p_it;
                 int u, v;
 
@@ -89,8 +88,7 @@ namespace marathon {
                         if (i != j) {
 
                             // compute path from i to j
-                            path.clear();
-                            pcs->construct(sg, i, j, path);
+                            std::list<int> path = pcs.construct(sg, i, j);
 
 #ifdef DEBUG
                             std::cout << "path from state " << i << " to state " << j
@@ -101,7 +99,7 @@ namespace marathon {
                         std::cout << std::endl;
 #endif
 
-                            Rational x = sg->getWeight(i) * sg->getWeight(j)
+                            Rational x = sg.getWeight(i) * sg.getWeight(j)
                                          * (path.size() - 1) / (Z * Z);
 
                             assert(path.front() == i);
@@ -160,8 +158,8 @@ namespace marathon {
                 std::pair<int, int> uv = c_it->first;
                 int u = uv.first;
                 Rational c = c_it->second;
-                Rational P_uv = sg->getTransitionProbability(uv.first, uv.second);
-                Rational Q_uv = sg->getWeight(u) * P_uv / Z;
+                Rational P_uv = sg.getTransitionProbability(uv.first, uv.second);
+                Rational Q_uv = sg.getWeight(u) * P_uv / Z;
                 assert(P_uv != Rational(-1));
                 c /= Q_uv;
                 if (c > max_congestion) {
@@ -183,10 +181,10 @@ namespace marathon {
     public:
 
         CongestionBoundCalculator(
-                const StateGraph *sg,
-                const PathConstructionScheme *pcs)
-                : sg(sg), pcs(pcs), omega(sg->getNumStates()),
-                  pimin(sg->getMinWeight() / sg->getNormalizingConstant()),
+                const StateGraph &sg,
+                const PathConstructionScheme &pcs)
+                : sg(sg), pcs(pcs), omega(sg.getNumStates()),
+                  pimin(sg.getMinWeight() / sg.getNormalizingConstant()),
                   load(-1) {
 
         }

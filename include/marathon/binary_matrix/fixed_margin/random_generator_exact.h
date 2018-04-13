@@ -358,10 +358,10 @@ namespace marathon {
                  * column sums.
                  * @return Random binary matrix.
                  */
-                const BinaryMatrix *next() override {
+                const BinaryMatrix &next() override {
 
                     if (!_realizable)
-                        return nullptr;
+                        throw std::runtime_error("Error! Vector pair not bi-graphical!");
 
                     // reset variables
                     A *columns = new A[_ncol];
@@ -370,10 +370,10 @@ namespace marathon {
                     int *colsum_last = new int[_nrow + 1];
                     int *colsum_conj = new int[_nrow + 1];
                     memcpy(columns, _columns, _ncol * sizeof(A));
-                    memcpy(rowsum, _rowsum, (_nrow + 2) * sizeof(int));
+                    memcpy(rowsum, &_rowsum[0], (_nrow + 2) * sizeof(int));
                     memcpy(colsum_first, _colsum_first, (_nrow + 1) * sizeof(int));
                     memcpy(colsum_last, _colsum_last, (_nrow + 1) * sizeof(int));
-                    memcpy(colsum_conj, _colsum_conj, (_nrow + 1) * sizeof(int));
+                    memcpy(colsum_conj, &_colsum_conj[0], (_nrow + 1) * sizeof(int));
                     _bin->clear();
                     _mul = 1;
 
@@ -401,7 +401,7 @@ namespace marathon {
                     delete[] colsum_last;
                     delete[] colsum_conj;
 
-                    return _bin;
+                    return *_bin;
                 }
 
 
@@ -409,9 +409,9 @@ namespace marathon {
                  * Create an independent copy of an existing random generator.
                  * @return Copy of this random generator.
                  */
-                RandomGeneratorExact* copy() const {
+                std::unique_ptr<marathon::RandomGenerator> copy() const {
                     // todo: improve performance by avoiding the redundant construction of auxiliary tables
-                    return new RandomGeneratorExact(_inst);
+                    return std::make_unique<RandomGeneratorExact>(_inst);
                 }
             };
         }

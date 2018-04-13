@@ -46,29 +46,28 @@ namespace marathon {
         protected:
 
             const SparseBipartiteGraph _g;              // bipartite graph
-            const int _n;                               // number of nodes in each vertex set
+            const size_t _n;                            // number of nodes in each vertex set
 
             void enumerate_recursive(
                     BipartiteMatching &match,
-                    const int u,
-                    const int unmatched1,
-                    const int unmatched2,
-                    const std::function<void(const State *)>& f
+                    const size_t u,
+                    const size_t unmatched1,
+                    const size_t unmatched2,
+                    const std::function<void(const State &)> &f
             ) const {
 
                 // if each vertex of vertex set U has been considered
                 if (u == _n) {
 
                     //
-                    if(unmatched1 != -1) {
-                        match.mates[unmatched1] = -1;
-                        match.mates[unmatched2] = -1;
-                        f(&match);
-                        match.mates[unmatched1] = -2;
-                        match.mates[unmatched2] = -2;
-                    }
-                    else {
-                        f(&match);
+                    if (unmatched1 != -1) {
+                        match.mates[unmatched1] = SIZE_MAX;
+                        match.mates[unmatched2] = SIZE_MAX;
+                        f(match);
+                        match.mates[unmatched1] = SIZE_MAX - 1;
+                        match.mates[unmatched2] = SIZE_MAX - 1;
+                    } else {
+                        f(match);
                     }
                     return;
                 }
@@ -81,22 +80,21 @@ namespace marathon {
                 // simulate all choices to add an edge (u,v) to the matching
 
                 // iterate over all adjacent nodes
-                std::vector<int> neighbors;
-                _g.getNeighbors(u, neighbors);
-                for (int v : neighbors) {
+                std::vector<size_t> neighbors = _g.getNeighbors(u);
+                for (size_t v : neighbors) {
 
                     if (!match.isMatched(v)) {
                         // add edge (u,v) to matching
                         match.mates[u] = v;
                         match.mates[v] = u;
-                        match.k++;
+                        match._edges++;
 
-                        enumerate_recursive(match, u+1, unmatched1, unmatched2, f);
+                        enumerate_recursive(match, u + 1, unmatched1, unmatched2, f);
 
                         // undo changes
-                        match.mates[u] = -1;
-                        match.mates[v] = -1;
-                        match.k--;
+                        match.mates[u] = SIZE_MAX;
+                        match.mates[v] = SIZE_MAX;
+                        match._edges--;
                     }
                 }
             }
@@ -107,41 +105,37 @@ namespace marathon {
              * Create an Enumerator object.
              * @param
              */
-            Enumerator(const SparseBipartiteGraph &g) :
-                    _g(g),
-                    _n((int) (g.getNumberOfNodes() / 2)) {
+            Enumerator(SparseBipartiteGraph g) :
+                    _g(std::move(g)),
+                    _n(_g.getNumberOfNodes() / 2) {
 
             }
 
-
-            virtual ~Enumerator() override {
-
-            }
 
             /**
              * Enumerate all perfect and near-perfect matchings an an bipartite graph.
              * @param f Function that is evaluated for each binary matrix.
              */
-            void enumerate(const std::function<void(const State *)> f) override {
+            void enumerate(const std::function<void(const State &)> f) override {
 
                 BipartiteMatching match(2 * _n); // empty matching on 2*_n nodes
 
                 // enumerate perfect matchings
-                enumerate_recursive(match, 0, -1, -1, f);
+                enumerate_recursive(match, 0, SIZE_MAX, SIZE_MAX, f);
 
                 // enumerate near-perfect matchings
-                for(int u=0; u<_n; u++){
-                    for(int v=_n; v<2*_n; v++) {
+                for (size_t u = 0; u < _n; u++) {
+                    for (size_t v = _n; v < 2 * _n; v++) {
 
                         // mark (u,v) as permanently unmatched
-                        match.mates[u] = -2;
-                        match.mates[v] = -2;
+                        match.mates[u] = SIZE_MAX - 1;
+                        match.mates[v] = SIZE_MAX - 1;
 
                         enumerate_recursive(match, 0, u, v, f);
 
                         // undo marking
-                        match.mates[u] = -1;
-                        match.mates[v] = -1;
+                        match.mates[u] = SIZE_MAX;
+                        match.mates[v] = SIZE_MAX;
                     }
                 }
 

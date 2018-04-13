@@ -42,7 +42,7 @@ namespace marathon {
 
     protected:
 
-        const StateGraph *sg;
+        const StateGraph &sg;
         T lambda_max = -1;
         Rational pimin;
 
@@ -52,8 +52,8 @@ namespace marathon {
          * Create a Spectral Bound Calculator.
          * @param sg
          */
-        SpectralBoundCalculator(const StateGraph *sg) : sg(sg) {
-            pimin = sg->getMinWeight() / sg->getNormalizingConstant();
+        SpectralBoundCalculator(const StateGraph &sg) : sg(sg) {
+            pimin = sg.getMinWeight() / sg.getNormalizingConstant();
         }
 
 
@@ -66,8 +66,8 @@ namespace marathon {
          */
         T eigenvalue() {
 
-            size_t omega = sg->getNumStates();          // Number of states
-            size_t numArcs = sg->getNumTransitions();   // Number of transitions
+            size_t omega = sg.getNumStates();          // Number of states
+            size_t numArcs = sg.getNumTransitions();   // Number of transitions
 
             // Check trivial cases
             if (omega <= 1)
@@ -77,10 +77,10 @@ namespace marathon {
             arma::Col<T> values(numArcs);
 
             int i = 0;
-            for (const Transition *t : sg->getArcs()) {
+            for (const Transition *t : sg.getArcs()) {
 
-                Rational wu = sg->getWeight(t->from);
-                Rational wv = sg->getWeight(t->to);
+                Rational wu = sg.getWeight(t->from);
+                Rational wv = sg.getWeight(t->to);
                 T p = t->weight.convert_to<T>();
 
                 // if transition matrix is not symmetric

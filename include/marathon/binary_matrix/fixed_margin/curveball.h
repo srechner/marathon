@@ -52,8 +52,8 @@ namespace marathon {
 
             protected:
 
-                // temporary memory
-                int *tmp1;
+                // auxiliary array
+                std::vector<int> tmp1;
 
             public:
 
@@ -61,9 +61,16 @@ namespace marathon {
                  * Create a Markov chain.
                  * @param inst Row and column sums.
                  */
-                explicit Curveball(const Instance &inst) : MarkovChain(inst) {
-                    const int ncol = (int) inst.getNumCols();
-                    tmp1 = new int[ncol];
+                explicit Curveball(Instance inst) : MarkovChain(std::move(inst)) {
+                    tmp1.resize(currentState.getNumCols());
+                }
+
+                /**
+                * Create a Markov chain.
+                * @param m Binary matrix used as initial state
+                */
+                explicit Curveball(BinaryMatrix m) : MarkovChain(std::move(m)) {
+                    tmp1.resize(currentState.getNumCols());
                 }
 
                 /**
@@ -72,10 +79,9 @@ namespace marathon {
                  * @param inst Row and Column sums.
                  * @param bin BinaryMatrix used as initial state.
                  */
-                Curveball(const Instance &inst, const BinaryMatrix& bin)
-                        : MarkovChain(inst, bin) {
-                    const int ncol = (int) inst.getNumCols();
-                    tmp1 = new int[ncol];
+                Curveball(Instance inst, BinaryMatrix bin)
+                        : MarkovChain(std::move(inst), std::move(bin)) {
+                    tmp1.resize(currentState.getNumCols());
                 }
 
                 /**
@@ -110,25 +116,11 @@ namespace marathon {
                 Curveball(
                         const int *rowsum,
                         const int *colsum,
-                        const int nrow,
-                        const int ncol
+                        size_t nrow,
+                        size_t ncol
                 ) : Curveball(Instance(rowsum, colsum, nrow, ncol)) {
 
                 }
-
-                /**
-                 * Create a Markov chain.
-                 * @param m Binary matrix used as initial state
-                 */
-                Curveball(const BinaryMatrix &m) : MarkovChain(m) {
-                    const int ncol = inst.getNumCols();
-                    tmp1 = new int[ncol];
-                }
-
-                virtual ~Curveball() {
-                    delete[] tmp1;
-                }
-
 
                 /**
                  * Generate each adjacent state x to s and the corresponding proposal propability p(s,x).
@@ -137,20 +129,22 @@ namespace marathon {
                  * @param process
                  */
                 virtual void adjacentStates(
-                        const State *x,
-                        const std::function<void(const State *, const marathon::Rational &)> &f
+                        const State &x,
+                        const std::function<void(const State &, const marathon::Rational &)> &f
                 ) const override {
 
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
+                    const int nrow = (int) _inst.getNumRows();
+                    const int ncol = (int) _inst.getNumCols();
 
-                    const BinaryMatrix* X = (BinaryMatrix*) x;
+                    // convert state reference
+                    const BinaryMatrix &X = static_cast<const BinaryMatrix &>(x);
 
                     // Make a copy of the current state
-                    BinaryMatrix *A = X->copy();
+                    BinaryMatrix A(X);
 
                     // auxiliary array
-                    int *tmp2 = new int[ncol];
+                    std::vector<int> tmp1(ncol);
+                    std::vector<int> tmp2(ncol);
 
                     /**
                      * Definition of Strona et. al: A fast and unbiased procedure
@@ -161,7 +155,7 @@ namespace marathon {
                     // randomly select two row indices
                     for (int i = 0; i < nrow; i++) {
                         for (int k = i + 1; k < nrow; k++) {
-                            
+
                             // select the indices that occur in on the Ai and Ak, but not in both
                             int a = 0;
                             int b = 0;
@@ -169,8 +163,8 @@ namespace marathon {
                             // for each column position
                             for (int j = 0; j < ncol; j++) {
 
-                                int A_ij = X->get(i, j);
-                                int A_kj = X->get(k, j);
+                                int A_ij = X.get(i, j);
+                                int A_kj = X.get(k, j);
 
                                 if (A_ij != A_kj) {
 
@@ -185,45 +179,42 @@ namespace marathon {
                             }
 
                             // calculate the probability of this choice
-                            const Integer num_subsets = binom(a+b, a);
+                            const Integer num_subsets = binom(a + b, a);
                             const Integer num_row_sel = binom(nrow, 2);
                             const Rational p(1, num_subsets * num_row_sel);
 
                             // simulate all combinations of choosing a out of (a+b) columns
-                            CombinationGenerator<int> cg(tmp1, tmp2, a + b, a);
+                            CombinationGenerator<int> cg(&tmp1[0], &tmp2[0], a + b, a);
                             do {
 
                                 // set A[i,j]=0 and A[k,j]=1 for j in tmp1
-                                for (int l = 0; l < a+b; l++) {
+                                for (int l = 0; l < a + b; l++) {
                                     int j = tmp1[l];
-                                    A->set(i, j, 0);
-                                    A->set(k, j, 1);
+                                    A.set(i, j, 0);
+                                    A.set(k, j, 1);
                                 }
 
                                 // for each selected column j: set A[i,j]=1 and A[k,j]=0
                                 for (int l = 0; l < a; l++) {
                                     int j = tmp2[l];
-                                    A->set(i, j, 1);
-                                    A->set(k, j, 0);
+                                    A.set(i, j, 1);
+                                    A.set(k, j, 0);
                                 }
 
                                 // process adjacent state
                                 f(A, p);
-                                assert(inst.isValid(*A));
+                                assert(_inst.isValid(A));
 
                             } while (cg.next());
 
                             // restore original state of rows i and k
-                            for(int l=0; l<a+b; l++) {
+                            for (int l = 0; l < a + b; l++) {
                                 const int j = tmp1[l];
-                                A->set(i, j, X->get(i,j));
-                                A->set(k, j, X->get(k,j));
+                                A.set(i, j, X.get(i, j));
+                                A.set(k, j, X.get(k, j));
                             }
                         }
                     }
-
-                    delete A;
-                    delete[] tmp2;
                 }
 
                 /**
@@ -231,10 +222,8 @@ namespace marathon {
                  */
                 virtual void step() override {
 
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
-
-                    BinaryMatrix *A = (BinaryMatrix *) currentState;
+                    const size_t nrow = _inst.getNumRows();
+                    const size_t ncol = _inst.getNumCols();
 
                     if (nrow == 1 || ncol == 1)
                         return;
@@ -252,8 +241,8 @@ namespace marathon {
                     // for each column position
                     for (int j = 0; j < ncol; j++) {
 
-                        bool A_ij = A->get(i, j);
-                        bool A_kj = A->get(k, j);
+                        bool A_ij = currentState.get(i, j);
+                        bool A_kj = currentState.get(k, j);
 
                         if (A_ij != A_kj) {
 
@@ -268,19 +257,19 @@ namespace marathon {
                     }
 
                     // randomly select a out of (a+b) elements to row i
-                    rg.shuffle<int>(tmp1, a + b);
+                    rg.shuffle<int>(&tmp1[0], a + b);
 
                     for (int l = 0; l < a; l++) {
                         int j = tmp1[l];
-                        A->set(i, j, 1);
-                        A->set(k, j, 0);
+                        currentState.set(i, j, 1);
+                        currentState.set(k, j, 0);
                     }
 
                     // the remaining elements to go row j
                     for (int l = a; l < a + b; l++) {
                         int j = tmp1[l];
-                        A->set(i, j, 0);
-                        A->set(k, j, 1);
+                        currentState.set(i, j, 0);
+                        currentState.set(k, j, 1);
                     }
                 }
 
@@ -288,8 +277,8 @@ namespace marathon {
                  * Create a copy of this MarkovChain.
                  * @return
                  */
-                virtual Curveball* copy() const override {
-                    return new Curveball(inst, *getCurrentState());
+                virtual std::unique_ptr<marathon::MarkovChain> copy() const override {
+                    return std::make_unique<Curveball>(_inst, currentState);
                 }
             };
         }

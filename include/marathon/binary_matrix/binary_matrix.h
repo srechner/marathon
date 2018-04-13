@@ -46,7 +46,7 @@ namespace marathon {
 
         private:
 
-            int _nrow, _ncol;               // number of rows and columns
+            uint _nrow, _ncol;              // number of rows and columns
             boost::dynamic_bitset<> _bits;  // the matrix is stored as a single row in a bitset.
 
             /**
@@ -55,8 +55,8 @@ namespace marathon {
              * @param j Column index.
              * @return Internal position of element (i,j).
              */
-            int coord_transform(const int i, const int j) const {
-                const int p = i * _ncol + j;
+            size_t coord_transform(const uint i, const uint j) const {
+                const size_t p = i * _ncol + j;
                 assert(p < _bits.size());
                 /*if (p >= _bits.size()) {
                     std::stringstream ss;
@@ -82,10 +82,10 @@ namespace marathon {
              * @param ncol Number of columns.
              */
             BinaryMatrix(
-                    const int nrow,
-                    const int ncol
-            ) : _nrow(nrow), _ncol(ncol),
-                _bits(boost::dynamic_bitset<>((size_t) (nrow * ncol))) {
+                    size_t nrow,
+                    size_t ncol
+            ) : _nrow(static_cast<uint>(nrow)), _ncol(static_cast<uint>(ncol)),
+                _bits(boost::dynamic_bitset<>(nrow * ncol)) {
 
             }
 
@@ -94,16 +94,13 @@ namespace marathon {
              * If given, initialize the binary matrix with the values stored in bits.
              * @param nrow Number of rows.
              * @param ncol Number of columns.
-             * @param bits Bool array that is interpreted as a nrow times ncol that has been
+             * @param bits Vector of booleans that is interpreted as a nrow times ncol that has been
              * flattened to a single row.
              */
-            BinaryMatrix(
-                    const int nrow,
-                    const int ncol,
-                    const bool *bits) :
-                    BinaryMatrix(nrow, ncol) {
+            BinaryMatrix(size_t nrow, size_t ncol, const std::vector<bool> &bits)
+                    : BinaryMatrix(nrow, ncol) {
 
-                for (int i = 0; i < nrow * ncol; i++) {
+                for (size_t i = 0; i < nrow * ncol; i++) {
                     _bits.set(i, bits[i]);
                 }
             }
@@ -112,11 +109,12 @@ namespace marathon {
              * Create a binary matrix from a binary string.
              * @param nrow Number of rows.
              * @param ncol Number of columns.
-             * @param str Binary string.
+             * @param str Binary string iterpreted as a nrow times ncol matrix flattened to a single row.
              */
-            BinaryMatrix(const int nrow, const int ncol, const std::string &str) :
+            BinaryMatrix(size_t nrow, size_t ncol, const std::string &str) :
                     BinaryMatrix(nrow, ncol) {
-                for (int i = 0; i < nrow * ncol; i++) {
+
+                for (size_t i = 0; i < nrow * ncol; i++) {
                     if (str[i] == '0')
                         _bits.set(i, 0);
                     else if (str[i] == '1')
@@ -131,28 +129,9 @@ namespace marathon {
             }
 
             /**
-             * Copy constructor.
-             * @param s
+             * Return a reference to the internal matrix representation.
+             * @return Internal matrix representation.
              */
-            BinaryMatrix(const BinaryMatrix &s) :
-                    _nrow(s._nrow), _ncol(s._ncol) {
-                _bits = boost::dynamic_bitset<>(s._bits);
-            }
-
-            /**
-             * Move constructor.
-             * @param m Binary matrix (rvalue reference).
-             */
-            BinaryMatrix(BinaryMatrix &&m) :
-                    _nrow(std::move(m._nrow)),
-                    _ncol(std::move(m._ncol)),
-                    _bits(std::move(m._bits)) {
-            }
-
-            virtual ~BinaryMatrix() {
-
-            }
-
             const boost::dynamic_bitset<> &getBitset() const {
                 return _bits;
             }
@@ -170,14 +149,14 @@ namespace marathon {
              * @return Return the number of rows.
              */
             size_t getNumRows() const {
-                return (size_t) _nrow;
+                return _nrow;
             }
 
             /**
              * @return Return the number of columns.
              */
             size_t getNumCols() const {
-                return (size_t) _ncol;
+                return _ncol;
             }
 
             /**
@@ -186,9 +165,9 @@ namespace marathon {
              * @param j Column index.
              * @return Value of entry (i,j).
              */
-            int get(const int i, const int j) const {
-                const int p = coord_transform(i, j);
-                return _bits[p] ? 1 : 0;
+            bool get(uint i, uint j) const {
+                const size_t p = coord_transform(i, j);
+                return _bits[p];
             }
 
             /**
@@ -197,8 +176,8 @@ namespace marathon {
              * @param j Column index.
              * @param b Zero or One.
              */
-            void set(const int i, const int j, const bool b) {
-                const int p = coord_transform(i, j);
+            void set(uint i, uint j, bool b) {
+                const size_t p = coord_transform(i, j);
                 _bits[p] = b;
             }
 
@@ -214,8 +193,8 @@ namespace marathon {
              * @param i Row index.
              * @param j Column index.
              */
-            void flip(const int i, const int j) {
-                const int p = coord_transform(i, j);
+            void flip(uint i, uint j) {
+                const size_t p = coord_transform(i, j);
                 _bits[p].flip();
             }
 
@@ -232,8 +211,14 @@ namespace marathon {
              * @param x State pointer that will be interpreted as a binary matrix pointer.
              * @return 0, if x is identical to this matrix, 1 or -1, otherwise.
              */
-            int compare(const State *x) const override {
-                auto d = (const BinaryMatrix *) x;
+            int compare(const State &x) const override {
+
+                // try to convert state to binary matrix
+                auto d = dynamic_cast<const BinaryMatrix *>(&x);
+
+                if(d == nullptr)
+                    return -1;
+
                 if (operator==(*d))
                     return 0;
                 else {
@@ -274,8 +259,8 @@ namespace marathon {
              * Return a deep copy of the matrix.
              * @return Copy of this matrix.
              */
-            BinaryMatrix *copy() const override {
-                return new BinaryMatrix(*this);
+            std::unique_ptr<State> copy() const override {
+                return std::make_unique<BinaryMatrix>(*this);
             }
 
             /**
@@ -288,12 +273,12 @@ namespace marathon {
              * @param l Column index.
              * @return
              */
-            bool isCheckerBoardUnit(const int i, const int j, const int k, const int l) const {
+            bool isCheckerBoardUnit(uint i, uint j, uint k, uint l) const {
 
-                const int a = get(i, j);
-                const int b = get(i, l);
-                const int c = get(k, j);
-                const int d = get(k, l);
+                const bool a = get(i, j);
+                const bool b = get(i, l);
+                const bool c = get(k, j);
+                const bool d = get(k, l);
 
                 return (a == d) && (b == c) && (a == !b);
             }
@@ -305,7 +290,7 @@ namespace marathon {
              * @param k Row index.
              * @param l Column index.
              */
-            void flipSubmatrix(const int i, const int j, const int k, const int l) {
+            void flipSubmatrix(uint i, uint j, uint k, uint l) {
                 flip(i, j);
                 flip(i, l);
                 flip(k, j);
@@ -333,32 +318,6 @@ namespace marathon {
                 return getNumRows() == s.getNumRows()
                        && getNumCols() == s.getNumCols()
                        && _bits == s._bits;
-            }
-
-            /**
-             * Assignment operator.
-             * @param m Binary matrix. (lvalue reference.)
-             * @return Binary matrix as a copy of m.
-             */
-            BinaryMatrix &operator=(const BinaryMatrix &m) {
-                if (this != &m) {
-                    _nrow = m._nrow;
-                    _ncol = m._ncol;
-                    _bits = boost::dynamic_bitset<>(m._bits);
-                }
-                return *this;
-
-            }
-
-            /**
-             * Assignment operator.
-             * @param m Binary matrix. (rvalue reference.)
-             * @return Binary matrix as a copy of m. In contrast, m will be destroyed.
-             */
-            BinaryMatrix& operator=(BinaryMatrix&& m) {
-                _nrow = m._nrow;
-                _ncol = m._ncol;
-                _bits = std::move(m._bits);
             }
 
         };

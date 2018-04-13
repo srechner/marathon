@@ -140,16 +140,6 @@ namespace marathon {
                 }
 
                 /**
-                  * Set the current state of the Markov chain.
-                  * A copy of state s is used from now on as current State.
-                  * @param s State pointer that is used to create the current state.
-                  */
-                void setCurrentState(const State *s) override {
-                    SimpleChain::setCurrentState(s);
-                    reset();
-                }
-
-                /**
                  * Generate each adjacent state x to s and the corresponding proposal propability p(s,x).
                  * For each pair (x,p) call the function f.
                  * @param s
@@ -215,10 +205,8 @@ namespace marathon {
                  * Create a copy of this MarkovChain.
                  * @return
                  */
-                virtual SimpleChainDynamic *copy() const override {
-                    auto mc = new SimpleChainDynamic(inst);
-                    mc->setCurrentState(this->getCurrentState());
-                    return mc;
+                virtual std::unique_ptr<marathon::MarkovChain> copy() const override {
+                    return std::make_unique<SimpleChainDynamic>(inst, currentState);
                 }
             };
         }

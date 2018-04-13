@@ -22,15 +22,15 @@ int main(int argc, char **argv) {
 
     // enumerate states
     size_t num_states = 0;
-    enm.enumerate([&](const marathon::State* s){
+    enm.enumerate([&](const marathon::State &s) {
 
-        // process state s...
-        auto x = (const marathon::binary_matrix::BinaryMatrix*) s;
+        // convert state to binary matrix
+        const auto &x = static_cast<const marathon::binary_matrix::BinaryMatrix &> (s);
 
-        // output state
+        // output binary matrix
         std::stringstream ss("A");
         ss << "A" << ++num_states << " = \n\n";
-        std::cout << ss.str() << x->fancyString() << std::endl;
+        std::cout << ss.str() << x.fancyString() << std::endl;
 
     });
 

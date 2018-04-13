@@ -56,7 +56,7 @@ namespace marathon {
 			 * Create a Markov chain object.
 			 * @param g Bipartite graph.
 			 */
-			Broder86(const SparseBipartiteGraph& g) : MarkovChain(g) {
+			Broder86(SparseBipartiteGraph g) : MarkovChain(std::move(g)) {
 
 			}
 
@@ -65,17 +65,8 @@ namespace marathon {
 			 * @param g Bipartite Graph.
 			 * @param m Perfect or near-perfect matching in g.
 			 */
-			Broder86(const SparseBipartiteGraph& g, const BipartiteMatching& m) :
-					MarkovChain(g, m) {
-
-			}
-
-			/**
-			 * Create a Markov chain object as a copy of another one.
-			 * @param mc Another Markov chain object.
-			 */
-			Broder86(const Broder86& mc) :
-					MarkovChain(mc) {
+			Broder86(SparseBipartiteGraph g, BipartiteMatching m) :
+					MarkovChain(std::move(g), std::move(m)) {
 
 			}
 
@@ -83,8 +74,8 @@ namespace marathon {
              * Create a copy of this MarkovChain.
              * @return
              */
-			virtual ::marathon::matching::MarkovChain *copy() const {
-				return new ::marathon::matching::Broder86(*this);
+			virtual std::unique_ptr<marathon::MarkovChain> copy() const {
+				return std::make_unique<Broder86>(*this);
 			}
 
 
@@ -95,12 +86,12 @@ namespace marathon {
 			 * @param process Callback function to call for each adjacent state.
 			 */
 			virtual void adjacentStates(
-					const State *x,
-					const std::function<void(const State *, const marathon::Rational &)> &f
+					const State &x,
+					const std::function<void(const State &, const marathon::Rational &)> &f
 			) const override {
 
 				// Variables
-				const BipartiteMatching *s = (const BipartiteMatching *) x;
+				const BipartiteMatching &s = static_cast<const BipartiteMatching &>(x);
 
 				// Jerrum and Sinclair, 1989. Approximating the Permanent.
 
@@ -109,48 +100,43 @@ namespace marathon {
 				// for each edge e=(u,v)
 				for (auto it = _edges.begin(); it != _edges.end(); ++it) {
 
-					int u = it->first;
-					int v = it->second;
+					size_t u = it->first;
+					size_t v = it->second;
 
 					// create new state as copy of old one
-					BipartiteMatching s2(*s);
+					BipartiteMatching s2(s);
 
 					// if matching is perfect and (u,v) can be removed from it
-					if (s->is_perfect() && s->mates[u] == v) {
+					if (s.is_perfect() && s.getMate(u) == v) {
+
 						// remove edge (u,v)
-						s2.mates[u] = -1;
-						s2.mates[v] = -1;
-						s2.k--;
-						s2.unmatched[0] = u;
-						s2.unmatched[1] = v;
-					} else if (s->is_near_perfect()) {	// matching is near-perfect
+						s2.removeEdge(u,v);
+
+					} else if (s.is_near_perfect()) {	// matching is near-perfect
 
 						// (u,v) can be added
-						if (!s->isMatched(u) && !s->isMatched(v)) {
+						if (!s.isMatched(u) && !s.isMatched(v)) {
+
 							// add edge (u,v)
-							s2.mates[u] = v;
-							s2.mates[v] = u;
-							s2.k++;
-							s2.unmatched[0] = -1;
-							s2.unmatched[1] = -1;
+							s2.addEdge(u,v);
 						}
-						else if (s->isMatched(u) && !s->isMatched(v)) {
+						else if (s.isMatched(u) && !s.isMatched(v)) {
 							// remove edge (u, mate[u])
 							// add edge (u,v)
-							int w = s->mates[u];
-							s2.mates[w] = -1;
+							size_t w = s.getMate(u);
+							s2.mates[w] = SIZE_MAX;
 							s2.mates[u] = v;
 							s2.mates[v] = u;
-							s2.unmatched[1] = w;	// w=mate[u] (>= n/2) becomes unmatched node
+							s2.unmatched2 = w;			// w=mate[u] (>= n/2) becomes unmatched node
 						}
-						else if (!s->isMatched(u) && s->isMatched(v)) {
+						else if (!s.isMatched(u) && s.isMatched(v)) {
 							// remove edge (v, mate[v])
 							// add edge (u,v)
-							int w = s->mates[v];
-							s2.mates[w] = -1;
+							size_t w = s.getMate(v);
+							s2.mates[w] = SIZE_MAX;
 							s2.mates[u] = v;
 							s2.mates[v] = u;
-							s2.unmatched[0] = w;	// w=mate[v] (< n/2) becomes unmatched node
+							s2.unmatched1 = w;	// w=mate[v] (< n/2) becomes unmatched node
 						} else {
 							// stay in s
 						}
@@ -159,55 +145,53 @@ namespace marathon {
 						// stay at current state
 					}
 
-					f(&s2, p);
+					f(s2, p);
 				}
 			}
 
 			virtual void step() override {
 
-				auto m = (BipartiteMatching*) getCurrentState();
-
 				// select an edge (u,v) uniformly at random
-				const int e = rg.nextInt(_edges.size());
-				const int u = _edges[e].first;
-				const int v = _edges[e].second;
+				const size_t e = rg.nextInt(_edges.size());
+				const size_t u = _edges[e].first;
+				const size_t v = _edges[e].second;
 
 				// if m is perfect and (u,v) can be removed
-				if (m->is_perfect() && m->mates[u] == v) {
+				if (currentState.is_perfect() && currentState.mates[u] == v) {
 					// remove edge (u,v)
-					m->mates[u] = -1;
-					m->mates[v] = -1;
-					m->k--;
-					m->unmatched[0] = u;
-					m->unmatched[1] = v;
-				} else if (m->is_near_perfect()) {	// matching is near-perfect
+					currentState.mates[u] = SIZE_MAX;
+					currentState.mates[v] = SIZE_MAX;
+					currentState._edges--;
+					currentState.unmatched1 = u;
+					currentState.unmatched2 = v;
+				} else if (currentState.is_near_perfect()) {	// matching is near-perfect
 
 					// if (u,v) can be added to m
-					if (!m->isMatched(u) && !m->isMatched(v)) {
+					if (!currentState.isMatched(u) && !currentState.isMatched(v)) {
 						// add edge (u,v) to m
-						m->mates[u] = v;
-						m->mates[v] = u;
-						m->k++;
-						m->unmatched[0] = -1;
-						m->unmatched[1] = -1;
+						currentState.mates[u] = v;
+						currentState.mates[v] = u;
+						currentState._edges++;
+						currentState.unmatched1 = SIZE_MAX;
+						currentState.unmatched2 = SIZE_MAX;
 					}
-					else if (m->isMatched(u) && !m->isMatched(v)) {
+					else if (currentState.isMatched(u) && !currentState.isMatched(v)) {
 						// remove edge (u, mate[u]) from m
 						// add edge (u,v) to m
-						int w = m->mates[u];
-						m->mates[w] = -1;
-						m->mates[u] = v;
-						m->mates[v] = u;
-						m->unmatched[1] = w;	// w=mate[u] (>= n/2) becomes unmatched
+						size_t w = currentState.mates[u];
+						currentState.mates[w] = SIZE_MAX;
+						currentState.mates[u] = v;
+						currentState.mates[v] = u;
+						currentState.unmatched2 = w;	// w=mate[u] (>= n/2) becomes unmatched
 					}
-					else if (!m->isMatched(u) && m->isMatched(v)) {
+					else if (!currentState.isMatched(u) && currentState.isMatched(v)) {
 						// remove edge (v, mate[v]) from m
 						// add edge (u,v) to m
-						int w = m->mates[v];
-						m->mates[w] = -1;
-						m->mates[u] = v;
-						m->mates[v] = u;
-						m->unmatched[0] = w;	// w=mate[v] (< n/2) becomes unmatched
+						size_t w = currentState.mates[v];
+						currentState.mates[w] = SIZE_MAX;
+						currentState.mates[u] = v;
+						currentState.mates[v] = u;
+						currentState.unmatched1 = w;	// w=mate[v] (< n/2) becomes unmatched
 					} else {
 						// stay at current state
 					}

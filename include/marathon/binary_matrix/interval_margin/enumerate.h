@@ -41,7 +41,7 @@ namespace marathon {
              */
             class Enumerator : private Counter, public marathon::Enumerator {
 
-                BinaryMatrix *_bin;      // binary matrix
+                BinaryMatrix _bin;       // binary matrix
                 int *_ascending;         // array of ascending integers starting at zero
 
                 /**
@@ -77,7 +77,7 @@ namespace marathon {
                         const std::vector<Group> &column_groups,
                         const int group_id,
                         const int aggr_in_row,
-                        const std::function<void(const State *)> f
+                        const std::function<void(const State &)> &f
                 ) {
 
                     // if the whole matrix has completely been processed
@@ -205,7 +205,7 @@ namespace marathon {
                                 const int j = first + select[k - l - 1];
 
                                 // set matrix entry
-                                _bin->set(rowsum_index[0], colsum_index[j], 1);
+                                _bin.set(rowsum_index[0], colsum_index[j], 1);
 
                                 // restore non-increasing order of colsum_lower
                                 std::swap(colsum_index[last - l], colsum_index[j]);
@@ -239,7 +239,7 @@ namespace marathon {
                                 std::swap(colsum_index[j], colsum_index[last - k + l + 1]);
 
                                 // reset matrix entry
-                                _bin->set(rowsum_index[0], colsum_index[j], 0);
+                                _bin.set(rowsum_index[0], colsum_index[j], 0);
                             }
 
                         } while (cg.next());
@@ -260,15 +260,12 @@ namespace marathon {
                 /**
 				 * Create a enumerator for binary matrices whose row and column
 				 * sums lie in the prescribed intervals.
-				 * @param rowsum_lower Lower bounds on the row sums.
-				 * @param rowsum_upper Upper bounds on the row sums.
-				 * @param colsum_lower Lower bounds on the column sums.
-				 * @param colsum_upper Upper bounds on the column sums.
+				 * @param inst Four-tuple of integer vectors.
 				 */
-                Enumerator(const Instance &inst)
-                        : Counter(inst) {
+                Enumerator(Instance inst)
+                        : Counter(std::move(inst)) {
 
-                    _bin = new BinaryMatrix(_nrow, _ncol);
+                    _bin = BinaryMatrix(_nrow, _ncol);
 
                     // create ascending array of integers
                     _ascending = new int[_ncol];
@@ -309,8 +306,8 @@ namespace marathon {
                         const int *rowsum_upper,
                         const int *colsum_lower,
                         const int *colsum_upper,
-                        const int nrow,
-                        const int ncol
+                        size_t nrow,
+                        size_t ncol
                 ) : Enumerator(
                         std::vector<int>(rowsum_lower, rowsum_lower + nrow),
                         std::vector<int>(rowsum_upper, rowsum_upper + nrow),
@@ -320,8 +317,7 @@ namespace marathon {
 
                 }
 
-                virtual ~Enumerator() {
-                    delete _bin;
+                virtual ~Enumerator() override {
                     delete _ascending;
                 }
 
@@ -330,7 +326,7 @@ namespace marathon {
                  * row and column sums are bounded by given integer vectors.
                  * @param f Function that is evaluated for each binary matrix.
                  */
-                void enumerate(const std::function<void(const State *)> f) override {
+                void enumerate(const std::function<void(const State &)> f) override {
 
                     int *rowsum_lower = new int[_nrow];
                     int *rowsum_upper = new int[_nrow];
@@ -386,7 +382,7 @@ namespace marathon {
                     group_columns(columns, groups);
 
                     // clear variables
-                    _bin->clear();
+                    _bin.clear();
 
                     // select the binary matrix with number target by traversing the enumeration tree
                     enumerate_recursive(

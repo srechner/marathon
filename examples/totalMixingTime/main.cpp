@@ -19,27 +19,27 @@ int main(int argc, char **argv) {
     }
 
     // create Markov chain
-    marathon::MarkovChain* mc;
+    std::unique_ptr<marathon::MarkovChain> mc;
     switch (chain) {
         case classical_switch:
-            mc = new marathon::binary_matrix::fixed_margin::SwitchChain(inst);
+            mc = std::make_unique<marathon::binary_matrix::fixed_margin::SwitchChain>(inst);
             break;
         case edge_switch:
-            mc = new marathon::binary_matrix::fixed_margin::EdgeSwitchChain(inst);
+            mc = std::make_unique<marathon::binary_matrix::fixed_margin::EdgeSwitchChain>(inst);
             break;
         case curveball:
-            mc = new marathon::binary_matrix::fixed_margin::Curveball(inst);
+            mc = std::make_unique<marathon::binary_matrix::fixed_margin::Curveball>(inst);
             break;
     }
 
     // construct state graph
-    marathon::StateGraph sg(mc);
+    marathon::StateGraph sg(*mc);
 
     // determine number of states
     const size_t N = sg.getNumStates();
 
     // calculate total mixing time
-    marathon::MixingTimeCalculator<double> mtc(&sg);
+    marathon::MixingTimeCalculator<double> mtc(sg);
     int t;
     if(N < 10000) {
         // more efficient but requires about 32 N^2 byte of main memory
@@ -51,9 +51,6 @@ int main(int argc, char **argv) {
     }
 
     std::cout << t << std::endl;
-
-    // clean up
-    delete mc;
 
     return 0;
 }

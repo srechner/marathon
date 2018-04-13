@@ -42,10 +42,6 @@ namespace marathon {
 
     public:
 
-        virtual ~Counter() {
-
-        }
-
         /**
          * Return the exact number of objects.
          * @return

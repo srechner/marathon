@@ -26,7 +26,7 @@
 #define MARATHON_BINARY_MATRIX_MARKOV_CHAIN_MARGIN_INTERVAL_H
 
 #include "instance.h"
-#include "marathon/markov_chain.h"
+#include "marathon/binary_matrix/markov_chain.h"
 #include "realize.h"
 #include "count.h"
 
@@ -39,11 +39,11 @@ namespace marathon {
             /**
              * Base class for all Markov chains that generate bipartite graphs / binary matrices.
              */
-            class MarkovChain : public ::marathon::MarkovChain {
+            class MarkovChain : public ::marathon::binary_matrix::MarkovChain {
 
             protected:
 
-                const interval_margin::Instance inst;          // instance
+                const interval_margin::Instance inst;          // lower and upper matrix margins
                 fixed_margin::Instance current_margin;         // row and column sums of current state
 
 
@@ -53,21 +53,23 @@ namespace marathon {
                  * Create a Markov chain.
                  * @param inst Four-Tuple of integer vectors.
                  */
-                MarkovChain(const Instance &inst) :
-                        inst(inst),
-                        current_margin(
-                                fixed_margin::Instance(*((BinaryMatrix *) (currentState = realize_slow(inst))))) {
-
+                MarkovChain(Instance inst) :
+                        ::marathon::binary_matrix::MarkovChain(realize_fast(inst)),
+                        inst(std::move(inst)),
+                        current_margin(fixed_margin::Instance(currentState)) {
                 }
 
                 /**
                  * Create a Markov chain.
                  * Use the binary matrix as initial state.
                  * @param inst Four-Tuple of integer vectors.
+                 * @param m Binary matrix.
                  */
-                MarkovChain(const Instance &inst, const BinaryMatrix &bin) :
-                        inst(inst), current_margin(bin) {
-                    currentState = bin.copy();
+                MarkovChain(Instance inst, BinaryMatrix m) :
+                        ::marathon::binary_matrix::MarkovChain(std::move(m)),
+                        inst(std::move(inst)),
+                        current_margin(fixed_margin::Instance(currentState)) {
+
                 }
 
                 /**
@@ -95,8 +97,8 @@ namespace marathon {
                         const int *rowsum_upper,
                         const int *colsum_lower,
                         const int *colsum_upper,
-                        const int nrow,
-                        const int ncol
+                        size_t nrow,
+                        size_t ncol
                 ) : MarkovChain(Instance(rowsum_lower, rowsum_upper, colsum_lower, colsum_upper, nrow, ncol)) {
 
                 }
@@ -121,37 +123,16 @@ namespace marathon {
                 }
 
                 /**
-                  * Set the current state of the Markov chain.
-                  * A copy of state s is used from now on as current State.
-                  * @param s State pointer that is used to create the current state.
-                  */
-                void setCurrentState(const State *s) override {
-                    ::marathon::MarkovChain::setCurrentState(s);
-                    current_margin = fixed_margin::Instance(*(BinaryMatrix *) s);
+                 * Set the current state.
+                 * @param s Binary matrix.
+                 */
+                virtual void setCurrentState(const State& s) override {
+                    auto m = dynamic_cast<const BinaryMatrix *>(&s);
+                    if (m == nullptr)
+                        throw std::runtime_error("Error! State is not a binary matrix!");
+                    currentState = *m;
+                    current_margin = fixed_margin::Instance(currentState);
                 }
-
-                /**
-                 * Return the current state of the Markov chain.
-                 * @return
-                 */
-                virtual const BinaryMatrix* getCurrentState() const override {
-                    return (BinaryMatrix*) currentState;
-                }
-
-                /**
-                 * Randomize the current state of the Markov chain.
-                 * @param steps Number of steps.
-                 * @return The current state after randomization.
-                 */
-                virtual const BinaryMatrix *randomize(int steps) override {
-                    return (BinaryMatrix*) marathon::MarkovChain::randomize(steps);
-                };
-
-                /**
-                 * Create a copy of the Markov chain object.
-                 * @return Copy of the Markov chain.
-                 */
-                virtual MarkovChain* copy() const override = 0;
             };
         }
     }

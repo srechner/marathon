@@ -38,108 +38,78 @@
 
 namespace marathon {
 
-	/**
-	 * Virtual Markov chain base class.
-	 */
-	class MarkovChain {
+    /**
+     * Virtual Markov chain base class.
+     */
+    class MarkovChain {
 
-	protected:
+    protected:
 
-		// a pointer to the current state object during randomization
-		State *currentState = nullptr;
+        // random generator used for randomization
+        marathon::RandomDevice rg;
 
-		// random generator used for randomization
-		marathon::RandomDevice rg;
+    public:
 
-	public:
-
-		/**
-		 * Standard Constructor
-		 */
-		MarkovChain() = default;
-
-		/**
-         * Declare a Markov chain with initial state s.
-         * @param s Initial state.
+        /**
+         * Randomize the current state of the Markov chain.
+         * @param steps Number of steps.
+         * @return The current state after randomization.
          */
-		MarkovChain(const State *s) {
-			currentState = s->copy();
-		}
-
-		/*
-		 * Standard Destructor
-		 */
-		virtual ~MarkovChain() {
-			delete currentState;
-		}
-
-		/**
-		 * Randomize the current state of the Markov chain.
-		 * @param steps Number of steps.
-		 * @return The current state after randomization.
-		 */
-		virtual const State *randomize(int steps) {
-			for (int i = 0; i < steps; i++)
+        virtual const State &randomize(int steps) {
+            for (int i = 0; i < steps; i++)
                 step();
-			return getCurrentState();
-		}
+            return getCurrentState();
+        }
 
-		/**
-		 * Return the current state of the Markov chain.
-		 * @return
-		 */
-		virtual const State *getCurrentState() const {
-			return currentState;
-		}
+        /**
+         * Return the current state of the Markov chain.
+         * @return
+         */
+        virtual const State &getCurrentState() const = 0;
 
-		/**
-		 * Return weight of state s.
-		 * @param s State of the Markov chain.
-		 * @return w(s).
-		 */
-		virtual Rational getWeight(const State* s) const {
-			return Rational(1);
-		}
+        /**
+         * Return weight of state s.
+         * @param s State of the Markov chain.
+         * @return w(s).
+         */
+        virtual Rational getWeight(const State &s) const {
+            return Rational(1);
+        }
 
+        /**
+         * Set the current state of the Markov chain.
+         * @param s State object.
+         */
+        virtual void setCurrentState(const State &s) = 0;
 
-		/**
-		 * Set the current state of the Markov chain.
-		 * A copy of state s is used from now on as current State.
-		 * @param s State pointer that is used to create the current state.
-		 */
-		virtual
-		void setCurrentState(const State *s) {
-			currentState = s->copy();
-		}
+        /**
+         *  Generate the set of states that are adjacent to s and call the function f for each state.
+         *  @param s A pointer to the state for which its neighbours are to be computed.
+         *  @param f A std::function object that represents a function Each adjacent state is to be processed by the function f.
+         */
+        virtual void adjacentStates(
+                const State &s,
+                const std::function<void(const State &, const Rational &)> &f
+        ) const {
+            throw std::runtime_error("marathon::Exception: virtual method adjacentStates is not implemented!");
+        }
 
-		/**
-		 *  Generate the set of states that are adjacent to s and call the function f for each state.
-		 *  @param s A pointer to the state for which its neighbours are to be computed.
-		 *  @param f A std::function object that represents a function Each adjacent state is to be processed by the function f.
-		 */
-		virtual void adjacentStates(
-				const State *s,
-				const std::function<void(const State *, const Rational &)> &f
-		) const {
-			throw std::runtime_error("marathon::Exception: virtual method adjacentStates is not implemented!");
-		}
+        /**
+         * Apply one step of the Markov chain to the current state.
+         * @return The current state after randomization.
+         */
+        virtual void step() {
+            throw std::runtime_error("marathon::Exception: virtual method step() is not implemented!");
+        }
 
-		/**
-		 * Apply one step of the Markov chain to the current state.
-		 * @return The current state after randomization.
-		 */
-		virtual void step() {
-			throw std::runtime_error("marathon::Exception: virtual method step() is not implemented!");
-		}
-
-		/**
-		 * Create a copy of this MarkovChain.
-		 * @return
-		 */
-		virtual MarkovChain *copy() const {
-			throw std::runtime_error("marathon::Exception: virtual method copy() is not implemented!");
-		}
-	};
+        /**
+         * Create a copy of this MarkovChain.
+         * @return
+         */
+        virtual std::unique_ptr<MarkovChain> copy() const {
+            throw std::runtime_error("marathon::Exception: virtual method copy() is not implemented!");
+        }
+    };
 }
 
 #endif /* INCLUDE_MARATHON_MARKOVCHAIN_H_ */

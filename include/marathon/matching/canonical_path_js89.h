@@ -46,29 +46,27 @@ namespace marathon {
              * @param sg Pointer to a state graph object.
              * @param s Index of a state (Start).
              * @param t Index of a state (End).
-             * @param path List of State indices that corresponds to the state.
+             * @return List of State indices that corresponds to the state.
              */
-            virtual void construct(
-                    const StateGraph *sg, const int s, const int t,
-                    std::list<int> &path) const {
+            virtual std::list<int> construct(const StateGraph &sg, const int s, const int t) const override {
 
-                const Broder86 *mc = (const Broder86 *) sg->getMarkovChain();
+                const Broder86 &mc = static_cast<const Broder86 &>(sg.getMarkovChain());
 
-                path.clear();
+                std::list<int> path;    // will be returned
 
                 if (s == t)
-                    return;
+                    return path;
 
                 // Implementation after JS89
                 std::list<int> init_seqment;
                 std::list<int> main_seqment;
                 std::list<int> final_seqment;
 
-                const int omega = sg->getNumStates();
+                const size_t omega = sg.getNumStates();
 
                 // working variables
                 int i, c, a, sw;
-                const int n = mc->_g.getNumberOfNodes();
+                const size_t n = mc._g.getNumberOfNodes();
                 const BipartiteMatching *u, *v;
                 std::queue<int> q;
 
@@ -98,11 +96,9 @@ namespace marathon {
                     while (!q.empty()) {
                         c = q.front();
                         q.pop();
-                        u =
-                                (const ::marathon::matching::BipartiteMatching *) sg->getState(
-                                        c);
+                        const BipartiteMatching &u = static_cast<const BipartiteMatching &>(sg.getState(c));
 
-                        if (2 * u->k == n) {    // Path to Perfect Matching
+                        if (2 * u._edges == n) {    // Path to Perfect Matching
                             // Reconstruct Path and return
                             do {
                                 segments[i]->push_front(c);
@@ -111,7 +107,7 @@ namespace marathon {
                             break;
                         } else {
                             // for all neighbors of u
-                            for (Transition *t : sg->getOutArcs(c)) {
+                            for (Transition *t : sg.getOutArcs(c)) {
                                 // if not visited yet
                                 if (!visited[t->to]) {
                                     q.push(t->to);
@@ -119,15 +115,6 @@ namespace marathon {
                                     visited[t->to] = 1;
                                 }
                             }
-                            /*computeNeighbours(u, neighbors);
-                             for (auto it = neighbors.begin(); it != neighbors.end(); ++it) {
-                             v = it->first;
-
-                             if (prev.find(v) == prev.end()) {	// not visited yet
-                             prev[v] = u;
-                             q.push(v);
-                             }
-                             }*/
                         }
                     }
                 }
@@ -135,28 +122,27 @@ namespace marathon {
                 final_seqment.reverse();
 
                 // Main Segment
-                const BipartiteMatching *I = (const BipartiteMatching *) sg->getState(
-                        init_seqment.back());
-                const BipartiteMatching *F = (const BipartiteMatching *) sg->getState(
-                        final_seqment.front());
-                BipartiteMatching s2(*I);
+                const int ii = init_seqment.back();
+                const int ff = final_seqment.front();
+                const BipartiteMatching &I = static_cast<const BipartiteMatching &>(sg.getState(ii));
+                const BipartiteMatching &F = static_cast<const BipartiteMatching &>(sg.getState(ff));
+                BipartiteMatching s2(I);
 
                 //std::cout << "I = " << I->toString() << std::endl;
                 //std::cout << "F = " << F->toString() << std::endl;
 
-                const BipartiteMatching *x[2] = {I, F};
+                const BipartiteMatching *x[2] = {&I, &F};
 
-                std::vector<int> cycle;
-                std::vector<int>::iterator it2;
+                std::vector<size_t> cycle;
+                std::vector<size_t>::iterator it2;
 
-                bool unrolled[n];
-                memset(unrolled, 0, n * sizeof(bool));
+                std::vector<bool> unrolled(n);
 
                 // unroll symmetric difference of I and F Cycle for Cycle
                 for (i = 0; i < n; i++) {
 
                     // if some node lies on a cycle which isn't unrolled yet
-                    if (I->mates[i] != F->mates[i] && !unrolled[i]) {
+                    if (I.mates[i] != F.mates[i] && !unrolled[i]) {
 
                         // Collect Cycle Nodes and store in list
                         cycle.clear();
@@ -166,7 +152,7 @@ namespace marathon {
                         do {
                             cycle.push_back(a);
                             unrolled[a] = true;
-                            a = x[sw]->mates[a];
+                            a = x[sw]->getMate(a);
                             sw = 1 - sw;
                         } while (a != i);
 
@@ -177,27 +163,27 @@ namespace marathon {
                         int u0 = cycle[0];
                         int v0 = cycle[1];
                         s2.removeEdge(u0, v0);
-                        int x = sg->indexOf(&s2);
+                        int x = sg.indexOf(s2);
                         assert(x != -1);
                         main_seqment.push_back(x);
 
                         // replace each edge (u_j, v_j) by (u_j, v_j-1)
                         for (int j = 1; j < cycle.size() / 2; j++) {
-                            int u_j = cycle[2 * j];
-                            int v_j = cycle[2 * j + 1];
-                            int v_jj = cycle[2 * j - 1];
+                            size_t u_j = cycle[2 * j];
+                            size_t v_j = cycle[2 * j + 1];
+                            size_t v_jj = cycle[2 * j - 1];
                             s2.mates[u_j] = v_jj;
                             s2.mates[v_jj] = u_j;
                             s2.mates[v_j] = -1;
-                            s2.unmatched[1] = v_j;
-                            x = sg->indexOf(&s2);
+                            s2.unmatched2 = v_j;
+                            x = sg.indexOf(s2);
                             assert(x != -1);
                             main_seqment.push_back(x);
                         }
 
                         // last step: add (u0, v_last)
                         s2.addEdge(u0, cycle.back());
-                        x = sg->indexOf(&s2);
+                        x = sg.indexOf(s2);
                         assert(x != -1);
                         main_seqment.push_back(x);
                     }
@@ -227,6 +213,8 @@ namespace marathon {
 
                 delete[] prev;
                 delete[] visited;
+
+                return path;
             }
 
         };

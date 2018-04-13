@@ -35,7 +35,7 @@
 namespace marathon {
     namespace matching {
 
-        typedef std::pair<int, int> edge;
+        typedef std::pair<size_t, size_t> edge;
         typedef std::vector<edge> edgelist;
 
         /**
@@ -45,99 +45,152 @@ namespace marathon {
 
         private:
 
-            std::vector<int> adj;      // adj[i] is the index of the first node adjacent to i
-            std::vector<int> edges;    // end points of edges
+            std::vector<size_t> adj;      // adj[i] is the index of the first node adjacent to i
+            std::vector<size_t> edges;    // end points of edges
 
-            void convert_to_bitset(
-                    boost::dynamic_bitset<> &bits) const {
+            /**
+             * Create a bitset representation of the bipartite graph.
+             * @return Bitset that represents the bi-adjacency matrix of this bipartite graph.
+             */
+            boost::dynamic_bitset<> convert_to_bitset() const {
 
-                //std::vector<int> adj;
+                const size_t n = getNumberOfNodes() / 2;
 
-                size_t n = getNumberOfNodes() / 2;
-
-                bits.resize(n * n);
-
-                for (int u = 0; u < n; u++) {
-
-                    for (int k = adj[u]; k < adj[u + 1]; k++) {
-                        int v = edges[k];
+                boost::dynamic_bitset<> bits(n*n);
+                for (size_t u = 0; u < n; u++) {
+                    for (size_t k = adj[u]; k < adj[u + 1]; k++) {
+                        size_t v = edges[k];
                         bits[u * n + (v - n)] = 1;
                     }
                 }
+
+                return bits;
             }
 
         public:
 
-            SparseBipartiteGraph(std::string inst) {
+            /**
+             * Create a bipartite graph from an instance encoding.
+             *
+             * @param inst Binary string of length n*n.
+             *
+             * Such a 0-1-String is interpreted as the bi-adjacency matrix M = (m_ij) of a bipartite graph G=(V,E).
+             * The bi-adjacency matrix M is defined as m_ij = 1, if (i,j) is in E, or 0, otherwise. The rows of M
+             * are concatenated to a single string.
+             * Thus, the input string "110101011" corresponds to the biadjacency  matrix
+             *
+             *  1 1 0
+             *  1 0 1
+             *  0 1 1
+             *
+             *  which is equivalent to the graph
+             *
+             *  u1  u2  u3
+             *  |\ / \ /|
+             *  | X   X |
+             *  |/ \ / \|
+             *  v1  v2  v3
+             *
+             */
+            SparseBipartiteGraph(const std::string &inst) {
 
-                int n = (int) sqrt(inst.length());
+                size_t n = (size_t) sqrt(inst.length());
+
+                if (n * n != inst.length()) {
+                    throw std::runtime_error("Error! Malformed input instance: " + inst);
+                }
 
                 adj.resize(2 * n + 1);
-                int k = 0;
-                for (int u = 0; u < n; u++) {
-                    for (int v = n; v < 2 * n; v++) {
+                size_t k = 0;
+                for (size_t u = 0; u < n; u++) {
+                    for (size_t v = n; v < 2 * n; v++) {
                         char c = inst.at(k);
                         if (c == '1') {
                             edges.push_back(v);
-                            adj[u + 1] = (int) edges.size();
+                            adj[u + 1] = edges.size();
                         }
                         k++;
                     }
                 }
 
-                for (int v = n; v < 2 * n; v++) {
-                    for (int u = 0; u < n; u++) {
-                        int k = u * n + (v - n);
+                for (size_t v = n; v < 2 * n; v++) {
+                    for (size_t u = 0; u < n; u++) {
+                        size_t k = u * n + (v - n);
                         char c = inst.at(k);
                         if (c == '1') {
                             edges.push_back(u);
-                            adj[v + 1] = (int) edges.size();
+                            adj[v + 1] =  edges.size();
                         }
                     }
                 }
             }
 
-            SparseBipartiteGraph(const SparseBipartiteGraph &b) {
-                //g = undirected_graph(b.g);
-                adj = b.adj;
-                edges = b.edges;
-            }
-
+            /**
+             * Create a bipartite graph from a bitset.
+             * @param bits Bitset of length n*n.
+             *
+             * Such a bitset is interpreted as the bi-adjacency matrix M = (m_ij) of a bipartite graph G=(V,E).
+             * The bi-adjacency matrix M is defined as m_ij = 1, if (i,j) is in E, or 0, otherwise. The rows of M
+             * are concatenated to a single string.
+             * Thus, the bitset containing "110101011" corresponds to the biadjacency  matrix
+             *
+             *  1 1 0
+             *  1 0 1
+             *  0 1 1
+             *
+             *  which is equivalent to graph
+             *
+             *  u1  u2  u3
+             *  |\ / \ /|
+             *  | X   X |
+             *  |/ \ / \|
+             *  v1  v2  v3
+             */
             SparseBipartiteGraph(const boost::dynamic_bitset<> &bits) {
 
-                int n = (int) sqrt(bits.size());
+                size_t n = (size_t) sqrt(bits.size());
+
+                if (n * n != bits.size()) {
+                    throw std::runtime_error("Error! Malformed input instance.");
+                }
 
                 adj.resize(2 * n + 1);
-                int k = 0;
-                for (int u = 0; u < n; u++) {
-                    for (int v = n; v < 2 * n; v++) {
+                size_t k = 0;
+                for (size_t u = 0; u < n; u++) {
+                    for (size_t v = n; v < 2 * n; v++) {
                         if (bits[k]) {
                             edges.push_back(v);
-                            adj[u + 1] = (int) edges.size();
+                            adj[u + 1] = edges.size();
                         }
                         k++;
                     }
                 }
 
-                for (int v = n; v < 2 * n; v++) {
-                    for (int u = 0; u < n; u++) {
-                        int k = u * n + (v - n);
+                for (size_t v = n; v < 2 * n; v++) {
+                    for (size_t u = 0; u < n; u++) {
+                        size_t k = u * n + (v - n);
                         if (bits[k]) {
                             edges.push_back(u);
-                            adj[v + 1] = (int) edges.size();
+                            adj[v + 1] = edges.size();
                         }
                     }
                 }
             }
 
-            bool hasEdge(const int u, const int v) const {
+            /**
+             * Is the edge (u,v) included?
+             * @param u Node index.
+             * @param v Node index.
+             * @return True, if (u,v) is included. False, otherwise.
+             */
+            bool hasEdge(size_t u, size_t v) const {
                 //return boost::edge(u, v, g).second;
 
                 // apply binary search to scan adjacency list
-                int l = adj[u];
-                int r = adj[u + 1];
+                size_t l = adj[u];
+                size_t r = adj[u + 1];
                 while (l < r) {
-                    const int m = (l + r) / 2;
+                    const size_t m = (l + r) / 2;
                     if (edges[m] == v)
                         return true;
                     else if (edges[m] < v)
@@ -148,41 +201,57 @@ namespace marathon {
                 return false;
             }
 
+            /**
+             * Return the total number of nodes.
+             * @return
+             */
             size_t getNumberOfNodes() const {
-                //return boost::num_vertices(g);
                 return adj.size() - 1;
             }
 
+            /**
+             * Return the total number of edges.
+             * @return
+             */
             size_t getNumberOfEdges() const {
                 return edges.size();
             }
 
-            void getEdges(edgelist &E) const {
+            /**
+             * Compile a vector of edges.
+             * @return Vector of edges.
+             */
+            edgelist
+            getEdges() const {
 
-                E.clear();
+                edgelist E;
 
-                for (int u = 0; u < adj.size() - 1; u++) {
-                    for (int i = adj[u]; i < adj[u + 1]; i++) {
-                        int v = edges[i];
+                for (size_t u = 0; u < adj.size() - 1; u++) {
+                    for (size_t i = adj[u]; i < adj[u + 1]; i++) {
+                        size_t v = edges[i];
                         E.push_back(std::make_pair(u, v));
                     }
                 }
+
+                return E;
             }
 
 
             /**
              * Return the set of adjacent states.
              * @param v Node index.
-             * @param neighbors (out parameter) List of adjacent states.
+             * @return List of adjacent states.
              */
-            void getNeighbors(int v, std::vector<int> &neighbors) const {
+            std::vector<size_t>
+            getNeighbors(size_t v) const {
 
-                neighbors.clear();
+                std::vector<size_t> neighbors;
 
-                for (int i = adj[v]; i < adj[v + 1]; i++) {
+                for (size_t i = adj[v]; i < adj[v + 1]; i++) {
                     neighbors.push_back(edges[i]);
                 }
 
+                return neighbors;
             }
 
             /**
@@ -191,8 +260,7 @@ namespace marathon {
              */
             std::string toString() const {
 
-                boost::dynamic_bitset<> bits;
-                convert_to_bitset(bits);
+                boost::dynamic_bitset<> bits = convert_to_bitset();
 
                 std::string buf;
                 boost::to_string(bits, buf);
@@ -203,9 +271,9 @@ namespace marathon {
             /**
              * Return the degree of node u.
              * @param u Node index.
-             * @return
+             * @return Number of nodes adjacent to u.
              */
-            int getDegree(const int u) const {
+            size_t getDegree(size_t u) const {
                 return adj[u + 1] - adj[u];
             }
 
@@ -214,7 +282,7 @@ namespace marathon {
              * @param v node index.
              * @return
              */
-            int getIndexOfFirstEdge(const int v) const {
+            size_t getIndexOfFirstEdge(size_t v) const {
                 return adj[v];
             }
 
@@ -223,7 +291,7 @@ namespace marathon {
              * @param v node index.
              * @return
              */
-            int getIndexOfLastEdge(const int v) const {
+            size_t getIndexOfLastEdge(size_t v) const {
                 return adj[v + 1] - 1;
             }
 

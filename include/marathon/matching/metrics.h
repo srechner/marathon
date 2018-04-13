@@ -36,12 +36,13 @@ namespace marathon {
          * @param bin2 A bipartite matching.
          * @return Size of symmetric difference.
          */
-        int hammingDistance(const BipartiteMatching &m1, const BipartiteMatching &m2) {
-            const int n = m1.n;
-            int d = 0;
-            for(int i=0; i<n; i++)
-                if(m1.mates[i] != m2.mates[i]) {
+        size_t hammingDistance(const BipartiteMatching &m1, const BipartiteMatching &m2) {
+            const size_t n = m1.getVertexSize();
+            size_t d = 0;
+            for (size_t i = 0; i < n; i++) {
+                if (m1.getMate(i) != m2.getMate(i)) {
                     d++;
+                }
             }
             return d;
         }

@@ -60,10 +60,10 @@ namespace marathon {
                 A *_columns;                // sorted column margins and indices
                 int *_colsum_first;         // first position of each value of colsum
                 int *_colsum_last;          // last position of each value of colsum
-                int* _ascending;            // array of ascending integers starting at zero
+                int *_ascending;            // array of ascending integers starting at zero
 
                 // class members modified during execution
-                BinaryMatrix *_bin;         // binary matrix created during execution
+                BinaryMatrix _bin;          // binary matrix modified during execution
 
 
                 /**
@@ -89,7 +89,7 @@ namespace marathon {
                         const int k_aggr,
                         const int rowsum_aggr,
                         const int colsum_conj_aggr,
-                        const std::function<void(const State*)> f
+                        const std::function<void(const State &)> &f
                 ) {
 
                     // if the current row has been completely processed
@@ -130,7 +130,7 @@ namespace marathon {
                     const int upper = std::min({rowsum[0], n, s});
 
                     // create auxiliary array
-                    int* selection = new int[std::max(upper, 0)];
+                    int *selection = new int[std::max(upper, 0)];
 
                     // Each value of k in the range [lower,upper] results in a set of matrices.
                     for (int k = lower; k <= upper; k++) {
@@ -158,7 +158,7 @@ namespace marathon {
                                 assert(columns[j].value == x);
 
                                 // set matrix element t one (restore original order)
-                                _bin->set(roworder[0], columns[j].index, 1);
+                                _bin.set(roworder[0], columns[j].index, 1);
                                 columns[j].value--;
 
                                 // to maintain the non-increasing order of columns, switch column j with
@@ -207,25 +207,25 @@ namespace marathon {
                                 const int j = first + selection[i];
 
                                 // column j was previously stored at position k
-                                const int k = colsum_first[x-1];
-                                assert(colsum_first[x-1] != -1);
-                                assert(columns[k].value == x-1);
+                                const int k = colsum_first[x - 1];
+                                assert(colsum_first[x - 1] != -1);
+                                assert(columns[k].value == x - 1);
 
                                 // reset matrix entry
-                                _bin->set(roworder[0], columns[k].index, 0);
+                                _bin.set(roworder[0], columns[k].index, 0);
                                 columns[k].value++;
 
                                 // restore original order
                                 std::swap(columns[j], columns[k]);
 
                                 // update first and last array at position x-1
-                                if(colsum_first[x-1] == colsum_last[x-1])
-                                    colsum_first[x-1] = colsum_last[x-1] = -1;
+                                if (colsum_first[x - 1] == colsum_last[x - 1])
+                                    colsum_first[x - 1] = colsum_last[x - 1] = -1;
                                 else
-                                    colsum_first[x-1]++;
+                                    colsum_first[x - 1]++;
 
                                 // update first and last array at position x
-                                if(colsum_first[x] == -1)
+                                if (colsum_first[x] == -1)
                                     colsum_first[x] = colsum_last[x] = j;
                                 else
                                     colsum_last[x]++;
@@ -289,11 +289,11 @@ namespace marathon {
                         _colsum_last[_columns[j].value] = j;
 
                     // create binary matrix object
-                    _bin = new BinaryMatrix(_nrow, _ncol);
+                    _bin = BinaryMatrix(_nrow, _ncol);
 
                     // create ascending array of integers
                     _ascending = new int[_ncol];
-                    for(int j=0; j<_ncol; j++)
+                    for (int j = 0; j < _ncol; j++)
                         _ascending[j] = j;
 
                 }
@@ -307,7 +307,6 @@ namespace marathon {
                     delete[] _columns;
                     delete[] _colsum_first;
                     delete[] _colsum_last;
-                    delete _bin;
                     delete _ascending;
                 }
 
@@ -316,7 +315,7 @@ namespace marathon {
                  * row and column sums match the given integer vectors.
                  * @param f Function that is evaluated for each binary matrix.
                  */
-                void enumerate(const std::function<void(const State*)> f) override {
+                void enumerate(const std::function<void(const State &)> f) override {
 
                     if (!_realizable)
                         return;
@@ -328,10 +327,10 @@ namespace marathon {
                     int *colsum_last = new int[_nrow + 1];
                     int *colsum_conj = new int[_nrow + 1];
                     memcpy(columns, _columns, _ncol * sizeof(A));
-                    memcpy(rowsum, _rowsum, (_nrow + 2) * sizeof(int));
+                    memcpy(rowsum, &_rowsum[0], (_nrow + 2) * sizeof(int));
                     memcpy(colsum_first, _colsum_first, (_nrow + 1) * sizeof(int));
                     memcpy(colsum_last, _colsum_last, (_nrow + 1) * sizeof(int));
-                    memcpy(colsum_conj, _colsum_conj, (_nrow + 1) * sizeof(int));
+                    memcpy(colsum_conj, &_colsum_conj[0], (_nrow + 1) * sizeof(int));
 
                     // select the binary matrix with number target by traversing the enumeration tree
                     enumerate_recursive(

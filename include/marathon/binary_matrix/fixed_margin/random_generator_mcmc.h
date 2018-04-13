@@ -59,8 +59,11 @@ namespace marathon {
 
             private:
 
-                marathon::binary_matrix::fixed_margin::MarkovChain *mc;
+                std::unique_ptr<marathon::MarkovChain> mc;
                 int steps;
+
+                // disable copy assignment
+                RandomGeneratorMCMC& operator=(const RandomGeneratorMCMC& rg);
 
             public:
 
@@ -80,13 +83,13 @@ namespace marathon {
                     // create Markov chain object
                     switch (method) {
                         case classical_switch:
-                            mc = new SwitchChain(margin);
+                            mc = std::make_unique<SwitchChain>(margin);
                             break;
                         case edge_switch:
-                            mc = new EdgeSwitchChain(margin);
+                            mc = std::make_unique<EdgeSwitchChain>(margin);
                             break;
                         case curveball:
-                            mc = new Curveball(margin);
+                            mc = std::make_unique<Curveball>(margin);
                             break;
                     }
                 }
@@ -96,12 +99,7 @@ namespace marathon {
                  * @param rg Random generator.
                  */
                 RandomGeneratorMCMC(const RandomGeneratorMCMC &rg)
-                        : mc(rg.mc->copy()), steps(rg.steps) {
-                }
-
-
-                ~RandomGeneratorMCMC() {
-                    delete mc;
+                        : mc(std::move(rg.mc->copy())), steps(rg.steps) {
                 }
 
                 /**
@@ -112,17 +110,17 @@ namespace marathon {
                  * column sums.
                  * @return Random binary matrix.
                  */
-                const BinaryMatrix *next() override {
+                const BinaryMatrix &next() override {
                     // apply random walk of length <steps>
-                    return mc->randomize(steps);
+                    return static_cast<const BinaryMatrix &>(mc->randomize(steps));
                 }
 
                 /**
                  * Create a copy of the random generator object.
                  * @return
                  */
-                RandomGeneratorMCMC *copy() const {
-                    return new RandomGeneratorMCMC(*this);
+                std::unique_ptr<marathon::RandomGenerator> copy() const override {
+                    return std::make_unique<RandomGeneratorMCMC>(*this);
                 }
             };
         }

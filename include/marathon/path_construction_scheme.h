@@ -31,28 +31,23 @@
 
 namespace marathon {
 
-	/**
-	 * A virtual base class for construction schemes of Canonical Paths.
-	 */
-	class PathConstructionScheme {
+    /**
+     * A virtual base class for construction schemes of Canonical Paths.
+     */
+    class PathConstructionScheme {
 
-	public:
+    public:
 
-		virtual ~PathConstructionScheme() {
+        /**
+         * Construct a path between states s and t in Graph sg.
+         * @param sg A pointer to a state graph object at which the path is embedded.
+         * @param s The index of the paths start state.
+         * @param t The index of the paths final state.
+         * @param path A list of state indices that represent the path.
+         */
+        virtual std::list<int> construct(const StateGraph &sg, const int s, const int t) const = 0;
 
-		}
-
-		/**
-		 * Construct a path between states s and t in Graph sg.
-		 * @param sg A pointer to a state graph object at which the path is embedded.
-		 * @param s The index of the paths start state.
-		 * @param t The index of the paths final state.
-		 * @param path A list of state indices that represent the path.
-		 */
-		virtual void construct(const StateGraph *sg, const int s, const int t,
-		                       std::list<int> &path) const = 0;
-
-	};
+    };
 
 }
 

@@ -40,15 +40,15 @@ namespace marathon {
          * @param g Bipartite graph.
          * @return Perfect matching in g.
          */
-        BipartiteMatching *cardmax_matching(const SparseBipartiteGraph &g) {
+        BipartiteMatching
+        cardmax_matching(const SparseBipartiteGraph &g) {
 
-            const int n = g.getNumberOfNodes();
+            const size_t n = g.getNumberOfNodes();
 
             // transform graph into boost graph representation
             typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS> undirected_graph;
             undirected_graph gg(n);
-            edgelist edges;
-            g.getEdges(edges);
+            edgelist edges = g.getEdges();
             for (edge e : edges) {
                 const int u = e.first;
                 const int v = e.second;
@@ -60,34 +60,32 @@ namespace marathon {
             bool success = checked_edmonds_maximum_cardinality_matching(gg, &mateys[0]);
             assert(success);
 
-            std::vector<int> mates(n);
+            std::vector<size_t> mates(n);
 
             boost::graph_traits<undirected_graph>::vertex_iterator vi, vi_end;
             for (boost::tie(vi, vi_end) = vertices(gg); vi != vi_end; ++vi) {
-                if (mateys[*vi]
-                    != boost::graph_traits<undirected_graph>::null_vertex()) {
+                if (mateys[*vi] != boost::graph_traits<undirected_graph>::null_vertex()) {
                     //std::cout << "{" << *vi << ", " << mateys[*vi] << "}" << std::endl;
                     mates[*vi] = mateys[*vi];
                     mates[mateys[*vi]] = *vi;
                 } else {
-                    mates[*vi] = -1;
+                    mates[*vi] = SIZE_MAX;
                 }
             }
 
 
             // Count Number of Matching Edges
-            int k = 0;
-            for (int i = 0; i < n; i++) {
-                if (mates[i] != -1) {
+            size_t k = 0;
+            for (size_t i = 0; i < n; i++) {
+                if (mates[i] != SIZE_MAX) {
                     k++;
                 }
             }
 
             if (k != n) {
                 throw std::runtime_error("Bipartite graph doesn't have a perfect matching!");
-            }
-            else {
-                return new BipartiteMatching(n, k / 2, -1, -1, &mates[0]);
+            } else {
+                return BipartiteMatching(n, k / 2, mates, SIZE_MAX, SIZE_MAX);
             }
 
         }

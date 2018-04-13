@@ -18,16 +18,16 @@ int main(int argc, char **argv) {
     }
 
     // create counter object
-    marathon::Counter* cnt;
+    std::unique_ptr<marathon::Counter> cnt;
     switch (problem) {
         case matching:
-            cnt = new marathon::matching::Counter(inst);
+            cnt = std::make_unique<marathon::matching::Counter>(inst);
             break;
         case fixed_margin:
-            cnt = new marathon::binary_matrix::fixed_margin::Counter(inst);
+            cnt = std::make_unique<marathon::binary_matrix::fixed_margin::Counter>(inst);
             break;
         case interval_margin:
-            cnt = new marathon::binary_matrix::interval_margin::Counter(inst);
+            cnt = std::make_unique<marathon::binary_matrix::interval_margin::Counter>(inst);
             break;
     }
 
@@ -36,9 +36,6 @@ int main(int argc, char **argv) {
 
     // output
     std::cout << size << std::endl;
-
-    // clean up
-    delete cnt;
-
+    
     return 0;
 }

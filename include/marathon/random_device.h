@@ -40,11 +40,11 @@ namespace marathon {
 
         static std::mutex m;
         static std::mt19937 rng_init;            // pseudo random number generator
-        static std::random_device rd;           // hardware random number generator (expensive)
+        static std::random_device rd;            // hardware random number generator (expensive)
 
         std::mt19937 rng;                        // random number generator for this object
         std::uniform_real_distribution<double> real_dist;
-        std::uniform_int_distribution<int> int_dist;
+        std::uniform_int_distribution<size_t> int_dist;
 
     public:
 
@@ -67,14 +67,14 @@ namespace marathon {
         /**
          * Return a uniformly distributed integer from the interval [0,b).
          */
-        int nextInt(int b) {
+        size_t nextInt(size_t b) {
             return int_dist(rng) % b;
         }
 
         /**
           * Return a uniformly distributed integer from the interval [a,b).
           */
-        int nextInt(int a, int b) {
+        size_t nextInt(size_t a, size_t b) {
             return a + nextInt(b-a);
         }
 
@@ -97,20 +97,20 @@ namespace marathon {
                 res = 0;
 
                 const int c = 30;
-                const int cc = 1 << c;
+                const size_t cc = 1ul << c;
 
                 // create k random bits in batches of size c
                 int i = 0;
                 while (i + c < k) {
-                    const int u = nextInt(cc);
+                    const size_t u = nextInt(cc);
                     res = (res * Integer(cc)) + Integer(u);
                     i += c;
                 }
 
                 // the remaining batch has a size of d <= c
                 const int d = k - i;
-                const int dd = 1 << d;
-                const int u = nextInt(dd);
+                const size_t dd = 1ul << d;
+                const size_t u = nextInt(dd);
                 res = (res * Integer(dd)) + Integer(u);
 
             } while (res >= b);

@@ -48,7 +48,6 @@ namespace marathon {
 
     public:
 
-
         /**
          * Create a combination generator that generates all combinations of k out of n items.
          * @param src An array of n objects.

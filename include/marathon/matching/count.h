@@ -43,7 +43,7 @@ namespace marathon {
         protected:
 
             const SparseBipartiteGraph _g;              // bipartite graph
-            const int _n;                               // number of nodes in each vertex set
+            const size_t _n;                            // number of nodes in each vertex set
 
             marathon::Integer _num_perfect;             // number of perfect matchings
             marathon::Integer _num_near_perfect;        // number of near-perfect matchings
@@ -131,12 +131,12 @@ namespace marathon {
              */
             marathon::Integer count_recursive(
                     BipartiteMatching &match,
-                    const int u
+                    size_t u
             ) {
 
                 // if each vertex of vertex set U has been considered
                 if (u == _n) {
-                    return 1;
+                    return Integer(1);
                 }
 
                 // if node u is already matched (are marked as permanently unmatched)
@@ -148,15 +148,13 @@ namespace marathon {
                 marathon::Integer res(0);
 
                 // iterate over all adjacent nodes
-                std::vector<int> neighbors;
-                _g.getNeighbors(u, neighbors);
-                for (int v : neighbors) {
+                std::vector<size_t> neighbors = _g.getNeighbors(u);
+                for (size_t v : neighbors) {
 
                     if (!match.isMatched(v)) {
+
                         // add edge (u,v) to matching
-                        match.mates[u] = v;
-                        match.mates[v] = u;
-                        match.k++;
+                        match.addEdge(u, v);
 
                         // try to load cached result
                         marathon::Integer x;
@@ -172,9 +170,7 @@ namespace marathon {
                         res += x;
 
                         // undo changes
-                        match.mates[u] = -1;
-                        match.mates[v] = -1;
-                        match.k--;
+                        match.removeEdge(u, v);
                     }
 
                 }
@@ -192,7 +188,7 @@ namespace marathon {
              * Create a Counter for the perfect and near-perfect matchings in a bipartite graph.
              * @param g Bipartite graph.
              */
-            Counter(const SparseBipartiteGraph &g) : _g(g), _n((int) (g.getNumberOfNodes() / 2)) {
+            Counter(SparseBipartiteGraph g) : _g(std::move(g)), _n((int) (_g.getNumberOfNodes() / 2)) {
 
                 // auxiliary variable used for backtracking
                 BipartiteMatching match(2 * _n); // empty matching on 2*_n nodes
@@ -201,13 +197,14 @@ namespace marathon {
                 _num_perfect = count_recursive(match, 0);
 
                 _num_near_perfect_uv.resize(_n * _n);
+
                 // for each pair of unmatched nodes
-                for (int u = 0; u < _n; u++) {
-                    for (int v = _n; v < 2 * _n; v++) {
+                for (size_t u = 0; u < _n; u++) {
+                    for (size_t v = _n; v < 2 * _n; v++) {
 
                         // mark (u,v) as permanently unmatched
-                        match.mates[u] = -2;
-                        match.mates[v] = -2;
+                        match.mates[u] = SIZE_MAX - 1;
+                        match.mates[v] = SIZE_MAX - 1;
 
                         // try to load cached result
                         marathon::Integer x;
@@ -224,8 +221,8 @@ namespace marathon {
                         _num_near_perfect += x;
 
                         // undo marking
-                        match.mates[u] = -1;
-                        match.mates[v] = -1;
+                        match.mates[u] = SIZE_MAX;
+                        match.mates[v] = SIZE_MAX;
                     }
                 }
 
@@ -238,24 +235,6 @@ namespace marathon {
                         std::cout << _num_near_perfect_uv[translate(u, v)] << std::endl;
                     }
                 }*/
-            }
-
-            /**
-             * Create a counter object as a copy of another one.
-             * @param cnt Another counter object.
-             */
-            Counter(const Counter &cnt) :
-                    _g(cnt._g),
-                    _n(cnt._n),
-                    _num_perfect(cnt._num_perfect),
-                    _num_near_perfect(cnt._num_near_perfect),
-                    _num_near_perfect_uv(cnt._num_near_perfect_uv),
-                    _tmp(cnt._tmp) {
-
-            }
-
-            virtual ~Counter() override {
-
             }
 
             /**

@@ -20,21 +20,21 @@ int main(int argc, char **argv) {
     marathon::binary_matrix::interval_margin::Instance margin(inst);
 
     // create random generator
-    marathon::binary_matrix::RandomGenerator *rg;
+    std::unique_ptr<marathon::binary_matrix::RandomGenerator> rg;
 
     switch (alg) {
         case exact: {
-            rg = new marathon::binary_matrix::interval_margin::RandomGeneratorExact(margin);
+            rg = std::make_unique<marathon::binary_matrix::interval_margin::RandomGeneratorExact>(margin);
             break;
         }
         case simple: {
             auto type = marathon::binary_matrix::interval_margin::RandomGeneratorMCMC::simple;
-            rg = new marathon::binary_matrix::interval_margin::RandomGeneratorMCMC(margin, type, steps);
+            rg = std::make_unique<marathon::binary_matrix::interval_margin::RandomGeneratorMCMC>(margin, type, steps);
             break;
         }
         case informed: {
             auto type = marathon::binary_matrix::interval_margin::RandomGeneratorMCMC::informed;
-            rg = new marathon::binary_matrix::interval_margin::RandomGeneratorMCMC(margin, type, steps);
+            rg = std::make_unique<marathon::binary_matrix::interval_margin::RandomGeneratorMCMC>(margin, type, steps);
             break;
         }
     }
@@ -42,19 +42,16 @@ int main(int argc, char **argv) {
     // create N random samples
     for (int i = 0; i < N; i++) {
 
-        // create random binary matrix
-        auto *s = rg->next();
+        // create a random binary matrix
+        const marathon::binary_matrix::BinaryMatrix &s = rg->next();
 
         // process sample...
 
         // output string representation
         std::stringstream ss;
         ss << "A" << i << " = \n\n";
-        std::cout << ss.str() << s->fancyString() << std::endl;
+        std::cout << ss.str() << s.fancyString() << std::endl;
     }
-
-    // clean up
-    delete rg;
 
     return 0;
 }

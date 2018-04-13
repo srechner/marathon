@@ -19,27 +19,24 @@ int main(int argc, char **argv) {
     }
 
     // create Markov chain
-    marathon::MarkovChain* mc;
+    std::unique_ptr<marathon::MarkovChain> mc;
     switch (chain) {
         case classical_switch:
-            mc = new marathon::binary_matrix::fixed_margin::SwitchChain(inst);
+            mc = std::make_unique<marathon::binary_matrix::fixed_margin::SwitchChain>(inst);
             break;
         case edge_switch:
-            mc = new marathon::binary_matrix::fixed_margin::EdgeSwitchChain(inst);
+            mc = std::make_unique<marathon::binary_matrix::fixed_margin::EdgeSwitchChain>(inst);
             break;
         case curveball:
-            mc = new marathon::binary_matrix::fixed_margin::Curveball(inst);
+            mc = std::make_unique<marathon::binary_matrix::fixed_margin::Curveball>(inst);
             break;
     }
 
     // construct state graph
-    marathon::StateGraph sg(mc);
-
-    // determine number of states
-    const size_t N = sg.getNumStates();
+    marathon::StateGraph sg(*mc);
 
     // calculate spectral bound of the total mixing time
-    marathon::SpectralBoundCalculator<double> sbc(&sg);
+    marathon::SpectralBoundCalculator<double> sbc(sg);
 
     // lower spectral bound
     double lspec = sbc.lowerSpectralBound(eps);
@@ -49,9 +46,6 @@ int main(int argc, char **argv) {
 
     std::cout << "lower spectral bound: " << lspec << std::endl;
     std::cout << "upper spectral bound: " << uspec << std::endl;
-
-    // clean up
-    delete mc;
 
     return 0;
 }

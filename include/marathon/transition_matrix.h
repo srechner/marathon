@@ -28,11 +28,15 @@
 #include "state_graph.h"
 
 #ifdef USE_ARMADILLO
+
 #include <armadillo>
+
 #endif
 
 #ifdef USE_BLAS
+
 #include <cblas.h>
+
 #endif
 
 namespace marathon {
@@ -45,9 +49,9 @@ namespace marathon {
 
     protected:
 
-        size_t N;       // number of rows and columns
-        size_t ld;      // lead dimension (upper bound on n)
-        T *data;          // actual data array
+        size_t N;               // number of rows and columns
+        size_t ld;              // lead dimension (upper bound on n)
+        std::vector<T> data;    // actual data array
 
     public:
 
@@ -59,56 +63,39 @@ namespace marathon {
                 N(N),
                 ld(((N + 255) / 256) * 256) // lead dimension is next mulitple of 256
         {
-            data = new T[N * ld];
-        }
-
-        /**
-         * Copy constructor
-         * @param t Transition matrix
-         */
-        TransitionMatrix(const TransitionMatrix &t) : TransitionMatrix(t.getDimension()) {
-            copy(&t);
+            data.resize(N * ld, 0);
         }
 
         /**
          * Constructor. Create Transition Matrix from State Graph.
          * @param sg Pointer to state graph object.
          */
-        TransitionMatrix(const StateGraph *sg) :
-                TransitionMatrix(sg->getNumStates()) {
+        TransitionMatrix(const StateGraph &sg) :
+                TransitionMatrix(sg.getNumStates()) {
 
-            setZero();
-
-            for (const Transition *t : sg->getArcs()) {
+            for (const Transition *t : sg.getArcs()) {
                 this->data[t->from * ld + t->to] = t->weight.convert_to<T>();
             }
         }
 
         /**
-         * Standard Destructor
-         */
-        virtual ~TransitionMatrix() {
-            delete[] data;
-        }
-
-        /**
          *  Return size of the matrix.
          */
-        uint32_t getDimension() const {
+        size_t getDimension() const {
             return N;
         }
 
         /**
          * Return lead dimension of the matrix.
          */
-        uint32_t getLeadDimension() const {
+        size_t getLeadDimension() const {
             return ld;
         }
 
         /**
          * Return a pointer to the data.
          */
-        T *getData() const {
+        const std::vector<T> &getData() const {
             return data;
         }
 
@@ -118,7 +105,7 @@ namespace marathon {
          * @param j column index
          * @return P[i,j]
          */
-        T get(const size_t i, const size_t j) const {
+        T get(size_t i, size_t j) const {
             return data[i * ld + j];
         }
 
@@ -128,85 +115,28 @@ namespace marathon {
          * @param j column index.
          * @param x value of type T
          */
-        void set(const size_t i, const size_t j, const T x) {
+        void set(size_t i, size_t j, T x) {
             data[i * ld + j] = x;
-        }
-
-        /**
-         * Overwrite the current matrix with unity matrix.
-         */
-        virtual void setEye() {
-            setZero();
-            for (int i = 0; i < this->N; i++) {
-                this->data[i * this->ld + i] = 1;
-            }
         }
 
         /**
          * Overwrite the current matrix with zeroes.
          */
-        virtual void setZero() {
-            // todo: add template specialization
-            for (size_t i = 0; i < getDimension(); i++) {
-                for (size_t j = 0; j < getDimension(); j++) {
-                    set(i, j, T(0));
-                }
-            }
-        }
-
-
-        /**
-         * Copy the content of P to this matrix.
-         * @param T Pointer to transition matrix.
-         */
-        virtual void copy(const TransitionMatrix *P) {
-            for (size_t i = 0; i < getDimension(); i++) {
-                for (size_t j = 0; j < getDimension(); j++) {
-                    set(i, j, P->get(i, j));
-                }
-            }
+        virtual void clear() {
+            data.resize(N * ld, T(0));
         }
 
         /**
-         * Multiply A with B and write the result to this.
-         * @param A A pointer to matrix A. Will not be changed.
-         * @param B A pointer to matrix B. Will not be changed.
-         */
-        virtual void mult(const TransitionMatrix<T> *A,
-                          const TransitionMatrix<T> *B) {
-#pragma omp parallel for
-            for (size_t i = 0; i < N; i++) {
-                for (size_t j = 0; j < N; j++) {
-                    T p_ij = 0;
-                    for (size_t k = 0; k < N; k++) {
-                        p_ij += A->get(i, k) * B->get(k, j);
-                    }
-                    set(i, j, p_ij);
-                }
-            }
-        }
-
-        /**
-         * Compute P^k and write the result to this.
+         * Compute P^k.
          * @param P A pointer to a Transition Matrix.
          * @param k Exponent.
-         * @param tmp Transition matrix used for temporary memory.
+         * @return P^k
          */
-        void pow(const TransitionMatrix<T> *P, const int k, TransitionMatrix<T> *tmp = nullptr) {
-
-            const int omega = P->N;
-
-            // create temporary matrix of the same subtype as calling instance.
-            bool tmp_given = tmp != nullptr;
-            if (!tmp_given) {
-                tmp = new TransitionMatrix<T>(omega);
-            }
+        TransitionMatrix<T> pow(uint k) const {
 
             // init matrix
             if (k == 0) {
-                this->setEye();
-            } else {
-                this->copy(P);
+                return eye(N);
             }
 
             // create binary representation of k
@@ -229,25 +159,46 @@ namespace marathon {
             std::cout << " l=" << l << std::endl;
 #endif
 
-            // binary exponentation - Left to Right (see Knuth Seminumerical Alg. Vol. 2 page 461)
+
+            TransitionMatrix<T> A(*this); // will be returned
+
+            // binary exponentation - Left to Right (see Don. Knuth: Seminumerical Alg. Vol. 2 page 461)
             while (l < 32) {
 
                 // square
-                tmp->mult(this, this);
-                std::swap(this->data, tmp->data);
+                A = A * A;
 
                 // multiply
-                if (bin[l] == 1) {
-                    // this = this*P
-                    tmp->mult(this, P);
-                    std::swap(this->data, tmp->data);
-                }
+                if (bin[l] == 1)
+                    A = A * *this;
 
                 l++;
             }
 
-            if (!tmp_given)
-                delete tmp;
+            return A;
+        }
+
+        /**
+         * Matrix multiplication.
+         * @param P Transition matrix.
+         * @return P * this
+         */
+        TransitionMatrix<T> operator*(const TransitionMatrix<T> &P) const {
+
+            TransitionMatrix<T> X(N);  // will be returned
+
+#pragma omp parallel for
+            for (size_t i = 0; i < N; i++) {
+                for (size_t j = 0; j < N; j++) {
+                    T p_ij = 0;
+                    for (size_t k = 0; k < N; k++) {
+                        p_ij += this->get(i, k) * P.get(k, j);
+                    }
+                    X.set(i, j, p_ij);
+                }
+            }
+
+            return X;
         }
 
         /**
@@ -273,16 +224,6 @@ namespace marathon {
         }
 
         /**
-         * Swap the content of the Matrix with another matrix.
-         *
-         */
-        void swap(TransitionMatrix<T> *P) {
-            std::swap(N, P->N);
-            std::swap(ld, P->ld);
-            std::swap(data, P->data);
-        }
-
-        /**
          * To output into streams.
          */
         friend inline std::ostream &operator<<(std::ostream &out,
@@ -292,69 +233,54 @@ namespace marathon {
         }
 
         /**
-         * To output into streams.
+         * Return the identity matrix with N rows and columns.
+         * @param N Number of rows and columns.
+         * @return Identity matrix.
          */
-        friend inline std::ostream &operator<<(std::ostream &out,
-                                               const TransitionMatrix<T> *s) {
-            out << s->to_string();
-            return out;
+        static TransitionMatrix<T> eye(size_t N) {
+            TransitionMatrix<T> P(N);
+            for (size_t i = 0; i < N; i++)
+                P.set(i,i,1);
+            return P;
         }
+
     };
+
 
     /***********************************************************************
      * template specializations
      **********************************************************************/
 
-    template<>
-    void TransitionMatrix<float>::copy(const TransitionMatrix<float> *P) {
-        memcpy(data, P->data, N * ld * sizeof(float));
-    }
-
-    template<>
-    void TransitionMatrix<double>::copy(const TransitionMatrix<double> *P) {
-        memcpy(data, P->data, N * ld * sizeof(double));
-    }
-
-    template<>
-    void TransitionMatrix<float>::setZero() {
-        size_t bytes = N * ld * sizeof(float);
-        memset(data, 0, bytes);
-    }
-
-    template<>
-    void TransitionMatrix<double>::setZero() {
-        size_t bytes = N * ld * sizeof(double);
-        memset(data, 0, bytes);
-    }
-
 #ifdef USE_BLAS
 
     template<>
-    void TransitionMatrix<float>::mult(const TransitionMatrix<float> *A,
-                                       const TransitionMatrix<float> *B) {
+    TransitionMatrix<float> TransitionMatrix<float>::operator*(const TransitionMatrix<float> &P) const {
 
         const float alpha = 1.0;
         const float beta = 0.0;
 
-        // use cblas
-        cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, this->N, this->N,
-                    this->N, alpha, B->getData(), B->getLeadDimension(), A->getData(),
-                    A->getLeadDimension(), beta, this->data, this->ld);
+        TransitionMatrix<float> X(N);
 
+        // use cblas
+        cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, N, N, N, alpha,
+                    &P.data[0], P.ld, &data[0], ld, beta, &X.data[0], X.ld);
+
+        return X;
     }
 
     template<>
-    void TransitionMatrix<double>::mult(const TransitionMatrix<double> *A,
-                                        const TransitionMatrix<double> *B) {
+    TransitionMatrix<double> TransitionMatrix<double>::operator*(const TransitionMatrix<double> &P) const {
 
         const double alpha = 1.0;
         const double beta = 0.0;
 
-        // use cblas
-        cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, this->N, this->N,
-                    this->N, alpha, B->getData(), B->getLeadDimension(), A->getData(),
-                    A->getLeadDimension(), beta, this->data, this->ld);
+        TransitionMatrix<double> X(N);
 
+        // use cblas
+        cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, N, N, N, alpha,
+                    &P.data[0], P.ld, &data[0], ld, beta, &X.data[0], X.ld);
+
+        return X;
     }
 
 #endif

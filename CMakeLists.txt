@@ -39,6 +39,7 @@ set(HEADER_FILES
         ${PROJECT_SOURCE_DIR}/include/marathon/binary_matrix/binary_matrix.h
         ${PROJECT_SOURCE_DIR}/include/marathon/binary_matrix/random_generator.h
         ${PROJECT_SOURCE_DIR}/include/marathon/binary_matrix/metrics.h
+        ${PROJECT_SOURCE_DIR}/include/marathon/binary_matrix/markov_chain.h
         ${PROJECT_SOURCE_DIR}/include/marathon/random_generator.h
         ${PROJECT_SOURCE_DIR}/include/marathon/binary_matrix/fixed_margin/count.h
         ${PROJECT_SOURCE_DIR}/include/marathon/binary_matrix/fixed_margin/decompose.h
@@ -81,7 +82,7 @@ set(HEADER_FILES
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Compile Flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 # find boost headers
 find_package(Boost 1.60 REQUIRED)

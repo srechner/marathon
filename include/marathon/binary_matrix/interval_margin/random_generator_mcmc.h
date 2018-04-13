@@ -73,7 +73,7 @@ namespace marathon {
                         const int steps
                 ) : steps(steps) {
 
-                    switch(chain) {
+                    switch (chain) {
                         case simple:
                             mc = new SimpleChain(seq);
                             break;
@@ -94,8 +94,8 @@ namespace marathon {
                  * Create a random generator as a copy of another one.
                  * @param rg Random generator.
                  */
-                RandomGeneratorMCMC(const RandomGeneratorMCMC& rg) :
-                        mc(rg.mc->copy()), steps(rg.steps) {
+                RandomGeneratorMCMC(const RandomGeneratorMCMC &rg) :
+                        mc(rg.mc), steps(rg.steps) {
 
                 }
 
@@ -109,18 +109,18 @@ namespace marathon {
                  * (approximately) uniform.
                  * @return Random binary matrix.
                  */
-                const BinaryMatrix *next() override {
+                const BinaryMatrix &next() override {
 
                     // apply random walk
-                    return mc->randomize(steps);
+                    return static_cast<const BinaryMatrix &>(mc->randomize(steps));
                 }
 
                 /**
                  * Create an independent copy of the random generator.
                  * @return Copy of this random generator.
                  */
-                RandomGeneratorMCMC* copy() const {
-                    return new RandomGeneratorMCMC(*this);
+                std::unique_ptr<marathon::RandomGenerator> copy() const override {
+                    return std::make_unique<RandomGeneratorMCMC>(*this);
                 }
             };
         }

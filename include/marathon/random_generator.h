@@ -39,18 +39,20 @@ namespace marathon {
 
     public:
 
+        virtual ~RandomGenerator() = default;
+
         /**
          * Return a random state.
          * @return Random state.
          */
-        virtual const State *next() = 0;
+        virtual const State &next() = 0;
 
 
         /**
          * Create a copy of the random generator.
          * @return A random generator that is identical to the current one.
          */
-        virtual RandomGenerator* copy() const = 0;
+        virtual std::unique_ptr<RandomGenerator> copy() const = 0;
 
     };
 }

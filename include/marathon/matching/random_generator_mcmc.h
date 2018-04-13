@@ -50,22 +50,22 @@ namespace marathon {
 
         private:
 
-            MarkovChain *mc;
+            std::unique_ptr<marathon::MarkovChain> mc;
             int steps;
 
         public:
 
             RandomGeneratorMCMC(
-                    const SparseBipartiteGraph& g,
+                    const SparseBipartiteGraph &g,
                     const chain_t method,
                     const int steps
             ) : steps(steps) {
-                switch(method) {
+                switch (method) {
                     case broder:
-                        mc = new Broder86(g);
+                        mc = std::make_unique<Broder86>(g);
                         break;
                     case jsv04:
-                        mc = new JSVChain(g);
+                        mc = std::make_unique<JSVChain>(g);
                         break;
                 }
             }
@@ -75,12 +75,8 @@ namespace marathon {
              * @param rg Random generator.
              */
             RandomGeneratorMCMC(const RandomGeneratorMCMC &rg) :
-                    mc(rg.mc->copy()), steps(rg.steps) {
+                    mc(std::move(rg.mc->copy())), steps(rg.steps) {
 
-            }
-
-            virtual ~RandomGeneratorMCMC() {
-                delete mc;
             }
 
             /**
@@ -89,18 +85,18 @@ namespace marathon {
              * (approximately) uniform.
              * @return Random binary matrix.
              */
-            const BipartiteMatching *next() override {
+            const BipartiteMatching &next() override {
 
                 // apply random walk
-                return (const BipartiteMatching *) mc->randomize(steps);
+                return static_cast<const BipartiteMatching &>(mc->randomize(steps));
             }
 
             /**
              * Create an independent copy of the random generator.
              * @return Copy of this random generator.
              */
-            RandomGeneratorMCMC *copy() const override {
-                return new RandomGeneratorMCMC(*this);
+            std::unique_ptr<marathon::RandomGenerator> copy() const override {
+                return std::make_unique<RandomGeneratorMCMC>(*this);
             }
         };
     }

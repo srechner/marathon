@@ -44,13 +44,7 @@ namespace marathon {
              * Return a random binary matrix.
              * @return Random binary matrix.
              */
-            virtual const BinaryMatrix *next() override = 0;
-
-            /**
-             * Create an independent copy of the random generator.
-             * @return Copy of this random generator.
-             */
-            virtual RandomGenerator* copy() const override = 0;
+            virtual const BinaryMatrix& next() override = 0;
 
         };
     }

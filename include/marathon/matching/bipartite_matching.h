@@ -36,75 +36,64 @@ namespace marathon {
     namespace matching {
 
         /**
-         * Class reprentation of matchings in a bipartite graph.
+         * Class representing a matching in a bipartite graph.
          */
         class BipartiteMatching : public State {
 
+            friend class Broder86;
+            friend class JSVChain;
+            friend class Counter;
+            friend class Enumerator;
+            friend class JS89Path;
+            friend class RandomGeneratorExact;
+
         public:
 
-            int n, k;            // number of nodes			// number of edges
-            int unmatched[2];    // indices of unmatched nodes (if any)
-            int *mates;
+            size_t n;                   // number of nodes in each vertex sets
+            size_t _edges;              // number of edges
+            size_t unmatched1;          // index of unmatched node in first vertex set (or SIZE_MAX if none)
+            size_t unmatched2;          // index of unmatched node in second vertex set (or SIZE_MAX if none)
+            std::vector<size_t> mates;  // matching partner of each node (or SIZE_MAX if none)
+
+        public:
 
             /**
              * Create empty matching in a bipartite graph with n nodes.
              * @param n
              */
-            BipartiteMatching(int n = 0) :
-                    n(n), k(0) {
-                mates = (int *) malloc(n * sizeof(int));
-                for (int i = 0; i < n; i++)
-                    mates[i] = -1;
+            BipartiteMatching(size_t n = 0) :
+                    n(n), _edges(0) {
+                mates.resize(n, SIZE_MAX);
             }
-
-            /**
-             * Create a matching as a copy of the matching s.
-             * @param s Bipartite matching.
-             */
-            BipartiteMatching(const BipartiteMatching &s) :
-                    n(s.n), k(s.k) {
-                unmatched[0] = s.unmatched[0];
-                unmatched[1] = s.unmatched[1];
-                mates = (int *) malloc(n * sizeof(int));
-                memcpy(mates, s.mates, n * sizeof(int));
-            }
-
 
             /**
              * Create a matching of size n.
              * @param n Number of nodes.
              * @param k Number of matching edges.
-             * @param unmatched1 Index of first unmatched node (or -1, if none).
-             * @param unmatched2 Index of second unmatched node (or -1, if none).
-             * @param matching Matching object.
+             * @param unmatched1 Index of first unmatched node (or SIZE_MAX, if none).
+             * @param unmatched2 Index of second unmatched node (or SIZE_MAX, if none).
+             * @param matex Vector of matching partners for each node.
              */
             BipartiteMatching(
-                    int n, int k, int unmatched1, int unmatched2, int *matching) :
-                    n(n), k(k) {
-                this->unmatched[0] = unmatched[0];
-                this->unmatched[1] = unmatched[1];
-                mates = (int *) malloc(n * sizeof(int));
-                memcpy(this->mates, matching, n * sizeof(int));
+                    size_t n, size_t k, std::vector<size_t> mates, size_t unmatched1, size_t unmatched2) :
+                    n(n), _edges(k), unmatched1(unmatched1), unmatched2(unmatched2), mates(std::move(mates)) {
             }
 
-            ~BipartiteMatching() {
-                free(mates);
-            }
 
             /**
              * Add the edge (u,v) to the matching.
              * @param u Index of first node.
              * @param v Index of second node.
              */
-            void addEdge(int u, int v) {
+            void addEdge(size_t u, size_t v) {
                 if (u > v)
                     addEdge(v, u);
                 else {
                     mates[u] = v;
                     mates[v] = u;
-                    k++;
-                    unmatched[0] = -1;
-                    unmatched[1] = -1;
+                    _edges++;
+                    unmatched1 = SIZE_MAX;
+                    unmatched2 = SIZE_MAX;
                 }
             }
 
@@ -113,49 +102,66 @@ namespace marathon {
              * @param u Index of first node.
              * @param v Index of second node.
              */
-            void removeEdge(int u, int v) {
+            void removeEdge(size_t u, size_t v) {
                 if (u > v)
                     removeEdge(v, u);
                 else {
-                    mates[u] = -1;
-                    mates[v] = -1;
-                    k--;
-                    unmatched[0] = u;
-                    unmatched[1] = v;
+                    mates[u] = SIZE_MAX;
+                    mates[v] = SIZE_MAX;
+                    _edges--;
+                    unmatched1 = u;
+                    unmatched2 = v;
                 }
             }
 
-/*
-            void operator=(BipartiteMatching const &s) {
-                n = s.n;
-                k = s.k;
-                unmatched[0] = s.unmatched[0];
-                unmatched[1] = s.unmatched[1];
-                mates = (int *) realloc(mates, n * sizeof(int));
-                memcpy(mates, s.mates, n * sizeof(int));
-            }*/
 
             bool operator==(const BipartiteMatching &s) const {
+
                 if (n != s.n)
                     return false;
-                if (k != s.k)
+                if (_edges != s._edges)
                     return false;
-                const int ret = memcmp(mates, s.mates, n * sizeof(int));
+
+                const int ret = memcmp(&mates[0], &s.mates[0], n * sizeof(size_t));
                 return (ret == 0);
             }
 
             bool operator<(const BipartiteMatching &s) const {
-                return memcmp(mates, s.mates, n * sizeof(int)) < 0;
+
+                if (n != s.n)
+                    return false;
+                if (_edges != s._edges)
+                    return false;
+
+                return memcmp(&mates[0], &s.mates[0], n * sizeof(size_t)) < 0;
             }
 
+            /**
+             * Return a hash value of this matching.
+             * @return Hash value.
+             */
             size_t hashValue() const {
-                //return unmatched[0] * n + unmatched[1];
-                return boost::hash_range(this->mates, this->mates + n);
+                return boost::hash_range(mates.begin(), mates.end());
             }
 
-            int compare(const State *x) const override {
-                const BipartiteMatching *b = (const BipartiteMatching *) x;
-                const int res = memcmp(this->mates, b->mates, this->n * sizeof(int));
+            /**
+             * Compare the matching with another one.
+             * @param x Bipartite matching.
+             * @return Zero, if x equals this. Negative value, if this < x. Positive value, if x < this.
+             */
+            int compare(const State &x) const override {
+
+                // try to convert state to bipartite matching
+                auto b = dynamic_cast<const BipartiteMatching *>(&x);
+
+                if (b == nullptr)
+                    return -1;
+
+                if (n != b->n || _edges != b->_edges)
+                    return -1;
+
+                // element-wise comparison of mates
+                const int res = memcmp(&mates[0], &b->mates[0], this->n * sizeof(int));
                 return res;
             }
 
@@ -168,17 +174,17 @@ namespace marathon {
                 std::stringstream ss;
 
                 ss << "[";
-                ss.width(log10(n) + 1);
-                for (int i = 0; i < n - 1; i++) {
-                    ss.width(log10(n) + 1);
-                    if (mates[i] == -1)
+                ss.width((int) log10(n) + 1);
+                for (size_t i = 0; i < n - 1; i++) {
+                    ss.width((int) log10(n) + 1);
+                    if (mates[i] == SIZE_MAX)
                         ss << "-";
                     else
                         ss << mates[i];
                     ss << ", ";
                 }
-                ss.width(log10(n) + 1);
-                if (mates[n - 1] == -1)
+                ss.width((int) log10(n) + 1);
+                if (mates[n - 1] == SIZE_MAX)
                     ss << "-";
                 else
                     ss << mates[n - 1];
@@ -187,22 +193,63 @@ namespace marathon {
                 return ss.str();
             }
 
-            State *copy() const {
-                return new BipartiteMatching(*this);
+            /**
+             * Return a copy of the current object.
+             * @return
+             */
+            std::unique_ptr<State> copy() const {
+                return std::make_unique<BipartiteMatching>(*this);
             }
 
+            /**
+             * Is this a perfect matching?
+             * @return
+             */
             bool is_perfect() const {
-                return 2 * k == n;
+                return 2 * _edges == n;
             }
 
+            /**
+             * Is this a near-perfect matching?
+             * @return
+             */
             bool is_near_perfect() const {
-                return 2 * k == n - 2;
+                return 2 * _edges == n - 2;
             }
 
-            bool isMatched(int v) const {
-                return mates[v] != -1;
+            /**
+             * Is vertex v matched?
+             * @param v
+             * @return
+             */
+            bool isMatched(size_t v) const {
+                return mates[v] != SIZE_MAX;
             }
 
+            /**
+             * Return the matching partner of node v.
+             * @param v Node index.
+             * @return Matching partner of node v, or SIZE_MAX if v is unmatched.
+             */
+            size_t getMate(size_t v) const {
+                return mates[v];
+            }
+
+            /**
+             * Return the number of matching edges.
+             * @return Number of matching edges.
+             */
+            size_t getNumberOfEdges() const {
+                return _edges;
+            }
+
+            /**
+             * Return the number of vertices in each vertex sets.
+             * @return Number of vertices in each vertex set.
+             */
+            size_t getVertexSize() const {
+                return n;
+            }
         };
 
     }

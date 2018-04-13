@@ -41,15 +41,13 @@ namespace marathon {
 
     public:
 
-        virtual ~Enumerator() {
-
-        }
+        virtual ~Enumerator() = default;
 
         /**
          * Enumerate all states. For each state, evoke the function f.
          * @param f Function that is evaluated for each state.
          */
-        virtual void enumerate(const std::function<void(const State*)> f) = 0;
+        virtual void enumerate(const std::function<void(const State &)> f) = 0;
     };
 }
 

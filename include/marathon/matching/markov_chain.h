@@ -40,8 +40,9 @@ namespace marathon {
 
         protected:
 
-            SparseBipartiteGraph _g;
-            edgelist _edges;
+            SparseBipartiteGraph _g;            // bipartite graph
+            edgelist _edges;                    // list of edges in _g
+            BipartiteMatching currentState;     // current state of the Markov chain
 
         public:
 
@@ -50,20 +51,18 @@ namespace marathon {
 			 * @param g Bipartite graph.
 			 * @param m Perfect or near-perfect matching in g.
 			 */
-            MarkovChain(const SparseBipartiteGraph& g, const BipartiteMatching& m)
-            : _g(g) {
-                _g.getEdges(_edges);
-                currentState = m.copy();
+            MarkovChain(SparseBipartiteGraph g, BipartiteMatching m)
+                    : _g(std::move(g)), _edges(_g.getEdges()), currentState(std::move(m)) {
+
             }
 
             /**
              * Create a Markov chain object.
              * @param g Bipartite graph.
              */
-            MarkovChain(const SparseBipartiteGraph& g)
-                    : _g(g) {
-                _g.getEdges(_edges);
-                currentState = cardmax_matching(g);
+            MarkovChain(SparseBipartiteGraph g)
+                    : _g(std::move(g)), _edges(_g.getEdges()), currentState(cardmax_matching(_g)) {
+
             }
 
 
@@ -88,39 +87,32 @@ namespace marathon {
              * .
              */
             MarkovChain(const std::string &inst) :
-                    _g(inst) {
-                _g.getEdges(_edges);
-                currentState = cardmax_matching(_g);
+                    _g(inst), _edges(_g.getEdges()), currentState(cardmax_matching(_g)) {
+                
             }
 
-
-            /**
-             * Create a Markov chain as a copy of another one.
-             * @param mc Another Markov chain object.
-             */
-            MarkovChain(const MarkovChain& mc) :
-                    _g(mc._g), _edges(mc._edges) {
-                // copy the current state of mc
-                currentState = mc.currentState->copy();
-            }
-
-            virtual ~MarkovChain() {
-
-            }
 
             /**
              * Return the current state of the Markov chain.
              * @return
              */
-            virtual const BipartiteMatching *getCurrentState() const override {
-                return (const BipartiteMatching*) currentState;
+            virtual const BipartiteMatching &getCurrentState() const override {
+                return currentState;
             }
 
             /**
-             * Create an independent copy of the Markov chain.
-             * @return Copy of this Markov chain.
+             * Set the current state.
+             * @param s Bipartite matching.
              */
-            virtual marathon::matching::MarkovChain* copy() const override = 0;
+            virtual void setCurrentState(const State &s) override {
+
+                // try to cast s to the correct type
+                auto m = dynamic_cast<const BipartiteMatching *>(&s);
+                if (m == nullptr)
+                    throw std::runtime_error("Error! State is not a binary matrix!");
+
+                currentState = *m;
+            }
 
         };
     }

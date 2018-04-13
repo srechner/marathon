@@ -52,7 +52,7 @@ namespace marathon {
              * Define a hash function for integer pairs.
              */
             struct hash {
-                size_t operator()(const std::pair<int, int>& p) const {
+                size_t operator()(const std::pair<int, int> &p) const {
                     return p.first ^ p.second;
                 }
             };
@@ -64,12 +64,12 @@ namespace marathon {
              * Initialize the non-constant class members.
              */
             void init_weight() {
-                const int n = (int) _g.getNumberOfNodes()/2;
+                const int n = (int) _g.getNumberOfNodes() / 2;
                 const Rational M = _cnt->countPerfect();
-                for(int u=0; u<n; u++) {
-                    for(int v = n; v<2*n; v++) {
-                        const Rational Nuv = _cnt->countNearPerfect(u,v);
-                        if(Nuv > 0) {
+                for (int u = 0; u < n; u++) {
+                    for (int v = n; v < 2 * n; v++) {
+                        const Rational Nuv = _cnt->countNearPerfect(u, v);
+                        if (Nuv > 0) {
                             auto uv = std::make_pair(u, v);
                             _weight[uv] = (M / Nuv).convert_to<double>();
                         }
@@ -93,8 +93,8 @@ namespace marathon {
              * Create a Markov chain object.
              * @param g Bipartite graph.
              */
-            explicit JSVChain(const SparseBipartiteGraph& g)
-                    : MarkovChain(g) {
+            explicit JSVChain(SparseBipartiteGraph g)
+                    : MarkovChain(std::move(g)) {
                 _cnt = new Counter(_g);
                 init_weight();
             }
@@ -104,8 +104,8 @@ namespace marathon {
              * @param g Bipartite Graph.
              * @param m Perfect or near-perfect matching in g.
              */
-            JSVChain(const SparseBipartiteGraph& g, const BipartiteMatching& m) :
-                    MarkovChain(g, m) {
+            JSVChain(SparseBipartiteGraph g, BipartiteMatching m) :
+                    MarkovChain(std::move(g), std::move(m)) {
                 _cnt = new Counter(_g);
                 init_weight();
             }
@@ -114,8 +114,8 @@ namespace marathon {
              * Create a Markov chain object as a copy of another.
              * @param mc Another Markov chain object.
              */
-            JSVChain(const JSVChain& mc) :
-                   MarkovChain(mc), _weight(mc._weight) {
+            JSVChain(const JSVChain &mc) :
+                    MarkovChain(mc), _weight(mc._weight) {
 
                 _cnt = mc._cnt; // do not copy but re-use same counter object
             }
@@ -124,8 +124,8 @@ namespace marathon {
              * Create a copy of this MarkovChain.
              * @return
              */
-            virtual ::marathon::matching::MarkovChain *copy() const {
-                return new ::marathon::matching::JSVChain(*this);
+            virtual std::unique_ptr<marathon::MarkovChain> copy() const {
+                return std::make_unique<JSVChain>(*this);
             }
 
 
@@ -134,15 +134,15 @@ namespace marathon {
              * @param x Perfect or near-perfect matching object.
              * @return w(x)
              */
-            Rational getWeight(const State *x) const override {
+            Rational getWeight(const State &x) const override {
 
-                const BipartiteMatching *s = (const BipartiteMatching *) x;
+                const BipartiteMatching &s = static_cast<const BipartiteMatching &>(x);
 
-                if (s->is_perfect()) {
+                if (s.is_perfect()) {
                     return 1;
-                } else if (s->is_near_perfect()) {
-                    const int u = s->unmatched[0];
-                    const int v = s->unmatched[1];
+                } else if (s.is_near_perfect()) {
+                    const size_t u = s.unmatched1;
+                    const size_t v = s.unmatched2;
                     return Rational(_cnt->countPerfect(), _cnt->countNearPerfect(u, v));
                 } else {
                     // cannot happen
@@ -157,13 +157,13 @@ namespace marathon {
              * @param f Function to be evaluated for each adjacent state.
              */
             void adjacentStates(
-                    const State *s,
-                    const std::function<void(const State *, const marathon::Rational &)> &f
+                    const State &s,
+                    const std::function<void(const State &, const marathon::Rational &)> &f
             ) const override {
 
                 // Variables
-                auto x = (const BipartiteMatching *) s;
-                const int n = (int) _g.getNumberOfNodes();
+                const BipartiteMatching &x = static_cast<const BipartiteMatching &>(s);
+                const size_t n = _g.getNumberOfNodes();
 
                 const Rational p(2, n);
                 const Rational q(1, n);
@@ -173,21 +173,21 @@ namespace marathon {
                 // Transition rules presented by Jerrum, Sinclair, Vigoda 2004.
 
                 // if x is perfect matching
-                if (x->is_perfect()) {
+                if (x.is_perfect()) {
 
                     // create copy of x
-                    BipartiteMatching y(*x);
+                    BipartiteMatching y(x);
 
                     // Choose a matching edge e=(u,v)
-                    for (int u = 0; 2 * u < n; u++) {
+                    for (size_t u = 0; 2 * u < n; u++) {
 
-                        const int v = x->mates[u];
+                        const size_t v = x.mates[u];
 
                         // remove (u,v)
                         y.removeEdge(u, v);
 
                         const Rational wx = getWeight(x);
-                        const Rational wy = getWeight(&y);
+                        const Rational wy = getWeight(y);
 
                         // metr = p * min(1, w(y)/w(x))
                         Rational metr = p;
@@ -196,45 +196,45 @@ namespace marathon {
                             loop += p - metr;
                         }
 
-                        f(&y, metr);
+                        f(y, metr);
 
                         // undo changes
                         y.addEdge(u, v);
                     }
 
-                } else if (x->is_near_perfect()) {    // is a near-perfect matching
+                } else if (x.is_near_perfect()) {    // is a near-perfect matching
 
-                    const int u = x->unmatched[0];
-                    const int v = x->unmatched[1];
+                    const size_t u = x.unmatched1;
+                    const size_t v = x.unmatched2;
 
                     // choose node z
-                    for (int z = 0; z < n; z++) {
+                    for (size_t z = 0; z < n; z++) {
 
                         // create copy
-                        BipartiteMatching y(*x);
+                        BipartiteMatching y(x);
 
                         // Three Cases to rule them all
 
                         if ((z == u || z == v) && _g.hasEdge(u, v)) {
                             y.addEdge(u, v);
-                        } else if (2 * z >= n && _g.hasEdge(u, z) && x->isMatched(z)) {
-                            int a = x->mates[z];
+                        } else if (2 * z >= n && _g.hasEdge(u, z) && x.isMatched(z)) {
+                            size_t a = x.mates[z];
                             y.removeEdge(a, z);
                             y.addEdge(u, z);
-                            y.unmatched[0] = a;
-                            y.unmatched[1] = v;
-                        } else if (2 * z < n && _g.hasEdge(z, v) && x->isMatched(z)) {
-                            int b = x->mates[z];
+                            y.unmatched1 = a;
+                            y.unmatched2 = v;
+                        } else if (2 * z < n && _g.hasEdge(z, v) && x.isMatched(z)) {
+                            size_t b = x.mates[z];
                             y.removeEdge(z, b);
                             y.addEdge(z, v);
-                            y.unmatched[0] = u;
-                            y.unmatched[1] = b;
+                            y.unmatched1 = u;
+                            y.unmatched2 = b;
                         } else {
                             // loop
                         }
 
                         const Rational wx = getWeight(x);
-                        const Rational wy = getWeight(&y);
+                        const Rational wy = getWeight(y);
 
                         // metr = p * min(1, w(y)/w(x))
                         Rational metr = q;
@@ -243,7 +243,7 @@ namespace marathon {
                             loop += q - metr;
                         }
 
-                        f(&y, metr);
+                        f(y, metr);
                     }
                 }
 
@@ -257,101 +257,100 @@ namespace marathon {
              */
             void step() override {
 
-                auto x = (BipartiteMatching *) getCurrentState();
                 const int n = (int) _g.getNumberOfNodes();
 
                 // draw real number between zero and one uniformly at random
                 double r = rg.nextDouble();
 
                 // if x is perfect matching
-                if (x->is_perfect()) {
+                if (currentState.is_perfect()) {
 
                     // weight of state x
                     const double wx = 1.0;
                     //const double wx = getWeight(x).convert_to<double>();
 
                     // Choose matching edge e=(u,v) uniformly at random and remove it
-                    const int u = rg.nextInt(n);
-                    const int v = x->mates[u];
-                    x->removeEdge(u, v);
+                    const size_t u = rg.nextInt(n);
+                    const size_t v = currentState.mates[u];
+                    currentState.removeEdge(u, v);
 
                     // apply metropolis rule
-                    auto uv = std::make_pair(x->unmatched[0], x->unmatched[1]);
+                    auto uv = std::make_pair(currentState.unmatched1, currentState.unmatched2);
                     const double wy = _weight[uv];
                     //const double wy = getWeight(x).convert_to<double>();
                     const double metr = wy;         // metr = min(1.0, wy / wx);
                     if (r >= metr) {
                         // reject transition by reversing the operation
-                        x->addEdge(u, v);
+                        currentState.addEdge(u, v);
                     }
 
-                } else if (x->is_near_perfect()) {    // if x is a near-perfect matching
+                } else if (currentState.is_near_perfect()) {    // if x is a near-perfect matching
 
                     // determine unmatched nodes
-                    const int u = x->unmatched[0];
-                    const int v = x->unmatched[1];
+                    const size_t u = currentState.unmatched1;
+                    const size_t v = currentState.unmatched2;
 
                     // weight of state x
-                    auto uv = std::make_pair(x->unmatched[0],x->unmatched[1]);
+                    auto uv = std::make_pair(currentState.unmatched1, currentState.unmatched2);
                     const double wx = _weight[uv];
                     //const double wx = getWeight(x).convert_to<double>();
 
                     // choose a node z uniformly at random
-                    const int z = rg.nextInt(n);
+                    const size_t z = rg.nextInt(n);
 
                     // if z is an unmatched node
                     if ((z == u || z == v) && _g.hasEdge(u, v)) {
-                        x->addEdge(u, v);
+                        currentState.addEdge(u, v);
 
                         // apply metropolis rule
                         const double wy = 1.0;  // y is a perfect matching
                         const double metr = wy / wx; // metr = std::min(1.0, wy / wx);
                         if (r >= metr) {
                             // reject transition by reversing the operation
-                            x->removeEdge(u, v);
+                            currentState.removeEdge(u, v);
                         }
 
 
-                    } else if (2 * z >= n && _g.hasEdge(u, z) && x->isMatched(z)) {
+                    } else if (2 * z >= n && _g.hasEdge(u, z) && currentState.isMatched(z)) {
 
                         // shift edge
-                        const int a = x->mates[z];
-                        x->mates[u] = z;
-                        x->mates[z] = u;
-                        x->mates[a] = -1;
-                        x->unmatched[0] = a;
+                        const size_t a = currentState.mates[z];
+                        currentState.mates[u] = z;
+                        currentState.mates[z] = u;
+                        currentState.mates[a] = SIZE_MAX;
+                        currentState.unmatched1 = a;
 
                         // apply metropolis rule
-                        auto uv = std::make_pair(x->unmatched[0], x->unmatched[1]);
+                        auto uv = std::make_pair(currentState.unmatched1, currentState.unmatched2);
                         const double wy = _weight[uv];
                         const double metr = wy / wx;  // metr = std::min(1.0, wy / wx);
                         if (r >= metr) {
                             // reject transition by reversing the operation
-                            x->mates[z] = a;
-                            x->mates[a] = z;
-                            x->mates[u] = -1;
-                            x->unmatched[0] = u;
+                            currentState.mates[z] = a;
+                            currentState.mates[a] = z;
+                            currentState.mates[u] = SIZE_MAX;
+                            currentState.unmatched1 = u;
                         }
 
-                    } else if (2 * z < n && _g.hasEdge(z, v) && x->isMatched(z)) {
+                    } else if (2 * z < n && _g.hasEdge(z, v) && currentState.isMatched(z)) {
 
                         // shift edge
-                        const int b = x->mates[z];
-                        x->mates[v] = z;
-                        x->mates[z] = v;
-                        x->mates[b] = -1;
-                        x->unmatched[1] = b;
+                        const size_t b = currentState.mates[z];
+                        currentState.mates[v] = z;
+                        currentState.mates[z] = v;
+                        currentState.mates[b] = SIZE_MAX;
+                        currentState.unmatched2 = b;
 
                         // apply metropolis rule
-                        auto uv = std::make_pair(x->unmatched[0], x->unmatched[1]);
+                        auto uv = std::make_pair(currentState.unmatched1, currentState.unmatched2);
                         const double wy = _weight[uv];
-                        const double metr = wy/wx; // metr = std::min(1.0, wy / wx);
+                        const double metr = wy / wx; // metr = std::min(1.0, wy / wx);
                         if (r >= metr) {
                             // reject transition by reversing the operation
-                            x->mates[z] = b;
-                            x->mates[b] = z;
-                            x->mates[v] = -1;
-                            x->unmatched[1] = v;
+                            currentState.mates[z] = b;
+                            currentState.mates[b] = z;
+                            currentState.mates[v] = SIZE_MAX;
+                            currentState.unmatched2 = v;
                         }
                     }
                 }

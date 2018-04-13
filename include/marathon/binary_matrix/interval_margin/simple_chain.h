@@ -222,7 +222,7 @@ namespace marathon {
                 }
 
 
-                inline void applySwitch(BinaryMatrix *s) {
+                inline void applySwitch(BinaryMatrix &s) {
 
                     const int nrow = (int) inst.getNumRows();
                     const int ncol = (int) inst.getNumCols();
@@ -248,15 +248,15 @@ namespace marathon {
                         std::swap(j, l);
 
                     // check if edges are flippable
-                    if (s->isCheckerBoardUnit(i, j, k, l)) {
-                        s->flipSubmatrix(i, j, k, l); // switch!
+                    if (s.isCheckerBoardUnit(i, j, k, l)) {
+                        s.flipSubmatrix(i, j, k, l); // switch!
                     } else {
                         // loop
                         loop_switch++;
                     }
                 }
 
-                void applyShift(BinaryMatrix *s) {
+                void applyShift(BinaryMatrix& s) {
 
                     const int nrow = (int) inst.getNumRows();
                     const int ncol = (int) inst.getNumCols();
@@ -278,24 +278,24 @@ namespace marathon {
                     if (k < nrow) {      // if k is a row index
 
                         // if we can shift a one from (i,j) to (k,j)
-                        if (s->get(i, j) && !s->get(k, j) &&
+                        if (s.get(i, j) && !s.get(k, j) &&
                             current_margin.rowsum[i] > inst.rowsum_lower[i] &&
                             current_margin.rowsum[k] < inst.rowsum_upper[k]) {
 
                             // shift a one from (i,j) to (k,j)
-                            s->flip(i, j);
-                            s->flip(k, j);
+                            s.flip(i, j);
+                            s.flip(k, j);
                             current_margin.rowsum[i]--;
                             current_margin.rowsum[k]++;
                         }
                             // if we can shift a one from (k,j) to (i,j)
-                        else if (!s->get(i, j) && s->get(k, j) &&
+                        else if (!s.get(i, j) && s.get(k, j) &&
                                  current_margin.rowsum[k] > inst.rowsum_lower[k] &&
                                  current_margin.rowsum[i] < inst.rowsum_upper[i]) {
 
                             // shift a one from (k,j) to (i,j)
-                            s->flip(i, j);
-                            s->flip(k, j);
+                            s.flip(i, j);
+                            s.flip(k, j);
                             current_margin.rowsum[k]--;
                             current_margin.rowsum[i]++;
                         } else {
@@ -308,23 +308,23 @@ namespace marathon {
                         k -= nrow;
 
                         // if we can shift a one from (i,j) to (i,k)
-                        if (s->get(i, j) && !s->get(i, k) &&
+                        if (s.get(i, j) && !s.get(i, k) &&
                             current_margin.colsum[j] > inst.colsum_lower[j] &&
                             current_margin.colsum[k] < inst.colsum_upper[k]) {
 
                             // shift a one from (i,j) to (i,k)
-                            s->flip(i, j);
-                            s->flip(i, k);
+                            s.flip(i, j);
+                            s.flip(i, k);
                             current_margin.colsum[j]--;
                             current_margin.colsum[k]++;
                         } // if we can shift a one from (i,k) to (i,j)
-                        else if (!s->get(i, j) && s->get(i, k) &&
+                        else if (!s.get(i, j) && s.get(i, k) &&
                                  current_margin.colsum[k] > inst.colsum_lower[k] &&
                                  current_margin.colsum[j] < inst.colsum_upper[j]) {
 
                             // shift a one from (i,k) to (i,j)
-                            s->flip(i, j);
-                            s->flip(i, k);
+                            s.flip(i, j);
+                            s.flip(i, k);
                             current_margin.colsum[k]--;
                             current_margin.colsum[j]++;
                         } else {
@@ -335,7 +335,7 @@ namespace marathon {
                 }
 
 
-                inline void applyFlip(BinaryMatrix *s) {
+                inline void applyFlip(BinaryMatrix& s) {
 
                     const int nrow = (int) inst.getNumRows();
                     const int ncol = (int) inst.getNumCols();
@@ -348,13 +348,13 @@ namespace marathon {
                     int i = rg.nextInt(nrow);
                     int j = rg.nextInt(ncol);
 
-                    if (s->get(i, j)) {
+                    if (s.get(i, j)) {
                         // Flip 1 -> 0
 
                         // flip is allowed by lower and upper margins?
                         if (current_margin.rowsum[i] > inst.rowsum_lower[i] &&
                             current_margin.colsum[j] > inst.colsum_lower[j]) {
-                            s->flip(i, j);
+                            s.flip(i, j);
                             current_margin.rowsum[i]--;
                             current_margin.colsum[j]--;
                         } else {
@@ -367,7 +367,7 @@ namespace marathon {
                         // flip is allowed by lower and upper margins?
                         if (current_margin.rowsum[i] < inst.rowsum_upper[i] &&
                             current_margin.colsum[j] < inst.colsum_upper[j]) {
-                            s->flip(i, j);
+                            s.flip(i, j);
                             current_margin.rowsum[i]++;
                             current_margin.colsum[j]++;
                         } else {
@@ -501,17 +501,15 @@ namespace marathon {
                  */
                 virtual void step() override {
 
-                    BinaryMatrix *s = (BinaryMatrix *) currentState;
-
                     // decide whether to use flip, switch, or shift
                     double p = rg.nextDouble();
 
                     if (p < p_switch)
-                        applySwitch(s);
+                        applySwitch(currentState);
                     else if (p < p_switch + p_shift)
-                        applyShift(s);
+                        applyShift(currentState);
                     else if (p < p_switch + p_shift + p_flip)
-                        applyFlip(s);
+                        applyFlip(currentState);
                     else
                         throw std::runtime_error("Error at SwitchShiftFlipSimple::step()");
                 }
@@ -520,10 +518,8 @@ namespace marathon {
                  * Create a copy of this MarkovChain.
                  * @return
                  */
-                virtual SimpleChain *copy() const override {
-                    auto mc = new SimpleChain(inst);
-                    mc->setCurrentState(this->getCurrentState());
-                    return mc;
+                virtual std::unique_ptr<marathon::MarkovChain> copy() const override {
+                    return std::make_unique<SimpleChain>(inst, currentState);
                 }
             };
         }

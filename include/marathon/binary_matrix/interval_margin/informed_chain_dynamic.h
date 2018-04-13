@@ -141,24 +141,14 @@ namespace marathon {
                 }
 
                 /**
-                  * Set the current state of the Markov chain.
-                  * A copy of state s is used from now on as current State.
-                  * @param s State pointer that is used to create the current state.
-                  */
-                void setCurrentState(const State *s) override {
-                    InformedChain::setCurrentState(s);
-                    reset();
-                }
-
-                /**
                  * Generate each adjacent state x to s and the corresponding proposal propability p(s,x).
                  * For each pair (x,p) call the function f.
                  * @param s
                  * @param process
                  */
                 void adjacentStates(
-                        const State *x,
-                        const std::function<void(const State *, const marathon::Rational &)> &process
+                        const State &x,
+                        const std::function<void(const State &, const marathon::Rational &)> &process
                 ) const override {
                     throw std::runtime_error("Error! Method adjacentStates is not reasonable for time-inhomogeneous Markov chains.");
                 }
@@ -220,10 +210,8 @@ namespace marathon {
                  * Create a copy of this MarkovChain.
                  * @return
                  */
-                virtual InformedChainDynamic *copy() const override {
-                    auto mc = new InformedChainDynamic(inst);
-                    mc->setCurrentState(this->getCurrentState());
-                    return mc;
+                virtual std::unique_ptr<marathon::MarkovChain> copy() const override {
+                    return std::make_unique<InformedChainDynamic>(inst, currentState);
                 }
             };
         }

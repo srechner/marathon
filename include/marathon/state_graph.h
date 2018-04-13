@@ -47,11 +47,11 @@ namespace marathon {
 
     protected:
 
-        const MarkovChain *mc;                                                  // pointer to markov chain object
+        const MarkovChain &mc;                                                  // pointer to markov chain object
 
         /* Vertices and its attributes */
-        std::vector<State *> states;                                            // The set of states.
-        std::unordered_map<State *, int, State::Hash, State::Equal> indices;    // State -> Index
+        std::vector<std::unique_ptr<State>> states;                             // The set of states.
+        std::unordered_map<State *, size_t, State::Hash, State::Equal> indices;    // State -> Index
 
         /* The transition set and views on it. */
         std::vector<Transition *> arcs;
@@ -59,7 +59,7 @@ namespace marathon {
         std::vector<std::vector<Transition *>> inArcs;
 
         /* Variables used for State Graph Construction */
-        std::set<int> reexpand;
+        std::set<size_t> reexpand;
 
         /**
          * Self-Check: Verifiy that chain is reversible.
@@ -115,8 +115,8 @@ namespace marathon {
 
             std::cout << "state size: " << getNumStates() << std::endl;
             for (int ii = 0; ii < getNumStates(); ii++) {
-                const State *s = getState(ii);
-                std::cout << ii << ": " << s->toString() << " " << getWeight(ii)
+                const State &s = getState(ii);
+                std::cout << ii << ": " << s.toString() << " " << getWeight(ii)
                           << std::endl;
             }
 
@@ -146,14 +146,14 @@ namespace marathon {
             if (verbose)
                 std::cout << "expand state " << i << std::endl;
 
-            const State *s = (const State *) getState(i);
+            const State &s = getState(i);
 
             // sum of proposal probabilites of adjacent states
             Rational sum(0);
 
             // for each state that is adjacent to s
-            mc->adjacentStates(s, [this, i, limit, lastStop, verbose, s, &sum]
-                    (const State *s2, const marathon::Rational &p) {
+            mc.adjacentStates(s, [this, i, limit, lastStop, verbose, &s, &sum]
+                    (const State &s2, const marathon::Rational &p) {
 
                 if (p == 0)
                     return;
@@ -168,7 +168,7 @@ namespace marathon {
                 if (j != -1) {
 
                     if (verbose) {
-                        std::cout << " " << j << ": " << s2->toString() << " " << p
+                        std::cout << " " << j << ": " << s2.toString() << " " << p
                                   << " already known state" << std::endl;
                     }
 
@@ -191,7 +191,7 @@ namespace marathon {
                     j = addState(s2);
 
                     if (verbose) {
-                        std::cout << " " << j << ": " << s2->toString() << " " << p
+                        std::cout << " " << j << ": " << s2.toString() << " " << p
                                   << " new state" << std::endl;
                     }
 
@@ -221,7 +221,11 @@ namespace marathon {
          * @param limit A limit on the number of states of the graph. The graph can later on be expanded by the expand() method.
          * @param verbose Enable debug output during state graph construction.
          */
-        StateGraph(const MarkovChain *mc, const int limit = INT_MAX, const bool verbose = false) : mc(mc) {
+        StateGraph(
+                const MarkovChain &mc,
+                const int limit = INT_MAX,
+                const bool verbose = false
+        ) : mc(mc) {
             expand(limit, verbose);
         }
 
@@ -229,18 +233,15 @@ namespace marathon {
          * Standard Destructor. Remove arcs and states.
          */
         virtual ~StateGraph() {
-            // delete all states
-            for (State *s : states)
-                delete s;
             // delete all transitions
             for (int i = 0; i < arcs.size(); i++)
                 delete arcs[i];
         }
 
         /**
-         * @return Returns a pointer to the corresponding Markov Chain Object.
+         * @return Returns a reference to the corresponding Markov Chain Object.
          */
-        const MarkovChain *getMarkovChain() const {
+        const MarkovChain &getMarkovChain() const {
             return mc;
         }
 
@@ -341,7 +342,7 @@ namespace marathon {
          * Return the weight of state i.
          */
         Rational getWeight(const int i) const {
-            return mc->getWeight(states[i]);
+            return mc.getWeight(*(states[i]));
         }
 
         /**
@@ -362,8 +363,8 @@ namespace marathon {
          */
         Rational getNormalizingConstant() const {
             Rational Z = 0;
-            for (const State *s : states)
-                Z += mc->getWeight(s);
+            for (const auto &s : states)
+                Z += mc.getWeight(*s);
             return Z;
         }
 
@@ -419,14 +420,19 @@ namespace marathon {
          * @param s The State to insert.
          * @return The index of the state after insertion.
          */
-        int addState(const State *s) {
+        size_t addState(const State &s) {
 
-            // copy the state
-            State *c = s->copy();
+            // create a copy
+            std::unique_ptr<State> c = s.copy();
+
+            const size_t index = states.size();
+
             // add state to the vector of states
-            states.push_back(c);
-            indices.insert(std::make_pair((State *) c, states.size() - 1));
-            //indices[s] = states.size() - 1;
+            indices[c.get()] = index;
+            //indices.insert(std::make_pair(c.get(), index));
+            states.push_back(std::move(c));
+
+            // prepare vector of transitions
             outArcs.push_back(std::vector<Transition *>());
             inArcs.push_back(std::vector<Transition *>());
             return states.size() - 1;
@@ -435,26 +441,26 @@ namespace marathon {
         /**
          * Returns a reference to the State with index i.
          */
-        const State *getState(int i) const {
-            return states[i];
+        const State &getState(int i) const {
+            return *(states[i]);
         }
 
         /**
          * Returns a reference to a vector of States.
          */
-        const std::vector<State *> &getStates() const {
+        const std::vector<std::unique_ptr<State>> &getStates() const {
             return states;
         }
 
         /**
-         * Returns the index of a state or -1 if the state graph does not contain this state.
+         * Returns the index of a state, or SIZE_MAX if the state graph does not contain this state.
          */
-        int indexOf(const State *s) const {
-            auto it = indices.find((State *) s);
+        size_t indexOf(const State &s) const {
+            auto it = indices.find(const_cast<State*>(&s));
             if (it != indices.end())
                 return it->second;
             else
-                return -1;
+                return SIZE_MAX;
         }
 
         /**
@@ -476,18 +482,10 @@ namespace marathon {
             if (sizeLast == 0) {
 
                 // Start with arbitrary State
-                const State *s1 = mc->getCurrentState();
-                if (s1 == nullptr) {
-
-                    if (verbose) {
-                        // print warning if statespace is empty
-                        std::cerr << "Warning! Empty state!" << std::endl;
-                    }
-                    return;
-                }
+                const State &s1 = mc.getCurrentState();
 
                 if (verbose) {
-                    std::cout << "Start state is " << s1->toString() << std::endl;
+                    std::cout << "Start state is " << s1.toString() << std::endl;
                 }
 
                 // add initial state

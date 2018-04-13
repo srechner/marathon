@@ -34,16 +34,21 @@ namespace marathon {
 	 * @tparam T One of the following: float, double, Rational.
 	 * @param p1 Vector of length n.
 	 * @param p2 Vector of length n.
-	 * @param n Length of vectors.
 	 * @return Variation Distance between p1 and p2.
 	 */
     template<class T>
-    T variationDistance(const T *p1, const T *p2, const size_t n) {
+    T variationDistance(const std::vector<T> &p1, const std::vector<T> &p2) {
+
+        if (p1.size() != p2.size())
+            throw std::runtime_error("Error! Vectors of unequal length!");
 
         T sum(0);
-        for (size_t j = 0; j < n; j++) {
+        for (size_t j = 0; j < p1.size(); j++) {
             T x = p1[j] - p2[j];
-            sum += x > T(0) ? x : x * T(-1);
+            if (x >= T(0))
+                sum += x;
+            else
+                sum -= x;
         }
 
         return sum / T(2);
@@ -53,9 +58,9 @@ namespace marathon {
      * Calculate the total variation distance of matrix P
      */
     template<typename T>
-    T totalVariationDistance(const TransitionMatrix<T> *P, const T *pi) {
+    T totalVariationDistance(const TransitionMatrix<T> &P, const std::vector<T> &pi) {
 
-        const size_t omega = P->getDimension();
+        const size_t omega = P.getDimension();
 
         T max(0);
 
@@ -64,16 +69,19 @@ namespace marathon {
 
             T sum(0);
             for (size_t j = 0; j < omega; j++) {
-                T pij = P->get(i, j);
+                T pij = P.get(i, j);
                 T x = pij - pi[j];
-                sum += x > T(0) ? x : x * T(-1);
+                if (x >= 0)
+                    sum += x;
+                else
+                    sum -= x;
             }
 
 #pragma omp critical
             max = sum > max ? sum : max;
         }
 
-        return max / 2;
+        return max / T(2);
     }
 
 
@@ -106,7 +114,7 @@ namespace marathon {
         // determine minimum and maximum
         T2 min, max;
         min = max = hist_temp.begin()->first;
-        for (const auto& kv : hist_temp) {
+        for (const auto &kv : hist_temp) {
             if (kv.first < min)
                 min = kv.first;
             if (kv.first > max)
@@ -122,7 +130,7 @@ namespace marathon {
         std::vector<T2> vec0(k);
         std::vector<T2> vec1(k);
 
-        for (const auto& p : hist_temp) {
+        for (const auto &p : hist_temp) {
 
             // calculate bin in which p must be inserted
             const int bin_id = (p.first - min) * k / z;
@@ -146,7 +154,7 @@ namespace marathon {
         for (int i = 0; i < k; i++)
             std::cout << vec1[i] << std::endl;*/
 
-        return marathon::variationDistance<T2>(&vec0[0], &vec1[0], k);
+        return marathon::variationDistance<T2>(vec0, vec1);
     }
 }
 

@@ -48,11 +48,11 @@ namespace marathon {
     template<typename T>
     T expectedValue(
             Enumerator *enumerator,
-            const std::function<T(const State *)> f) {
+            const std::function<T(const State &)> f) {
 
         T res = 0;
         size_t num_states = 0;
-        enumerator->enumerate([&](const State *s) {
+        enumerator->enumerate([&](const State &s) {
             res += f(s);
             ++num_states;
         });
@@ -71,12 +71,12 @@ namespace marathon {
     template<typename T>
     T sampleMean(
             marathon::RandomGenerator *rg,
-            const std::function<T(const State *)> f,
+            const std::function<T(const State &)> &f,
             const int N) {
 
         T res = 0;
         for (int l = 0; l < N; l++) {
-            auto s = rg->next();
+            const auto &s = rg->next();
             res += f(s);
         }
         return res / T(N);
@@ -91,8 +91,8 @@ namespace marathon {
      */
     template<typename T=double>
     const SamplingHistogram<T>
-    samplingHistogram (
-            marathon::Enumerator* enumerator,
+    samplingHistogram(
+            marathon::Enumerator *enumerator,
             std::function<T(const State *)> f
     ) {
 
@@ -123,8 +123,8 @@ namespace marathon {
      */
     template<typename T=double>
     const SamplingHistogram<T>
-    samplingHistogram (
-            marathon::RandomGenerator* rg,
+    samplingHistogram(
+            marathon::RandomGenerator *rg,
             std::function<T(const State *)> f,
             const int N
     ) {
@@ -133,7 +133,7 @@ namespace marathon {
         SamplingHistogram<T> res;
 
         // draw N random samples
-        for(int i=0; i<N; i++) {
+        for (int i = 0; i < N; i++) {
             const auto x = rg->next();
             res[f(x)]++;
         }

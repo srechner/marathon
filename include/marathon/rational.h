@@ -62,11 +62,11 @@ namespace marathon {
 			_r = boost::multiprecision::cpp_rational(num, denom);
 		}
 
-		Rational(Integer n) {
+		Rational(const Integer& n) {
 			_r = boost::multiprecision::cpp_rational(n);
 		}
 
-		Rational(Integer num, Integer denom) {
+		Rational(const Integer& num, const Integer& denom) {
 			_r = boost::multiprecision::cpp_rational(num, denom);
 		}
 

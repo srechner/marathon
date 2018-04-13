@@ -38,8 +38,8 @@ namespace marathon {
 
     protected:
 
-        const MarkovChain *mc;
-        const std::function<T(const State *)> f;
+        const std::shared_ptr<MarkovChain> mc;
+        const std::function<T(const State &)> f;
 
     public:
 
@@ -49,9 +49,9 @@ namespace marathon {
          * @param f Function object evaluated to determine the empirical mixing time.
          */
         EmpiricalMixingTimeCalculator(
-                const MarkovChain *mc,
-                const std::function<T(const State *)> &f
-        ) : mc(mc), f(f) {
+                std::shared_ptr<MarkovChain> mc,
+                std::function<T(const State &)> f
+        ) : mc(std::move(mc)), f(std::move(f)) {
 
         }
 
@@ -134,7 +134,7 @@ namespace marathon {
         ) {
 
             // create a population of Markov chain objects
-            MarkovChain **mc_population = new MarkovChain *[N];
+            std::vector<std::unique_ptr<MarkovChain>> mc_population(N);
             for (int i = 0; i < N; i++)
                 mc_population[i] = mc->copy();
 
@@ -165,7 +165,7 @@ namespace marathon {
                 for (int i = 0; i < N; i++) {
 
                     // evolve Markov chain
-                    const State *s = mc_population[i]->randomize(stepsize);
+                    const State &s = mc_population[i]->randomize(stepsize);
 
                     // evaluate target function
                     tmp[i] = f(s);
@@ -194,11 +194,6 @@ namespace marathon {
 
             if (verbose)
                 std::cout << t << "\t" << distance << std::endl;
-
-            // cleanup
-            for (int i = 0; i < N; i++)
-                delete mc_population[i];
-            delete[] mc_population;
 
             return t;
         }

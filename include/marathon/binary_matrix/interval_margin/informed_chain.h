@@ -65,7 +65,7 @@ namespace marathon {
                  * Apply horizontal Trade.
                  */
                 inline
-                void applyTradeHorizontal(BinaryMatrix *s) {
+                void applyTradeHorizontal(BinaryMatrix &s) {
 
                     const int nrow = (int) inst.getNumRows();
                     const int ncol = (int) inst.getNumCols();
@@ -86,8 +86,8 @@ namespace marathon {
                     // for each column position
                     for (int k = 0; k < ncol; k++) {
 
-                        bool s_ik = s->get(i, k);
-                        bool s_jk = s->get(j, k);
+                        bool s_ik = s.get(i, k);
+                        bool s_jk = s.get(j, k);
 
                         if (s_ik != s_jk) {
 
@@ -113,7 +113,7 @@ namespace marathon {
                     // does the selection of a elements produce a loop?
                     bool allsame = true;
                     for (int k = 0; k < a; k++) {
-                        if (!s->get(i, tmp1[k])) {
+                        if (!s.get(i, tmp1[k])) {
                             allsame = false;
                             break;
                         }
@@ -125,14 +125,14 @@ namespace marathon {
                     }
 
                     for (int k = 0; k < a; k++) {
-                        s->set(i, tmp1[k], true);
-                        s->set(j, tmp1[k], false);
+                        s.set(i, tmp1[k], true);
+                        s.set(j, tmp1[k], false);
                     }
 
                     // the remaining elements to go row j
                     for (int k = a; k < a + b; k++) {
-                        s->set(i, tmp1[k], false);
-                        s->set(j, tmp1[k], true);
+                        s.set(i, tmp1[k], false);
+                        s.set(j, tmp1[k], true);
                     }
                 }
 
@@ -140,7 +140,7 @@ namespace marathon {
                  * Apply horizontal Multi-Shift
                  * @param s
                  */
-                inline void applyMultiShiftHorizontal(BinaryMatrix *s) {
+                inline void applyMultiShiftHorizontal(BinaryMatrix &s) {
 
                     const int nrow = (int) inst.getNumRows();
                     const int ncol = (int) inst.getNumCols();
@@ -158,7 +158,7 @@ namespace marathon {
 
                     // for each column position
                     for (int k = 0; k < ncol; k++) {
-                        bool s_ik = s->get(i, k);
+                        bool s_ik = s.get(i, k);
 
                         if (s_ik && current_margin.colsum[k] > inst.colsum_lower[k]) {
                             tmp1[a + b] = k;
@@ -181,7 +181,7 @@ namespace marathon {
                     // does the selection of a elements produce a loop?
                     bool allsame = true;
                     for (int k = 0; k < a; k++) {
-                        if (!s->get(i, tmp1[k])) {
+                        if (!s.get(i, tmp1[k])) {
                             allsame = false;
                             break;
                         }
@@ -195,19 +195,19 @@ namespace marathon {
                     // set positive entries
                     for (int k = 0; k < a; k++) {
                         int j = tmp1[k];
-                        current_margin.colsum[j] += s->get(i, j) ? 0 : 1;
-                        s->set(i, j, true);
+                        current_margin.colsum[j] += s.get(i, j) ? 0 : 1;
+                        s.set(i, j, true);
                     }
 
                     // set negative entries
                     for (int k = a; k < a + b; k++) {
                         int j = tmp1[k];
-                        current_margin.colsum[j] += s->get(i, j) ? -1 : 0;
-                        s->set(i, tmp1[k], false);
+                        current_margin.colsum[j] += s.get(i, j) ? -1 : 0;
+                        s.set(i, tmp1[k], false);
                     }
                 }
 
-                inline void applyTradeVertical(BinaryMatrix *s) {
+                inline void applyTradeVertical(BinaryMatrix &s) {
 
                     const int nrow = (int) inst.getNumRows();
                     const int ncol = (int) inst.getNumCols();
@@ -229,8 +229,8 @@ namespace marathon {
                     // for each row position
                     for (int k = 0; k < nrow; k++) {
 
-                        bool s_ki = s->get(k, i);
-                        bool s_kj = s->get(k, j);
+                        bool s_ki = s.get(k, i);
+                        bool s_kj = s.get(k, j);
 
                         if (s_ki != s_kj) {
 
@@ -256,7 +256,7 @@ namespace marathon {
                     // does the selection of a elements produce a loop?
                     bool allsame = true;
                     for (int k = 0; k < a; k++) {
-                        if (!s->get(tmp1[k], i)) {
+                        if (!s.get(tmp1[k], i)) {
                             allsame = false;
                             break;
                         }
@@ -269,14 +269,14 @@ namespace marathon {
 
 
                     for (int k = 0; k < a; k++) {
-                        s->set(tmp1[k], i, true);
-                        s->set(tmp1[k], j, false);
+                        s.set(tmp1[k], i, true);
+                        s.set(tmp1[k], j, false);
                     }
 
                     // the remaining elements to go column j
                     for (int k = a; k < a + b; k++) {
-                        s->set(tmp1[k], i, false);
-                        s->set(tmp1[k], j, true);
+                        s.set(tmp1[k], i, false);
+                        s.set(tmp1[k], j, true);
                     }
                 }
 
@@ -284,7 +284,7 @@ namespace marathon {
                  * Vertical Multi-Shift to s.
                  * @param s Binary Matrix.
                  */
-                inline void applyMultiShiftVertical(BinaryMatrix *s) {
+                inline void applyMultiShiftVertical(BinaryMatrix &s) {
 
                     const int nrow = (int) inst.getNumRows();
                     const int ncol = (int) inst.getNumCols();
@@ -303,7 +303,7 @@ namespace marathon {
 
                     // for each row position
                     for (int i = 0; i < nrow; i++) {
-                        bool sij = s->get(i, j);
+                        bool sij = s.get(i, j);
 
                         if (sij && current_margin.rowsum[i] > inst.rowsum_lower[i]) {
                             tmp1[a + b] = i;
@@ -327,7 +327,7 @@ namespace marathon {
                     bool allsame = true;
                     for (int k = 0; k < a; k++) {
                         int i = tmp1[k];
-                        if (!s->get(i, j)) {
+                        if (!s.get(i, j)) {
                             allsame = false;
                             break;
                         }
@@ -341,15 +341,15 @@ namespace marathon {
                     // set positive entries
                     for (int k = 0; k < a; k++) {
                         int i = tmp1[k];
-                        current_margin.rowsum[i] += s->get(i, j) ? 0 : 1;
-                        s->set(i, j, true);
+                        current_margin.rowsum[i] += s.get(i, j) ? 0 : 1;
+                        s.set(i, j, true);
                     }
 
                     // set negative entries
                     for (int k = a; k < a + b; k++) {
                         int i = tmp1[k];
-                        current_margin.rowsum[i] += s->get(i, j) ? -1 : 0;
-                        s->set(i, j, false);
+                        current_margin.rowsum[i] += s.get(i, j) ? -1 : 0;
+                        s.set(i, j, false);
                     }
                 }
 
@@ -358,7 +358,7 @@ namespace marathon {
                  * Apply a horizontal Multi-Flip operation to s.
                  * @param s Binary Matrix.
                  */
-                inline void applyMultiFlipHorizontal(BinaryMatrix *s) {
+                inline void applyMultiFlipHorizontal(BinaryMatrix &s) {
 
                     const int nrow = (int) inst.getNumRows();
                     const int ncol = (int) inst.getNumCols();
@@ -377,7 +377,7 @@ namespace marathon {
 
                     // for each column position
                     for (int j = 0; j < ncol; j++) {
-                        bool sij = s->get(i, j);
+                        bool sij = s.get(i, j);
                         if (sij && current_margin.colsum[j] > inst.colsum_lower[j]) {
                             tmp1[a + b] = j;
                             a++;
@@ -405,7 +405,7 @@ namespace marathon {
                     int k = rg.subset<int>(tmp3, tmp2, t);
 
                     // if nothing to flip
-                    if(k == 0) {
+                    if (k == 0) {
                         loop_multiflip++;
                         //printf("typeB\n");
                         return;
@@ -414,7 +414,7 @@ namespace marathon {
                     // determine by how much rowsum[i] would be changed by a flip of the k selected entries
                     int diff = 0;
                     for (int l = 0; l < k; l++)
-                        diff += s->get(i, tmp3[l]) ? -1 : 1;
+                        diff += s.get(i, tmp3[l]) ? -1 : 1;
 
                     // if entries can be flipped without violating the lower and upper bounds
                     if (inst.rowsum_lower[i] <= current_margin.rowsum[i] + diff &&
@@ -423,8 +423,8 @@ namespace marathon {
                         // flip selected entries
                         for (int l = 0; l < k; l++) {
                             int j = tmp3[l];
-                            current_margin.colsum[j] += s->get(i, j) ? -1 : 1;
-                            s->flip(i, j);
+                            current_margin.colsum[j] += s.get(i, j) ? -1 : 1;
+                            s.flip(i, j);
                         }
                         current_margin.rowsum[i] += diff;
                     } else {
@@ -439,7 +439,7 @@ namespace marathon {
                  * Apply a vertical Multi-Flip operation to s.
                  * @param s Binary Matrix.
                  */
-                inline void applyMultiFlipVertical(BinaryMatrix *s) {
+                inline void applyMultiFlipVertical(BinaryMatrix &s) {
 
                     const int nrow = (int) inst.getNumRows();
                     const int ncol = (int) inst.getNumCols();
@@ -458,7 +458,7 @@ namespace marathon {
 
                     // for each column position
                     for (int i = 0; i < nrow; i++) {
-                        bool sij = s->get(i, j);
+                        bool sij = s.get(i, j);
                         if (sij && current_margin.rowsum[i] > inst.rowsum_lower[i]) {
                             tmp1[a + b] = i;
                             a++;
@@ -485,7 +485,7 @@ namespace marathon {
                     // choose a subset of tmp2 uniformly at random
                     int k = rg.subset<int>(tmp3, tmp2, t);
 
-                    if(k == 0) {
+                    if (k == 0) {
                         loop_multiflip++;
                         //printf("typeB\n");
                         return;
@@ -494,7 +494,7 @@ namespace marathon {
                     // determine by how much colsum[j] would be changed by a flip of the k selected entries
                     int diff = 0;
                     for (int l = 0; l < k; l++)
-                        diff += s->get(tmp3[l], j) ? -1 : 1;
+                        diff += s.get(tmp3[l], j) ? -1 : 1;
 
                     // if entries can be flipped without violating the lower and upper bounds
                     if (inst.colsum_lower[j] <= current_margin.colsum[j] + diff &&
@@ -503,8 +503,8 @@ namespace marathon {
                         // flip selected entries
                         for (int l = 0; l < k; l++) {
                             int i = tmp3[l];
-                            current_margin.rowsum[i] += s->get(i, j) ? -1 : 1;
-                            s->flip(i, j);
+                            current_margin.rowsum[i] += s.get(i, j) ? -1 : 1;
+                            s.flip(i, j);
                         }
                         current_margin.colsum[j] += diff;
                     } else {
@@ -522,8 +522,8 @@ namespace marathon {
                  * @return
                  */
                 void simulateTradeHorizontal(
-                        const BinaryMatrix *s,
-                        const std::function<void(const State *, const Rational &)> &process,
+                        const BinaryMatrix &s,
+                        const std::function<void(const State &, const Rational &)> &process,
                         const int *rowsum,
                         const int *colsum
                 ) const {
@@ -546,8 +546,8 @@ namespace marathon {
                             // for each column position
                             for (int k = 0; k < ncol; k++) {
 
-                                bool s_ik = s->get(i, k);
-                                bool s_jk = s->get(j, k);
+                                bool s_ik = s.get(i, k);
+                                bool s_jk = s.get(j, k);
 
                                 if (s_ik != s_jk) {
 
@@ -574,11 +574,11 @@ namespace marathon {
                             // the probability for each choice of the loop
                             const Rational p =
                                     (q_horizontal_rat * p_trade_rat *
-                                    Rational(2, nrow * (nrow - 1))) / binom(a + b, a);
+                                     Rational(2, nrow * (nrow - 1))) / binom(a + b, a);
                             do {
 
                                 // create copy of s
-                                BinaryMatrix s2(*s);
+                                BinaryMatrix s2(s);
 
                                 for (int k = 0; k < a + b; k++) {
                                     s2.set(i, tmp1[k], false);
@@ -590,7 +590,7 @@ namespace marathon {
                                     s2.set(j, tmp2[k], false);
                                 }
 
-                                process(&s2, p);
+                                process(s2, p);
 
                             } while (cg.next());
                         }
@@ -608,8 +608,8 @@ namespace marathon {
                  * @return
                  */
                 void simulateMultiShiftHorizontal(
-                        const BinaryMatrix *s,
-                        const std::function<void(const State *, const Rational &)> &process,
+                        const BinaryMatrix &s,
+                        const std::function<void(const State &, const Rational &)> &process,
                         const int *rowsum,
                         const int *colsum
                 ) const {
@@ -631,7 +631,7 @@ namespace marathon {
 
                         // for each column position
                         for (int k = 0; k < ncol; k++) {
-                            bool s_ik = s->get(i, k);
+                            bool s_ik = s.get(i, k);
 
                             if (s_ik && colsum[k] > inst.colsum_lower[k]) {
                                 tmp1[a + b] = k;
@@ -657,7 +657,7 @@ namespace marathon {
 
                         do {
                             // create copy of s
-                            BinaryMatrix s2(*s);
+                            BinaryMatrix s2(s);
 
                             for (int k = 0; k < a + b; k++)
                                 s2.set(i, tmp1[k], false);
@@ -665,7 +665,7 @@ namespace marathon {
                             for (int k = 0; k < a; k++)
                                 s2.set(i, tmp2[k], true);
 
-                            process(&s2, p);
+                            process(s2, p);
 
                         } while (cg.next());
 
@@ -682,8 +682,8 @@ namespace marathon {
                  * @return
                  */
                 void simulateTradeVertical(
-                        const BinaryMatrix *s,
-                        const std::function<void(const State *, const Rational &)> &process,
+                        const BinaryMatrix &s,
+                        const std::function<void(const State &, const Rational &)> &process,
                         const int *rowsum,
                         const int *colsum
                 ) const {
@@ -706,8 +706,8 @@ namespace marathon {
                             // for each row position
                             for (int k = 0; k < nrow; k++) {
 
-                                bool s_ki = s->get(k, i);
-                                bool s_kj = s->get(k, j);
+                                bool s_ki = s.get(k, i);
+                                bool s_kj = s.get(k, j);
 
                                 if (s_ki != s_kj) {
 
@@ -723,8 +723,7 @@ namespace marathon {
 
                             // if there is nothing to choose from
                             if (a + b == 0) {
-                                loop += q_vertical_rat * p_trade_rat *
-                                        Rational(2, ncol * (ncol - 1));
+                                loop += q_vertical_rat * p_trade_rat * Rational(2, ncol * (ncol - 1));
                                 continue;
                             }
 
@@ -737,7 +736,7 @@ namespace marathon {
                                     binom(a + b, a);
                             do {
                                 // create copy of s
-                                BinaryMatrix s2(*s);
+                                BinaryMatrix s2(s);
 
                                 for (int k = 0; k < a + b; k++) {
                                     s2.set(tmp1[k], i, false);
@@ -749,7 +748,7 @@ namespace marathon {
                                     s2.set(tmp2[k], j, false);
                                 }
 
-                                process(&s2, p);
+                                process(s2, p);
 
                             } while (cg.next());
                         }
@@ -766,8 +765,8 @@ namespace marathon {
                  * @return
                  */
                 void simulateMultiShiftVertical(
-                        const BinaryMatrix *s,
-                        const std::function<void(const State *, const Rational &)> &process,
+                        const BinaryMatrix &s,
+                        const std::function<void(const State &, const Rational &)> &process,
                         const int *rowsum,
                         const int *colsum
                 ) const {
@@ -789,7 +788,7 @@ namespace marathon {
 
                         // for each row position
                         for (int i = 0; i < nrow; i++) {
-                            bool sij = s->get(i, j);
+                            bool sij = s.get(i, j);
 
                             if (sij && rowsum[i] > inst.rowsum_lower[i]) {
                                 tmp1[a + b] = i;
@@ -810,11 +809,10 @@ namespace marathon {
                         CombinationGenerator<int> cg(tmp1, tmp2, a + b, a);
 
                         // the probability for each choice of the loop
-                        const Rational p = q_vertical_rat * p_multishift_rat * Rational(1, ncol) /
-                                           binom(a + b, a);
+                        const Rational p = q_vertical_rat * p_multishift_rat * Rational(1, ncol) / binom(a + b, a);
                         do {
                             // create copy of s
-                            BinaryMatrix s2(*s);
+                            BinaryMatrix s2(s);
 
                             for (int k = 0; k < a + b; k++)
                                 s2.set(tmp1[k], j, false);
@@ -822,7 +820,7 @@ namespace marathon {
                             for (int k = 0; k < a; k++)
                                 s2.set(tmp2[k], j, true);
 
-                            process(&s2, p);
+                            process(s2, p);
 
                         } while (cg.next());
                     }
@@ -839,8 +837,8 @@ namespace marathon {
                  * @return
                  */
                 void simulateMultiFlipHorizontal(
-                        const BinaryMatrix *s,
-                        const std::function<void(const State *, const Rational &)> &process,
+                        const BinaryMatrix &s,
+                        const std::function<void(const State &, const Rational &)> &process,
                         const int *rowsum,
                         const int *colsum
                 ) const {
@@ -862,7 +860,7 @@ namespace marathon {
 
                         // for each column position
                         for (int j = 0; j < ncol; j++) {
-                            bool sij = s->get(i, j);
+                            bool sij = s.get(i, j);
                             if (sij && colsum[j] > inst.colsum_lower[j]) {
                                 tmp1[a + b] = j;
                                 a++;
@@ -903,14 +901,14 @@ namespace marathon {
                                     // determine by how much rowsum[i] would be changed by a flip of the k selected entries
                                     int diff = 0;
                                     for (int l = 0; l < k; l++)
-                                        diff += s->get(i, tmp3[l]) ? -1 : 1;
+                                        diff += s.get(i, tmp3[l]) ? -1 : 1;
 
                                     // if entries can be flipped without violating the lower and upper bounds
                                     if (inst.rowsum_lower[i] <= rowsum[i] + diff &&
                                         rowsum[i] + diff <= inst.rowsum_upper[i]) {
 
                                         // create copy of s
-                                        BinaryMatrix s2(*s);
+                                        BinaryMatrix s2(s);
 
                                         // flip selected entries
                                         for (int l = 0; l < k; l++) {
@@ -918,12 +916,12 @@ namespace marathon {
                                             s2.flip(i, j);
                                         }
 
-                                        process(&s2, p);
+                                        process(s2, p);
 
                                     } else {
                                         loop += p;
                                     }
-                                } while(cg_sub.next());
+                                } while (cg_sub.next());
                             }
 
                         } while (cg.next());
@@ -941,8 +939,8 @@ namespace marathon {
                  * @return
                  */
                 void simulateMultiFlipVertical(
-                        const BinaryMatrix *s,
-                        const std::function<void(const State *, const Rational &)> &process,
+                        const BinaryMatrix &s,
+                        const std::function<void(const State &, const Rational &)> &process,
                         const int *rowsum,
                         const int *colsum
                 ) const {
@@ -964,7 +962,7 @@ namespace marathon {
 
                         // for each row position
                         for (int i = 0; i < nrow; i++) {
-                            bool sij = s->get(i, j);
+                            bool sij = s.get(i, j);
                             if (sij && rowsum[i] > inst.rowsum_lower[i]) {
                                 tmp1[a + b] = i;
                                 a++;
@@ -1006,7 +1004,7 @@ namespace marathon {
                                     int diff = 0;
                                     for (int l = 0; l < k; l++) {
                                         int i = tmp3[l];
-                                        diff += s->get(i, j) ? -1 : 1;
+                                        diff += s.get(i, j) ? -1 : 1;
                                     }
 
                                     // if entries can be flipped without violating the lower and upper bounds
@@ -1014,7 +1012,7 @@ namespace marathon {
                                         colsum[j] + diff <= inst.colsum_upper[j]) {
 
                                         // create copy of s
-                                        BinaryMatrix s2(*s);
+                                        BinaryMatrix s2(s);
 
                                         // flip selected entries
                                         for (int l = 0; l < k; l++) {
@@ -1022,12 +1020,12 @@ namespace marathon {
                                             s2.flip(i, j);
                                         }
 
-                                        process(&s2, p);
+                                        process(s2, p);
 
                                     } else {
                                         loop += p;
                                     }
-                                } while(cg_sub.next());
+                                } while (cg_sub.next());
                             }
 
                         } while (cg.next());
@@ -1072,10 +1070,10 @@ namespace marathon {
                  */
                 explicit InformedChain(const Instance &inst) :
                         MarkovChain(inst),
-                        q_horizontal_rat(Rational(inst.getNumCols(), inst.getNumRows() + inst.getNumCols())),
-                        q_vertical_rat(Rational(inst.getNumRows(), inst.getNumRows() + inst.getNumCols())),
                         q_horizontal(inst.getNumCols() / (double) (inst.getNumRows() + inst.getNumCols())),
-                        q_vertical(inst.getNumRows() / (double) (inst.getNumRows() + inst.getNumCols())) {
+                        q_vertical(inst.getNumRows() / (double) (inst.getNumRows() + inst.getNumCols())),
+                        q_horizontal_rat(Rational(inst.getNumCols(), inst.getNumRows() + inst.getNumCols())),
+                        q_vertical_rat(Rational(inst.getNumRows(), inst.getNumRows() + inst.getNumCols())) {
                     init();
                 }
 
@@ -1086,10 +1084,10 @@ namespace marathon {
                  */
                 InformedChain(const Instance &inst, const BinaryMatrix &bin)
                         : MarkovChain(inst, bin),
-                        q_horizontal_rat(Rational(inst.getNumCols(), inst.getNumRows() + inst.getNumCols())),
-                        q_vertical_rat(Rational(inst.getNumRows(), inst.getNumRows() + inst.getNumCols())),
-                        q_horizontal(inst.getNumCols() / (double) (inst.getNumRows() + inst.getNumCols())),
-                        q_vertical(inst.getNumRows() / (double) (inst.getNumRows() + inst.getNumCols())) {
+                          q_horizontal(inst.getNumCols() / (double) (inst.getNumRows() + inst.getNumCols())),
+                          q_vertical(inst.getNumRows() / (double) (inst.getNumRows() + inst.getNumCols())),
+                          q_horizontal_rat(Rational(inst.getNumCols(), inst.getNumRows() + inst.getNumCols())),
+                          q_vertical_rat(Rational(inst.getNumRows(), inst.getNumRows() + inst.getNumCols())) {
                     init();
                 }
 
@@ -1157,15 +1155,15 @@ namespace marathon {
                  * @param process
                  */
                 void adjacentStates(
-                        const State *x,
-                        const std::function<void(const State *, const marathon::Rational &)> &process
+                        const State &x,
+                        const std::function<void(const State &, const marathon::Rational &)> &process
                 ) const override {
 
                     const int nrow = (int) inst.getNumRows();
                     const int ncol = (int) inst.getNumCols();
 
                     // create a copy of x
-                    const BinaryMatrix *s = (const BinaryMatrix *) x;
+                    BinaryMatrix s(static_cast<const BinaryMatrix &>(x));
 
                     // create temporary array of row and column sums
                     int *rowsum = new int[nrow];
@@ -1174,7 +1172,7 @@ namespace marathon {
                     memset(colsum, 0, ncol * sizeof(int));
                     for (int i = 0; i < nrow; i++) {
                         for (int j = 0; j < ncol; j++) {
-                            if(s->get(i,j)) {
+                            if (s.get(i, j)) {
                                 rowsum[i]++;
                                 colsum[j]++;
                             }
@@ -1198,8 +1196,6 @@ namespace marathon {
                  */
                 virtual void step() override {
 
-                    BinaryMatrix *s = (BinaryMatrix *) currentState;
-
                     // select two random numbers from [0,1)
                     double p = rg.nextDouble();
                     double q = rg.nextDouble();
@@ -1208,9 +1204,9 @@ namespace marathon {
                     if (p < p_trade) {                                   // apply trade
 
                         if (q < q_horizontal) {
-                            applyTradeHorizontal(s);
+                            applyTradeHorizontal(currentState);
                         } else if (q < q_horizontal + q_vertical) {
-                            applyTradeVertical(s);
+                            applyTradeVertical(currentState);
                         } else {
                             throw std::runtime_error("Error while applying trade.");
                         }
@@ -1218,24 +1214,24 @@ namespace marathon {
                     } else if (p < p_trade + p_multishift) {      // apply multi-shift
 
                         if (q < q_horizontal) {
-                            applyMultiShiftHorizontal(s);
+                            applyMultiShiftHorizontal(currentState);
                         } else if (q < q_horizontal + q_vertical) {
-                            applyMultiShiftVertical(s);
+                            applyMultiShiftVertical(currentState);
                         } else {
                             throw std::runtime_error("Error while applying multi-shift.");
                         }
 
-                    } else if (p < p_trade + p_multishift + p_multiflip) {                                                       // apply multi-flip
+                    } else if (p < p_trade + p_multishift +
+                                   p_multiflip) {                                                       // apply multi-flip
 
                         if (q < q_horizontal) {
-                            applyMultiFlipHorizontal(s);
-                        } else if(q < q_horizontal + q_vertical) {
-                            applyMultiFlipVertical(s);
+                            applyMultiFlipHorizontal(currentState);
+                        } else if (q < q_horizontal + q_vertical) {
+                            applyMultiFlipVertical(currentState);
                         } else {
                             throw std::runtime_error("Error while applying multi-flip.");
                         }
-                    }
-                    else {
+                    } else {
                         throw std::runtime_error("Error while applying operation.");
                     }
                 }
@@ -1244,10 +1240,8 @@ namespace marathon {
                  * Create a copy of this MarkovChain.
                  * @return
                  */
-                virtual InformedChain *copy() const override {
-                    auto mc = new InformedChain(inst);
-                    mc->setCurrentState(this->getCurrentState());
-                    return mc;
+                virtual std::unique_ptr<marathon::MarkovChain> copy() const override {
+                    return std::make_unique<InformedChain>(inst, currentState);
                 }
 
             };

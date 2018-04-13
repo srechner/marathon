@@ -56,14 +56,14 @@ namespace marathon {
                  * @param nrow Number of rows.
                  * @param ncol Number of columns.
                  */
-                Instance(const int nrow, const int ncol) {
+                Instance(size_t nrow, size_t ncol) {
                     rowsum.resize(nrow);
                     colsum.resize(ncol);
                     rowindex.resize(nrow);
                     colindex.resize(ncol);
-                    for (int i = 0; i < nrow; i++)
+                    for (size_t i = 0; i < nrow; i++)
                         rowindex[i] = i;
-                    for (int j = 0; j < ncol; j++)
+                    for (size_t j = 0; j < ncol; j++)
                         colindex[j] = j;
                 }
 
@@ -77,8 +77,8 @@ namespace marathon {
                 Instance(
                         const int *rowsum,
                         const int *colsum,
-                        const int nrow,
-                        const int ncol
+                        size_t nrow,
+                        size_t ncol
                 ) {
 
                     this->rowsum.assign(rowsum, rowsum + nrow);
@@ -98,33 +98,21 @@ namespace marathon {
                  * @param colsum Sequence of column sums.
                  */
                 Instance(
-                        const std::vector<int> &rowsum,
-                        const std::vector<int> &colsum
-                ) : rowsum(rowsum),
-                    colsum(colsum) {
+                        std::vector<int> rowsum,
+                        std::vector<int> colsum
+                ) : rowsum(std::move(rowsum)),
+                    colsum(std::move(colsum)) {
 
-                    const int nrow = rowsum.size();
-                    const int ncol = colsum.size();
+                    const size_t nrow = rowsum.size();
+                    const size_t ncol = colsum.size();
 
                     rowindex.resize(nrow);
                     colindex.resize(ncol);
 
-                    for(int i=0; i<nrow; i++)
+                    for (int i = 0; i < nrow; i++)
                         rowindex[i] = i;
-                    for(int j=0; j<ncol; j++)
+                    for (int j = 0; j < ncol; j++)
                         colindex[j] = j;
-
-                }
-
-                /**
-                 * Define margins for a matrix of size nrow times ncol.
-                 * @param seq
-                 */
-                Instance(const Instance &seq) :
-                        rowsum(seq.rowsum),
-                        colsum(seq.colsum),
-                        rowindex(seq.rowindex),
-                        colindex(seq.colindex) {
 
                 }
 
@@ -192,8 +180,8 @@ namespace marathon {
                 */
                 Instance(const BinaryMatrix &bin) {
 
-                    const int nrow = bin.getNumRows();
-                    const int ncol = bin.getNumCols();
+                    const size_t nrow = bin.getNumRows();
+                    const size_t ncol = bin.getNumCols();
 
                     rowsum.resize(nrow);
                     colsum.resize(ncol);
@@ -257,8 +245,8 @@ namespace marathon {
                 * Determine the sum of all row sum entries or column sum entries.
                 * @return Row total.
                 */
-                const size_t getTotal() const {
-                    return std::accumulate(rowsum.begin(), rowsum.end(), 0);
+                const uint getTotal() const {
+                    return std::accumulate(rowsum.begin(), rowsum.end(), 0u);
                 }
 
                 /**
@@ -266,7 +254,7 @@ namespace marathon {
                  * @param s Binary Matrix.
                  * @return True, if s is valid or False, otherwise.
                  */
-                virtual bool isValid(const BinaryMatrix& bin) const {
+                virtual bool isValid(const BinaryMatrix &bin) const {
 
                     const int nrow = (int) getNumRows();
                     const int ncol = (int) getNumCols();
@@ -310,7 +298,6 @@ namespace marathon {
 
                     return valid;
                 }
-
             };
         }
     }
@@ -319,7 +306,7 @@ namespace marathon {
 /* Special Instances Hardcoded */
 
 const marathon::binary_matrix::fixed_margin::Instance darwin_margin(
-        {14,13,14,10,12,2,10,1,10,11,6,2,17},
-        {4,4,11,10,10,8,9,10,8,9,3,10,4,7,9,3,3});
+        {14, 13, 14, 10, 12, 2, 10, 1, 10, 11, 6, 2, 17},
+        {4, 4, 11, 10, 10, 8, 9, 10, 8, 9, 3, 10, 4, 7, 9, 3, 3});
 
 #endif //MARATHON_BINARY_MATRIX_FIXED_MARGIN_MARGIN_H

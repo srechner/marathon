@@ -44,7 +44,7 @@ namespace marathon {
              * @return True, if (rowsum, colsum) is a realizable sequence pair. False, otherwise.
              */
             inline
-            bool isRealizable(const Instance& m) {
+            bool isRealizable(const Instance &m) {
 
                 // the total sum of each sequence
                 int sum_rowsum = 0;
@@ -71,13 +71,11 @@ namespace marathon {
                     return false;
 
                 // compute conjugated row sums
-                int *rowsum_conjugated = new int[m.getNumCols()];
-                conjugate(rowsum_conjugated, &m.rowsum[0], m.getNumCols(), m.getNumRows());
+                std::vector<int> rowsum_conjugated = conjugate(m.rowsum, m.getNumCols());
 
                 // sort column sums descendingly
-                int *colsum_sorted = new int[m.getNumCols()];
-                memcpy(colsum_sorted, &m.colsum[0], m.getNumCols() * sizeof(int));
-                std::sort(colsum_sorted, colsum_sorted + m.getNumCols(), [](const int a, const int b) { return a > b; });
+                std::vector<int> colsum_sorted(m.colsum);
+                std::sort(colsum_sorted.begin(), colsum_sorted.end(), [](int a, int b) { return a > b; });
 
                 // the degree sequence is realizable when the conjugated rowsum dominate the colsum
                 bool realizable = true;
@@ -91,9 +89,6 @@ namespace marathon {
                         break;
                     }
                 }
-
-                delete[] rowsum_conjugated;
-                delete[] colsum_sorted;
 
                 return realizable;
             }
@@ -137,11 +132,11 @@ namespace marathon {
              * @param seq Sequence of row and column sums.
              */
             inline
-            BinaryMatrix *
+            BinaryMatrix
             realize(const Instance &seq) {
 
-                const int nrow = (int) seq.getNumRows();
-                const int ncol = (int) seq.getNumCols();
+                const size_t nrow = seq.getNumRows();
+                const size_t ncol = seq.getNumCols();
 
                 /**************************************************************
                  * Running Time: O(nrow + ncol*log(ncol) + total),
@@ -158,19 +153,18 @@ namespace marathon {
                 };
 
                 // sorted vector of index-degree-pairs
-                A *column = new A[ncol];
+                std::vector<A> column(ncol);
                 for (int j = 0; j < ncol; j++) {
                     column[j] = {seq.colindex[j], seq.colsum[j]};
                 }
 
                 // sort column pairs descendingly by degree
-                std::sort(column, column + ncol, [](const A &a, const A &b) {
+                std::sort(column.begin(), column.end(), [](const A &a, const A &b) {
                     return a.degree > b.degree;
                 });
 
                 // create conjugate sequence of row sums
-                int *rowsum_conjugated = new int[ncol];
-                conjugate(rowsum_conjugated, &seq.rowsum[0], ncol, nrow);
+                std::vector<int> rowsum_conjugated = conjugate(seq.rowsum, ncol);
 
                 int rowsum_conjugated_sum = 0;
                 int colsum_sum = 0;
@@ -179,9 +173,7 @@ namespace marathon {
                     colsum_sum += column[j].degree;
                     if (rowsum_conjugated_sum < colsum_sum) {
                         // sequence is not realizable
-                        delete[] column;
-                        delete[] rowsum_conjugated;
-                        return nullptr;
+                        throw std::runtime_error("Error! Vector pair not bi-graphical!");
                     }
                 }
 
@@ -189,10 +181,10 @@ namespace marathon {
                  * Apply Ryser's algorithm.
                  *****************************************************************/
 
-                BinaryMatrix *bip = new BinaryMatrix(nrow, ncol);
+                BinaryMatrix bip(nrow, ncol);
 
                 // last[k] = max { j : column[j].degree == k }
-                int *last = new int[nrow + 1];
+                std::vector<int> last(nrow + 1);
                 for (int k = 0; k < nrow + 1; k++)
                     last[k] = -1;
                 for (int j = 0; j < ncol; j++) {
@@ -214,7 +206,7 @@ namespace marathon {
                         int dj = column[k].degree;
                         assert(dj != 0);
 
-                        bip->set(i, j, 1);
+                        bip.set(i, j, 1);
                         column[k].degree--;
 
                         // find largest index l such that column[l].degree == d
@@ -233,10 +225,6 @@ namespace marathon {
                     }
                 }
 
-                delete[] column;
-                delete[] rowsum_conjugated;
-                delete[] last;
-
                 return bip;
             }
 
@@ -251,7 +239,7 @@ namespace marathon {
              * @param ncol The number of columns.
              */
             inline
-            BinaryMatrix *
+            BinaryMatrix
             realize(
                     const int *rowsum,
                     const int *colsum,
@@ -269,7 +257,7 @@ namespace marathon {
              * @param colsum Sequence of column sums.
              */
             inline
-            BinaryMatrix *
+            BinaryMatrix
             realize(
                     const std::vector<int> &rowsum,
                     const std::vector<int> &colsum
@@ -285,11 +273,11 @@ namespace marathon {
              * @param m Row and column sums.
              */
             inline
-            BinaryMatrix *
-            realize_random(const Instance& m) {
+            BinaryMatrix
+            realize_random(const Instance &m) {
 
-                const int nrow = m.getNumRows();
-                const int ncol = m.getNumCols();
+                const size_t nrow = m.getNumRows();
+                const size_t ncol = m.getNumCols();
 
                 /**************************************************************
                  * Running Time: O(nrow + ncol*log(ncol) + total),
@@ -306,32 +294,32 @@ namespace marathon {
                 };
 
                 // sorted vector of index-degree-pairs
-                A *cols = new A[ncol];
+                std::vector<A> cols(ncol);
                 for (int j = 0; j < ncol; j++)
                     cols[j] = {m.colindex[j], m.colsum[j]};
 
-                A *rows = new A[nrow];
+                std::vector<A> rows(nrow);
                 for (int i = 0; i < nrow; i++)
                     rows[i] = {m.rowindex[i], m.rowsum[i]};
 
                 // sort columns descendingly by degree
-                std::sort(cols, cols + ncol, [](const A &a, const A &b) {
+                std::sort(cols.begin(), cols.end(), [](const A &a, const A &b) {
                     return a.degree > b.degree;
                 });
 
                 // sort rows descendingly by degree
-                std::sort(rows, rows + nrow, [](const A &a, const A &b) {
+                std::sort(rows.begin(), rows.end(), [](const A &a, const A &b) {
                     return a.degree > b.degree;
                 });
 
                 // check range of degrees
                 if (rows[0].degree > ncol || rows[nrow - 1].degree < 0
-                    || cols[0].degree > nrow || cols[ncol - 1].degree < 0)
-                    return nullptr;
+                    || cols[0].degree > nrow || cols[ncol - 1].degree < 0) {
+                    throw std::runtime_error("Error! Vector pair not bi-graphical!");
+                }
 
                 // create conjugate sequence of row sums
-                int *rowsum_conjugated = new int[ncol];
-                conjugate(rowsum_conjugated, &m.rowsum[0], ncol, nrow);
+                std::vector<int> rowsum_conjugated = conjugate(m.rowsum, ncol);
 
                 int rowsum_conjugated_sum = 0;
                 int colsum_sum = 0;
@@ -340,10 +328,7 @@ namespace marathon {
                     colsum_sum += cols[j].degree;
                     if (rowsum_conjugated_sum < colsum_sum) {
                         // sequence is not realizable
-                        delete[] cols;
-                        delete[] rows;
-                        delete[] rowsum_conjugated;
-                        return nullptr;
+                        throw std::runtime_error("Error! Vector pair not bi-graphical!");
                     }
                 }
 
@@ -352,7 +337,7 @@ namespace marathon {
                  *****************************************************************/
 
                 // matrix realization
-                BinaryMatrix *bip = new BinaryMatrix(nrow, ncol);
+                BinaryMatrix bip(nrow, ncol);
 
                 // RNG
                 marathon::RandomDevice r;
@@ -433,7 +418,7 @@ namespace marathon {
 
                             // determine matrix position and set entry to one
                             int j = cols[q].index;
-                            bip->set(i, j, 1);
+                            bip.set(i, j, 1);
 
                             // reduce degree
                             int m = cols[q].degree;
@@ -454,7 +439,7 @@ namespace marathon {
 
                         if (k < n) {
                             // randomly shuffle the columns cols[f..f+n]
-                            r.shuffle<A>(cols + f, n);
+                            r.shuffle<A>(&cols[f], n);
                         }
 
                         // select k random columns out of n
@@ -462,7 +447,7 @@ namespace marathon {
 
                             // insert one
                             int j = cols[q].index;
-                            bip->set(i, j, 1);
+                            bip.set(i, j, 1);
                             cols[q].degree--;
 
                             // update first and last
@@ -546,7 +531,7 @@ namespace marathon {
 
                             // determine matrix position and set entry to one
                             int j = rows[q].index;
-                            bip->set(j, i, 1);
+                            bip.set(j, i, 1);
 
                             // reduce degree
                             int m = rows[q].degree;
@@ -567,7 +552,7 @@ namespace marathon {
 
                         if (k < n) {
                             // randomly shuffle the rows rows[f..f+n]
-                            r.shuffle<A>(rows + f, n);
+                            r.shuffle<A>(&rows[f], n);
                         }
 
                         // select k random rows out of n
@@ -575,7 +560,7 @@ namespace marathon {
 
                             // insert one
                             int j = rows[q].index;
-                            bip->set(j, i, 1);
+                            bip.set(j, i, 1);
                             rows[q].degree--;
 
                             // update first and last
@@ -623,9 +608,6 @@ namespace marathon {
                     }
                 }
 
-                delete[] rows;
-                delete[] cols;
-                delete[] rowsum_conjugated;
                 delete[] row_first;
                 delete[] row_last;
                 delete[] col_first;
@@ -644,7 +626,7 @@ namespace marathon {
              * @param ncol The number of columns.
              */
             inline
-            BinaryMatrix *
+            BinaryMatrix
             realize_random(
                     const int *rowsum,
                     const int *colsum,

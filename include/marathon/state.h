@@ -28,92 +28,89 @@
 #include <cstdlib>
 #include <string>
 #include <iostream>
+#include <memory>
 
 namespace marathon {
 
 /**
  * Abstract Base Class for States.
  */
-class State {
+    class State {
 
-public:
+    public:
 
-	virtual ~State() {
+        /**
+         * Create a deep copy of the state.
+         */
+        virtual std::unique_ptr<State> copy() const = 0;
 
-	}
+        /**
+         * Return a hash function of the state.
+         */
+        virtual size_t hashValue() const = 0;
 
-	/**
-	 * Create a deep copy of the state.
-	 */
-	virtual State* copy() const = 0;
+        /**
+         * Compare the state with another state.
+         * @param s State object.
+         * @return Zero, if this==s. Negative value, if this<s. Positive value if s<this.
+         */
+        virtual int compare(const State &s) const = 0;
 
-	/**
-	 * Return a hash function of the state.
-	 */
-	virtual size_t hashValue() const = 0;
+        /**
+         * Return a string representation of the state.
+         */
+        virtual std::string toString() const = 0;
 
-	/**
-	 * Compare the state with another state.
-	 * @param s State pointer.
-	 * @return Zero, if this==s. Negative value, if this<s. Positive value if s<this.
-	 */
-	virtual int compare(const State* s) const = 0;
+        /**
+         * Output into streams.
+         */
+        friend inline std::ostream &operator<<(std::ostream &out, const State &s) {
+            out << s.toString();
+            return out;
+        }
 
-	/**
-	 * Return a string representation of the state.
-	 */
-	virtual std::string toString() const = 0;
+        /**
+         * Output into streams.
+         */
+        friend inline std::ostream &operator<<(std::ostream &out, const State *s) {
+            out << s->toString();
+            return out;
+        }
 
-	/**
-	 * Output into streams.
-	 */
-	friend inline std::ostream& operator<<(std::ostream& out, const State& s) {
-		out << s.toString();
-		return out;
-	}
+        /**
+         * Wrapper Class for the use in std::unordered_maps.
+         */
+        class Hash {
+        public:
+            size_t operator()(State *x) const {
+                const size_t res = x->hashValue();
+                return res;
+            }
+        };
 
-	/**
-	 * Output into streams.
-	 */
-	friend inline std::ostream& operator<<(std::ostream& out, const State* s) {
-		out << s->toString();
-		return out;
-	}
+        /*
+         * Wrapper Class for the use in std::unordered_maps.
+         */
+        class Equal {
+        public:
+            bool operator()(State *x1, State *x2) const {
+                const bool res = x1->compare(*x2) == 0;
+                return res;
+            }
+        };
 
-	/**
-	 * Wrapper Class for the use in std::unordered_maps.
-	 */
-	class Hash {
-	public:
-		size_t operator()(State * x) const {
-			const size_t res = x->hashValue();
-			return res;
-		}
-	};
+        /*
+         * Wrapper Class for the use in std::maps.
+         */
+        class Less {
+        public:
+            bool operator()(State *x1, State *x2) const {
+                const bool res = x1->compare(*x2) < 0;
+                return res;
+            }
+        };
 
-	/*
-	 * Wrapper Class for the use in std::unordered_maps.
-	 */
-	class Equal {
-	public:
-		bool operator()(State * x1, State * x2) const {
-			const bool res = x1->compare(x2) == 0;
-			return res;
-		}
-	};
-
-	/*
-	 * Wrapper Class for the use in std::maps.
-	 */
-	class Less {
-	public:
-		bool operator()(State * x1, State * x2) const {
-			const bool res = x1->compare(x2) == -1;
-			return res;
-		}
-	};
-
-};
+    };
 
 }
 

@@ -40,8 +40,8 @@ namespace marathon {
 
             protected:
 
-                const int total;                           // number of edges
-                std::vector<std::pair<int,int>> edges;     // edge array
+                const size_t total;                         // number of edges
+                std::vector<std::pair<uint, uint>> edges;   // edge array
 
 
                 /**
@@ -49,16 +49,16 @@ namespace marathon {
                  * @param M
                  * @return
                  */
-                std::vector<std::pair<int,int>> initEdges(const BinaryMatrix& M) const {
+                std::vector<std::pair<uint, uint>> initEdges(const BinaryMatrix &M) const {
 
-                    std::vector<std::pair<int,int>> edges(M.getTotal());
+                    std::vector<std::pair<uint, uint>> edges(M.getTotal());
 
-                    const int nrow = M.getNumRows();
-                    const int ncol = M.getNumCols();
+                    const size_t nrow = M.getNumRows();
+                    const size_t ncol = M.getNumCols();
                     int k = 0;
-                    for(int i=0; i<nrow; i++) {
-                        for(int j=0; j<ncol; j++) {
-                            if(M.get(i,j)) {
+                    for (uint i = 0; i < nrow; i++) {
+                        for (uint j = 0; j < ncol; j++) {
+                            if (M.get(i, j)) {
                                 edges[k].first = i;
                                 edges[k].second = j;
                                 k++;
@@ -72,11 +72,12 @@ namespace marathon {
 
                 /**
                  * Create a Markov chain for the given instance.
+                 * @param seq Bi-graphical pair of integer vectors.
                  */
-                explicit EdgeSwitchChain(const Instance &seq)
-                        : MarkovChain(seq),
-                          total(seq.getTotal()),
-                          edges(initEdges(*getCurrentState())) {
+                explicit EdgeSwitchChain(Instance seq)
+                        : MarkovChain(std::move(seq)),
+                          total(_inst.getTotal()),
+                          edges(initEdges(currentState)) {
 
                 }
 
@@ -86,10 +87,10 @@ namespace marathon {
                  * @param inst Row and Column sums.
                  * @param bin BinaryMatrix used as initial state.
                  */
-                EdgeSwitchChain(const Instance &inst, const BinaryMatrix &bin)
-                        : MarkovChain(inst, bin),
-                          total(bin.getTotal()),
-                          edges(initEdges(*getCurrentState())) {
+                EdgeSwitchChain(Instance inst, BinaryMatrix bin)
+                        : MarkovChain(std::move(inst), std::move(bin)),
+                          total(currentState.getTotal()),
+                          edges(initEdges(currentState)) {
                 }
 
                 /**
@@ -124,8 +125,8 @@ namespace marathon {
                 EdgeSwitchChain(
                         const int *rowsum,
                         const int *colsum,
-                        const int nrow,
-                        const int ncol
+                        size_t nrow,
+                        size_t ncol
                 ) : EdgeSwitchChain(Instance(rowsum, colsum, nrow, ncol)) {
 
                 }
@@ -135,10 +136,8 @@ namespace marathon {
                  */
                 virtual void step() override {
 
-                    const int nrow = inst.getNumRows();
-                    const int ncol = inst.getNumCols();
-
-                    BinaryMatrix *s = (BinaryMatrix*) currentState;
+                    const int nrow = (int) _inst.getNumRows();
+                    const int ncol = (int) _inst.getNumCols();
 
                     // select two edges
                     int a = rg.nextInt(total);     // a = {i,j}
@@ -151,21 +150,21 @@ namespace marathon {
                     int k = edges[b].first;
                     int l = edges[b].second;
 
-                    assert(s->get(i,j));
-                    assert(s->get(k,l));
+                    assert(currentState.get(i, j));
+                    assert(currentState.get(k, l));
 
                     // if i,j,k,l is switchable
-                    if(!s->get(i,l) && !s->get(k,j)) {
+                    if (!currentState.get(i, l) && !currentState.get(k, j)) {
 
                         // switch
-                        s->set(i,j,0);
-                        s->set(k,l,0);
-                        s->set(i,l,1);
-                        s->set(k,j,1);
+                        currentState.set(i, j, 0);
+                        currentState.set(k, l, 0);
+                        currentState.set(i, l, 1);
+                        currentState.set(k, j, 1);
 
                         // adjust edge array
-                        edges[a] = std::make_pair(i,l);
-                        edges[b] = std::make_pair(k,j);
+                        edges[a] = std::make_pair(i, l);
+                        edges[b] = std::make_pair(k, j);
                     }
                 }
 
@@ -176,54 +175,53 @@ namespace marathon {
                  * @param process
                  */
                 void adjacentStates(
-                        const State *x,
-                        const std::function<void(const State*, const marathon::Rational &)> &process
+                        const State &x,
+                        const std::function<void(const State &, const marathon::Rational &)> &process
                 ) const override {
 
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
+                    const int nrow = (int) _inst.getNumRows();
+                    const int ncol = (int) _inst.getNumCols();
 
                     // create a copy of x
-                    BinaryMatrix s(*((const BinaryMatrix *) x));
+                    BinaryMatrix s(static_cast<const BinaryMatrix &>(x));
 
                     auto edges = initEdges(s);
 
                     // each choice has a prob. of p
-                    const Rational p(2, total*(total-1));
+                    const Rational p(2, total * (total - 1));
 
                     Rational loop(0);
 
                     // select two edges
-                    for(int a = 0; a<total; a++) {
-                        for(int b = a+1; b<total; b++) {
+                    for (int a = 0; a < total; a++) {
+                        for (int b = a + 1; b < total; b++) {
 
                             int i = edges[a].first;
                             int j = edges[a].second;
                             int k = edges[b].first;
                             int l = edges[b].second;
 
-                            assert(s.get(i,j));
-                            assert(s.get(k,l));
+                            assert(s.get(i, j));
+                            assert(s.get(k, l));
 
                             // if i,j,k,l is switchable
-                            if(!s.get(i,l) && !s.get(k,j)) {
+                            if (!s.get(i, l) && !s.get(k, j)) {
 
                                 // switch
-                                s.set(i,j,0);
-                                s.set(k,l,0);
-                                s.set(i,l,1);
-                                s.set(k,j,1);
+                                s.set(i, j, 0);
+                                s.set(k, l, 0);
+                                s.set(i, l, 1);
+                                s.set(k, j, 1);
 
-                                process(&s, p);
+                                process(s, p);
 
                                 // undo modification
-                                s.set(i,j,1);
-                                s.set(k,l,1);
-                                s.set(i,l,0);
-                                s.set(k,j,0);
+                                s.set(i, j, 1);
+                                s.set(k, l, 1);
+                                s.set(i, l, 0);
+                                s.set(k, j, 0);
 
-                            }
-                            else {
+                            } else {
                                 loop += p;
                             }
                         }
@@ -237,9 +235,8 @@ namespace marathon {
                  * Create a copy of this MarkovChain.
                  * @return
                  */
-                virtual EdgeSwitchChain *copy() const override {
-                    auto s = getCurrentState();
-                    return new EdgeSwitchChain(inst, *s);
+                virtual std::unique_ptr<marathon::MarkovChain> copy() const override {
+                    return std::make_unique<EdgeSwitchChain>(_inst, currentState);
                 }
 
             };

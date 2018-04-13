@@ -18,29 +18,28 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    // create Markov chain
-    marathon::MarkovChain* mc;
+    // create Markov chain object
+    std::unique_ptr<marathon::MarkovChain> mc;
+
     switch (chain) {
         case classical_switch:
-            mc = new marathon::binary_matrix::fixed_margin::SwitchChain(inst);
+            mc = std::make_unique<marathon::binary_matrix::fixed_margin::SwitchChain>(inst);
             break;
         case edge_switch:
-            mc = new marathon::binary_matrix::fixed_margin::EdgeSwitchChain(inst);
+            mc = std::make_unique<marathon::binary_matrix::fixed_margin::EdgeSwitchChain>(inst);
             break;
         case curveball:
-            mc = new marathon::binary_matrix::fixed_margin::Curveball(inst);
+            mc = std::make_unique<marathon::binary_matrix::fixed_margin::Curveball>(inst);
             break;
     }
 
     // construct state graph
-    marathon::StateGraph sg(mc);
+    marathon::StateGraph sg(*mc);
 
     // print transition matrix
-    marathon::TransitionMatrix<marathon::Rational> P(&sg);
-    std::cout << P << std::endl;
+    marathon::TransitionMatrix<marathon::Rational> P(sg);
 
-    // clean up
-    delete mc;
+    std::cout << P << std::endl;
 
     return 0;
 }
