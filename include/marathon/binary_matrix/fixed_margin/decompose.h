@@ -155,14 +155,14 @@ namespace marathon {
                         // try to find critical point k1
 
                         // build conjugate sequence
-                        std::vector<int> colsum_conjugate = conjugate(seq.colsum, nrow);
+                        std::vector<int> colsum_conjugate = conjugate(seq._colsum, nrow);
 
                         // determine critical point k1
                         int rowsum_sum = 0;
                         int colsum_conjugated_sum = 0;
                         int k1 = 0;
                         for (; k1 < nrow; k1++) {
-                            rowsum_sum += seq.rowsum[k1];
+                            rowsum_sum += seq._rowsum[k1];
                             colsum_conjugated_sum += colsum_conjugate[k1];
                             if (rowsum_sum == colsum_conjugated_sum) {
                                 break;
@@ -175,14 +175,14 @@ namespace marathon {
                             // sequence can be decomposed by splitting row indices at position k1
                             Instance sub1(k1 + 1, ncol);
                             Instance sub2(nrow - k1 - 1, ncol);
-                            memcpy(&sub1.rowsum[0], &seq.rowsum[0], (k1 + 1) * sizeof(int));
-                            memcpy(&sub2.rowsum[0], &seq.rowsum[k1 + 1], (nrow - k1 - 1) * sizeof(int));
-                            memcpy(&sub1.rowindex[0], &seq.rowindex[0], (k1 + 1) * sizeof(int));
-                            memcpy(&sub2.rowindex[0], &seq.rowindex[k1 + 1], (nrow - k1 - 1) * sizeof(int));
-                            conjugate(&sub1.colsum[0], &colsum_conjugate[0], ncol, k1 + 1);
-                            conjugate(&sub2.colsum[0], &colsum_conjugate[k1 + 1], ncol, nrow - k1 - 1);
-                            memcpy(&sub1.colindex[0], &seq.colindex[0], ncol * sizeof(int));
-                            memcpy(&sub2.colindex[0], &seq.colindex[0], ncol * sizeof(int));
+                            memcpy(&sub1._rowsum[0], &seq._rowsum[0], (k1 + 1) * sizeof(int));
+                            memcpy(&sub2._rowsum[0], &seq._rowsum[k1 + 1], (nrow - k1 - 1) * sizeof(int));
+                            memcpy(&sub1._rowindex[0], &seq._rowindex[0], (k1 + 1) * sizeof(int));
+                            memcpy(&sub2._rowindex[0], &seq._rowindex[k1 + 1], (nrow - k1 - 1) * sizeof(int));
+                            conjugate(&sub1._colsum[0], &colsum_conjugate[0], ncol, k1 + 1);
+                            conjugate(&sub2._colsum[0], &colsum_conjugate[k1 + 1], ncol, nrow - k1 - 1);
+                            memcpy(&sub1._colindex[0], &seq._colindex[0], ncol * sizeof(int));
+                            memcpy(&sub2._colindex[0], &seq._colindex[0], ncol * sizeof(int));
 
                             decompose_recursive(sub1, f, false, true);
                             decompose_recursive(sub2, f, true, true);
@@ -196,14 +196,14 @@ namespace marathon {
                         // try to find critical point k2
 
                         // build conjugate sequence
-                        std::vector<int> rowsum_conjugate = conjugate(seq.rowsum, ncol);
+                        std::vector<int> rowsum_conjugate = conjugate(seq._rowsum, ncol);
 
                         // determine critical point k2
                         int colsum_sum = 0;
                         int rowsum_conjugated_sum = 0;
                         int k2 = 0;
                         for (; k2 < ncol; k2++) {
-                            colsum_sum += seq.colsum[k2];
+                            colsum_sum += seq._colsum[k2];
                             rowsum_conjugated_sum += rowsum_conjugate[k2];
                             if (colsum_sum == rowsum_conjugated_sum) {
                                 break;
@@ -216,14 +216,14 @@ namespace marathon {
                             // sequence can be decomposed by splitting column indices at position k2
                             Instance sub1(nrow, k2 + 1);
                             Instance sub2(nrow, ncol - k2 - 1);
-                            memcpy(&sub1.colsum[0], &seq.colsum[0], (k2 + 1) * sizeof(int));
-                            memcpy(&sub2.colsum[0], &seq.colsum[k2 + 1], (ncol - k2 - 1) * sizeof(int));
-                            memcpy(&sub1.colindex[0], &seq.colindex[0], (k2 + 1) * sizeof(int));
-                            memcpy(&sub2.colindex[0], &seq.colindex[k2 + 1], (ncol - k2 - 1) * sizeof(int));
-                            conjugate(&sub1.rowsum[0], &rowsum_conjugate[0], nrow, k2 + 1);
-                            conjugate(&sub2.rowsum[0], &rowsum_conjugate[k2 + 1], nrow, ncol - k2 - 1);
-                            memcpy(&sub1.rowindex[0], &seq.rowindex[0], nrow * sizeof(int));
-                            memcpy(&sub2.rowindex[0], &seq.rowindex[0], nrow * sizeof(int));
+                            memcpy(&sub1._colsum[0], &seq._colsum[0], (k2 + 1) * sizeof(int));
+                            memcpy(&sub2._colsum[0], &seq._colsum[k2 + 1], (ncol - k2 - 1) * sizeof(int));
+                            memcpy(&sub1._colindex[0], &seq._colindex[0], (k2 + 1) * sizeof(int));
+                            memcpy(&sub2._colindex[0], &seq._colindex[k2 + 1], (ncol - k2 - 1) * sizeof(int));
+                            conjugate(&sub1._rowsum[0], &rowsum_conjugate[0], nrow, k2 + 1);
+                            conjugate(&sub2._rowsum[0], &rowsum_conjugate[k2 + 1], nrow, ncol - k2 - 1);
+                            memcpy(&sub1._rowindex[0], &seq._rowindex[0], nrow * sizeof(int));
+                            memcpy(&sub2._rowindex[0], &seq._rowindex[0], nrow * sizeof(int));
 
                             decompose_recursive(sub1, f, true, false);
                             decompose_recursive(sub2, f, true, true);
@@ -259,15 +259,15 @@ namespace marathon {
                     // build conjugate sequence
                     int *rowsum_conjugate = new int[ncol];
                     int *colsum_conjugate = new int[nrow];
-                    conjugate(rowsum_conjugate, &seq.rowsum[0], ncol, nrow);
-                    conjugate(colsum_conjugate, &seq.colsum[0], nrow, ncol);
+                    conjugate(rowsum_conjugate, &seq._rowsum[0], ncol, nrow);
+                    conjugate(colsum_conjugate, &seq._colsum[0], nrow, ncol);
 
                     // determine critical point k1
                     int rowsum_sum = 0;
                     int colsum_conjugated_sum = 0;
                     int k1 = 0;
                     for (; k1 < nrow; k1++) {
-                        rowsum_sum += seq.rowsum[k1];
+                        rowsum_sum += seq._rowsum[k1];
                         colsum_conjugated_sum += colsum_conjugate[k1];
                         if (rowsum_sum == colsum_conjugated_sum) {
                             break;
@@ -279,7 +279,7 @@ namespace marathon {
                     int rowsum_conjugated_sum = 0;
                     int k2 = 0;
                     for (; k2 < ncol; k2++) {
-                        colsum_sum += seq.colsum[k2];
+                        colsum_sum += seq._colsum[k2];
                         rowsum_conjugated_sum += rowsum_conjugate[k2];
                         if (colsum_sum == rowsum_conjugated_sum) {
                             break;
@@ -296,14 +296,14 @@ namespace marathon {
                             // sequence can be decomposed by splitting row indices at position k1
                             Instance sub1(k1 + 1, ncol);
                             Instance sub2(nrow - k1 - 1, ncol);
-                            memcpy(&sub1.rowsum[0], &seq.rowsum[0], (k1 + 1) * sizeof(int));
-                            memcpy(&sub2.rowsum[0], &seq.rowsum[k1 + 1], (nrow - k1 - 1) * sizeof(int));
-                            memcpy(&sub1.rowindex[0], &seq.rowindex[0], (k1 + 1) * sizeof(int));
-                            memcpy(&sub2.rowindex[0], &seq.rowindex[k1 + 1], (nrow - k1 - 1) * sizeof(int));
-                            conjugate(&sub1.colsum[0], &colsum_conjugate[0], ncol, k1 + 1);
-                            conjugate(&sub2.colsum[0], &colsum_conjugate[k1 + 1], ncol, nrow - k1 - 1);
-                            memcpy(&sub1.colindex[0], &seq.colindex[0], ncol * sizeof(int));
-                            memcpy(&sub2.colindex[0], &seq.colindex[0], ncol * sizeof(int));
+                            memcpy(&sub1._rowsum[0], &seq._rowsum[0], (k1 + 1) * sizeof(int));
+                            memcpy(&sub2._rowsum[0], &seq._rowsum[k1 + 1], (nrow - k1 - 1) * sizeof(int));
+                            memcpy(&sub1._rowindex[0], &seq._rowindex[0], (k1 + 1) * sizeof(int));
+                            memcpy(&sub2._rowindex[0], &seq._rowindex[k1 + 1], (nrow - k1 - 1) * sizeof(int));
+                            conjugate(&sub1._colsum[0], &colsum_conjugate[0], ncol, k1 + 1);
+                            conjugate(&sub2._colsum[0], &colsum_conjugate[k1 + 1], ncol, nrow - k1 - 1);
+                            memcpy(&sub1._colindex[0], &seq._colindex[0], ncol * sizeof(int));
+                            memcpy(&sub2._colindex[0], &seq._colindex[0], ncol * sizeof(int));
 
                             decompose_recursive(sub1, f);
                             decompose_recursive(sub2, f);
@@ -312,14 +312,14 @@ namespace marathon {
                             // sequence can be decomposed by splitting column indices at position k2
                             Instance sub1(nrow, k2 + 1);
                             Instance sub2(nrow, ncol - k2 - 1);
-                            memcpy(&sub1.colsum[0], &seq.colsum[0], (k2 + 1) * sizeof(int));
-                            memcpy(&sub2.colsum[0], &seq.colsum[k2 + 1], (ncol - k2 - 1) * sizeof(int));
-                            memcpy(&sub1.colindex[0], &seq.colindex[0], (k2 + 1) * sizeof(int));
-                            memcpy(&sub2.colindex[0], &seq.colindex[k2 + 1], (ncol - k2 - 1) * sizeof(int));
-                            conjugate(&sub1.rowsum[0], &rowsum_conjugate[0], nrow, k2 + 1);
-                            conjugate(&sub2.rowsum[0], &rowsum_conjugate[k2 + 1], nrow, ncol - k2 - 1);
-                            memcpy(&sub1.rowindex[0], &seq.rowindex[0], nrow * sizeof(int));
-                            memcpy(&sub2.rowindex[0], &seq.rowindex[0], nrow * sizeof(int));
+                            memcpy(&sub1._colsum[0], &seq._colsum[0], (k2 + 1) * sizeof(int));
+                            memcpy(&sub2._colsum[0], &seq._colsum[k2 + 1], (ncol - k2 - 1) * sizeof(int));
+                            memcpy(&sub1._colindex[0], &seq._colindex[0], (k2 + 1) * sizeof(int));
+                            memcpy(&sub2._colindex[0], &seq._colindex[k2 + 1], (ncol - k2 - 1) * sizeof(int));
+                            conjugate(&sub1._rowsum[0], &rowsum_conjugate[0], nrow, k2 + 1);
+                            conjugate(&sub2._rowsum[0], &rowsum_conjugate[k2 + 1], nrow, ncol - k2 - 1);
+                            memcpy(&sub1._rowindex[0], &seq._rowindex[0], nrow * sizeof(int));
+                            memcpy(&sub2._rowindex[0], &seq._rowindex[0], nrow * sizeof(int));
 
                             decompose_recursive(sub1, f);
                             decompose_recursive(sub2, f);
@@ -353,16 +353,16 @@ namespace marathon {
 
                     // sort row and column sums descendingly
                     struct A {
-                        int index;
+                        size_t index;
                         int value;
                     };
 
                     A *rows = new A[nrow];
                     A *cols = new A[ncol];
                     for (int i = 0; i < nrow; i++)
-                        rows[i] = {inst.rowindex[i], inst.rowsum[i]};
+                        rows[i] = {inst._rowindex[i], inst._rowsum[i]};
                     for (int j = 0; j < ncol; j++)
-                        cols[j] = {inst.colindex[j], inst.colsum[j]};
+                        cols[j] = {inst._colindex[j], inst._colsum[j]};
 
                     std::sort(rows, rows + nrow, [](const A &a, const A &b) {
                         return a.value > b.value;
@@ -372,13 +372,13 @@ namespace marathon {
                     });
 
                     for (int i = 0; i < nrow; i++) {
-                        _inst.rowindex[i] = rows[i].index;
-                        _inst.rowsum[i] = rows[i].value;
+                        _inst._rowindex[i] = rows[i].index;
+                        _inst._rowsum[i] = rows[i].value;
                     }
 
                     for (int j = 0; j < ncol; j++) {
-                        _inst.colindex[j] = cols[j].index;
-                        _inst.colsum[j] = cols[j].value;
+                        _inst._colindex[j] = cols[j].index;
+                        _inst._colsum[j] = cols[j].value;
                     }
 
                     delete[] rows;

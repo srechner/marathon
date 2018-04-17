@@ -45,7 +45,7 @@ namespace marathon {
 
                 // auxiliary data structure
                 struct A {
-                    int index;
+                    size_t index;
                     int value;
                 };
 
@@ -252,7 +252,7 @@ namespace marathon {
                  * (This generator does not use sequence decomposition.)
                  * @param Row and column sums.
                  */
-                RandomGeneratorExact(const Instance &margin) : Counter(margin) {
+                RandomGeneratorExact(Instance margin) : Counter(std::move(margin)) {
 
                     /**
                      * Idea by Miller and Harrison:
@@ -270,7 +270,7 @@ namespace marathon {
                     // create ascending order of rows
                     A *row = new A[_nrow];
                     for (int i = 0; i < _nrow; i++)
-                        row[i] = {margin.rowindex[i], margin.rowsum[i]};
+                        row[i] = {_inst._rowindex[i], _inst._rowsum[i]};
                     std::sort(row, row + _nrow, [](const A &a, const A &b) { return a.value > b.value; });
                     _roworder = new int[_nrow];
                     for (int i = 0; i < _nrow; i++)
@@ -280,7 +280,7 @@ namespace marathon {
                     // create descending order of columns
                     _columns = new A[_ncol];
                     for (int j = 0; j < _ncol; j++)
-                        _columns[j] = {margin.colindex[j], margin.colsum[j]};
+                        _columns[j] = {_inst._colindex[j], _inst._colsum[j]};
                     std::sort(_columns, _columns + _ncol,
                               [](const A &a, const A &b) { return a.value > b.value; });
 
@@ -316,8 +316,8 @@ namespace marathon {
                 RandomGeneratorExact(
                         const int *rowsum,
                         const int *colsum,
-                        const int nrow,
-                        const int ncol
+                        size_t nrow,
+                        size_t ncol
                 ) : RandomGeneratorExact(Instance(rowsum, colsum, nrow, ncol)) {
 
 

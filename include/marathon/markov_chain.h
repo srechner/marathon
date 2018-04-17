@@ -50,13 +50,15 @@ namespace marathon {
 
     public:
 
+        virtual ~MarkovChain() = default;
+
         /**
          * Randomize the current state of the Markov chain.
          * @param steps Number of steps.
          * @return The current state after randomization.
          */
-        virtual const State &randomize(int steps) {
-            for (int i = 0; i < steps; i++)
+        virtual const State &randomize(size_t steps) {
+            for (size_t i = 0; i < steps; i++)
                 step();
             return getCurrentState();
         }

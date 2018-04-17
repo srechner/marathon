@@ -46,11 +46,6 @@ namespace marathon {
             class RandomGeneratorMCMC :
                     public marathon::binary_matrix::RandomGenerator {
 
-            private:
-
-                interval_margin::MarkovChain *mc;
-                int steps;
-
             public:
 
                 /**
@@ -60,6 +55,14 @@ namespace marathon {
                     simple, informed, simple_dynamic, informed_dynamic, unknown
                 };
 
+            private:
+
+                size_t _steps;
+                std::unique_ptr<interval_margin::MarkovChain> _mc;
+
+            public:
+
+
                 /**
                  * Create a generator for binary matrices with prescribed row sums and column sums.
                  * This generator uses a Markov chain Monte Carlo approach to create random samples.
@@ -68,40 +71,43 @@ namespace marathon {
                  * @param steps Length of the random walk.
                  */
                 RandomGeneratorMCMC(
-                        const Instance &seq,
-                        const chain_t chain,
-                        const int steps
-                ) : steps(steps) {
+                        Instance inst,
+                        chain_t chain,
+                        size_t steps
+                ) : _steps(steps) {
 
                     switch (chain) {
                         case simple:
-                            mc = new SimpleChain(seq);
+                            _mc = std::make_unique<SimpleChain>(std::move(inst));
                             break;
                         case informed:
-                            mc = new InformedChain(seq);
+                            _mc = std::make_unique<InformedChain>(std::move(inst));
                             break;
                         case simple_dynamic:
-                            mc = new SimpleChainDynamic(seq);
+                            _mc = std::make_unique<SimpleChainDynamic>(std::move(inst));
                             break;
                         case informed_dynamic:
-                            mc = new InformedChainDynamic(seq);
+                            _mc = std::make_unique<InformedChainDynamic>(std::move(inst));
                             break;
+                        default:
+                            throw std::runtime_error("Error! unknown chain specifier!");
                     }
-
                 }
 
                 /**
-                 * Create a random generator as a copy of another one.
-                 * @param rg Random generator.
+                 * Create a random generator with a predefined Markov chain.
+                 * @param mc Markov chain.
+                 * @param steps Number of steps.
                  */
-                RandomGeneratorMCMC(const RandomGeneratorMCMC &rg) :
-                        mc(rg.mc), steps(rg.steps) {
+                RandomGeneratorMCMC(
+                        const std::unique_ptr<interval_margin::MarkovChain> &mc,
+                        size_t steps)
+                        : _steps(steps) {
 
+                    auto x = static_cast<interval_margin::MarkovChain *>(mc->copy().release());
+                    _mc = std::unique_ptr<interval_margin::MarkovChain>(x);
                 }
 
-                virtual ~RandomGeneratorMCMC() {
-                    delete mc;
-                }
 
                 /**
                  * Return a binary matrix whose row and column sums match the
@@ -112,7 +118,7 @@ namespace marathon {
                 const BinaryMatrix &next() override {
 
                     // apply random walk
-                    return static_cast<const BinaryMatrix &>(mc->randomize(steps));
+                    return static_cast<const BinaryMatrix &>(_mc->randomize(_steps));
                 }
 
                 /**
@@ -120,7 +126,7 @@ namespace marathon {
                  * @return Copy of this random generator.
                  */
                 std::unique_ptr<marathon::RandomGenerator> copy() const override {
-                    return std::make_unique<RandomGeneratorMCMC>(*this);
+                    return std::make_unique<RandomGeneratorMCMC>(_mc, _steps);
                 }
             };
         }

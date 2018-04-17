@@ -48,13 +48,13 @@ namespace marathon {
 		 * @param new_ncol New number of columns.
 		 */
 		inline
-		void resize(const int new_nrow, const int new_ncol) {
+		void resize(size_t new_nrow, size_t new_ncol) {
 
 			// lock table
 			std::lock_guard<std::mutex> lock(detail::binom_table_mutex);
 
-			int old_nrow = binom_table.size();
-			int old_ncol = binom_table[0].size();
+			size_t old_nrow = binom_table.size();
+			size_t old_ncol = binom_table[0].size();
 
 			if (new_nrow < old_nrow && new_ncol < old_ncol)
 				return;
@@ -77,11 +77,11 @@ namespace marathon {
 
 			// fill RU part
 			binom_table[0].reserve(new_ncol);
-			for (int j = old_ncol; j < new_ncol; j++)
+			for (size_t j = old_ncol; j < new_ncol; j++)
 				binom_table[0].push_back(0);
-			for (int i = 1; i < old_nrow; i++) {
+			for (size_t i = 1; i < old_nrow; i++) {
 				binom_table[i].reserve(new_ncol);
-				for (int j = old_ncol; j < new_ncol; j++) {
+				for (size_t j = old_ncol; j < new_ncol; j++) {
 					Integer bij = binom_table[i - 1][j] + binom_table[i - 1][j - 1];
 					binom_table[i].push_back(bij);
 				}
@@ -89,10 +89,10 @@ namespace marathon {
 
 			// fill BOTTOM part
 			binom_table.reserve(new_nrow);
-			for (int i = old_nrow; i < new_nrow; i++) {
+			for (size_t i = old_nrow; i < new_nrow; i++) {
 				binom_table.push_back({1}); // binom(i,0)=1
 				binom_table[i].reserve(new_ncol);
-				for (int j = 1; j < new_ncol; j++) {
+				for (size_t j = 1; j < new_ncol; j++) {
 					Integer bij = binom_table[i - 1][j] + binom_table[i - 1][j - 1];
 					binom_table[i].push_back(bij);
 				}
@@ -114,11 +114,7 @@ namespace marathon {
 	 * Computes n choose k.
 	 */
 	inline
-	Integer binom(const int n, const int k) {
-
-		// invalid parameter?
-		if (k < 0 || n < 0)
-			return 0;
+	Integer binom(size_t n, size_t k) {
 
 		// binom(n,k) = binom(n, n-k)
 		if (k > n - k)
@@ -127,15 +123,15 @@ namespace marathon {
 		// spin while table is under construction
 		while(detail::under_construction);
 
-		const int nrow = detail::binom_table.size();
-		const int ncol = detail::binom_table[0].size();
+		const size_t nrow = detail::binom_table.size();
+		const size_t ncol = detail::binom_table[0].size();
 
 		// if the result is not yet computed? extend the table!
 		if (n >= nrow || k >= ncol) {
 
 			// the new table sizes (at least +50% rows)
-			const int new_nrow = std::max(n+1, (int) (nrow * 1.5));
-			const int new_ncol = (new_nrow / 2) + 1;
+			const size_t new_nrow = std::max(n+1, (nrow * 3) / 2);
+			const size_t new_ncol = (new_nrow / 2) + 1;
 			assert(new_nrow > nrow);
 
 			detail::resize(new_nrow, new_ncol);
@@ -171,9 +167,9 @@ namespace marathon {
 	 * Computes n!.
 	 */
 	inline
-	Integer factorial(const int n) {
-		Integer res = 1;
-		for (int i = 2; i <= n; i++) {
+	Integer factorial(size_t n) {
+		Integer res(1);
+		for (size_t i = 2; i <= n; i++) {
 			res = res * Integer(i);
 		}
 		return res;
@@ -186,13 +182,13 @@ namespace marathon {
 	 * @return b^e
 	 */
 	inline
-	Integer pow(const size_t b, const size_t e) {
+	Integer pow(size_t b, size_t e) {
 
 		Integer a = b;
 		size_t f = e;
 		Integer res(1);
 
-		while (f) {
+		while (f > 0) {
 			if (f & 1)
 				res *= a;
 			a = a * a;

@@ -241,7 +241,7 @@ namespace marathon {
                         return;
 
                     // descendingly sort row sums
-                    _rowsum = _inst.rowsum;
+                    _rowsum = _inst._rowsum;
                     std::sort(_rowsum.begin(), _rowsum.end(), [](int a, int b) { return a > b; });
 
                     // add two dummy elements at the end of the vector
@@ -249,7 +249,7 @@ namespace marathon {
                     _rowsum.push_back(0);
 
                     // conjugate column sums
-                    _colsum_conj = conjugate(_inst.colsum, _nrow + 1);
+                    _colsum_conj = conjugate(_inst._colsum, _nrow + 1);
                 }
 
                 /**

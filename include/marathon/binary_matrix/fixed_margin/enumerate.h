@@ -51,12 +51,12 @@ namespace marathon {
 
                 // auxiliary data structure
                 struct A {
-                    int index;
+                    size_t index;
                     int value;
                 };
 
                 // invariant class members
-                int *_roworder;             // permutation of row indices
+                size_t *_roworder;          // permutation of row indices
                 A *_columns;                // sorted column margins and indices
                 int *_colsum_first;         // first position of each value of colsum
                 int *_colsum_last;          // last position of each value of colsum
@@ -79,7 +79,7 @@ namespace marathon {
                  */
                 void enumerate_recursive(
                         const int *rowsum,
-                        const int *roworder,
+                        const size_t *roworder,
                         A *columns,
                         int *colsum_conj,
                         int *colsum_first,
@@ -248,7 +248,7 @@ namespace marathon {
                  * with exactly prescribed margins.
                  * @param seq Margin of row and column sums.
                  */
-                Enumerator(const Instance &inst) : Counter(inst) {
+                Enumerator(Instance inst) : Counter(std::move(inst)) {
 
                     /**
                      * Derived from Miller and Harrison:
@@ -262,17 +262,17 @@ namespace marathon {
                     // create ascending order of rows
                     A *row = new A[_nrow];
                     for (int i = 0; i < _nrow; i++)
-                        row[i] = {inst.rowindex[i], inst.rowsum[i]};
+                        row[i] = {_inst._rowindex[i], _inst._rowsum[i]};
                     std::sort(row, row + _nrow, [](const A &a, const A &b) { return a.value > b.value; });
-                    _roworder = new int[_nrow];
-                    for (int i = 0; i < _nrow; i++)
+                    _roworder = new size_t[_nrow];
+                    for (size_t i = 0; i < _nrow; i++)
                         _roworder[i] = row[i].index;
                     delete[] row;
 
                     // create descending order of columns
                     _columns = new A[_ncol];
                     for (int j = 0; j < _ncol; j++)
-                        _columns[j] = {inst.colindex[j], inst.colsum[j]};
+                        _columns[j] = {_inst._colindex[j], _inst._colsum[j]};
                     std::sort(_columns, _columns + _ncol,
                               [](const A &a, const A &b) { return a.value > b.value; });
 

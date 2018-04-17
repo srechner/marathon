@@ -77,7 +77,7 @@ namespace marathon {
                 explicit EdgeSwitchChain(Instance seq)
                         : MarkovChain(std::move(seq)),
                           total(_inst.getTotal()),
-                          edges(initEdges(currentState)) {
+                          edges(initEdges(_currentState)) {
 
                 }
 
@@ -89,8 +89,8 @@ namespace marathon {
                  */
                 EdgeSwitchChain(Instance inst, BinaryMatrix bin)
                         : MarkovChain(std::move(inst), std::move(bin)),
-                          total(currentState.getTotal()),
-                          edges(initEdges(currentState)) {
+                          total(_currentState.getTotal()),
+                          edges(initEdges(_currentState)) {
                 }
 
                 /**
@@ -150,17 +150,17 @@ namespace marathon {
                     int k = edges[b].first;
                     int l = edges[b].second;
 
-                    assert(currentState.get(i, j));
-                    assert(currentState.get(k, l));
+                    assert(_currentState.get(i, j));
+                    assert(_currentState.get(k, l));
 
                     // if i,j,k,l is switchable
-                    if (!currentState.get(i, l) && !currentState.get(k, j)) {
+                    if (!_currentState.get(i, l) && !_currentState.get(k, j)) {
 
                         // switch
-                        currentState.set(i, j, 0);
-                        currentState.set(k, l, 0);
-                        currentState.set(i, l, 1);
-                        currentState.set(k, j, 1);
+                        _currentState.set(i, j, 0);
+                        _currentState.set(k, l, 0);
+                        _currentState.set(i, l, 1);
+                        _currentState.set(k, j, 1);
 
                         // adjust edge array
                         edges[a] = std::make_pair(i, l);
@@ -236,7 +236,7 @@ namespace marathon {
                  * @return
                  */
                 virtual std::unique_ptr<marathon::MarkovChain> copy() const override {
-                    return std::make_unique<EdgeSwitchChain>(_inst, currentState);
+                    return std::make_unique<EdgeSwitchChain>(_inst, _currentState);
                 }
 
             };

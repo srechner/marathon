@@ -43,8 +43,6 @@ namespace marathon {
              */
             class SimpleChain : public MarkovChain {
 
-                friend class SwitchChainIntelligent;
-
             protected:
 
                 // the probabilities of selecting each kind of operation type
@@ -54,35 +52,32 @@ namespace marathon {
 
 
                 void simulateSwitch(
-                        const BinaryMatrix *s,
-                        const std::function<void(const State *, const Rational &)> &process,
-                        const int *rowsum,
-                        const int *colsum
+                        const BinaryMatrix &s,
+                        const std::function<void(const State &, const Rational &)> &process,
+                        const std::vector<int> &rowsum,
+                        const std::vector<int> &colsum
                 ) const {
-
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
 
                     Rational loop(0);
 
                     // simulate switch operations
                     const Rational p_switch =
-                            p_switch_rat * Rational(4, ncol * (ncol - 1) * nrow * (nrow - 1));
-                    for (int i = 0; i < nrow; i++) {
-                        for (int j = 0; j < ncol; j++) {
-                            for (int k = i + 1; k < nrow; k++) {
-                                for (int l = j + 1; l < ncol; l++) {
+                            p_switch_rat * Rational(4, _ncol * (_ncol - 1) * _nrow * (_nrow - 1));
+                    for (size_t i = 0; i < _nrow; i++) {
+                        for (size_t j = 0; j < _ncol; j++) {
+                            for (size_t k = i + 1; k < _nrow; k++) {
+                                for (size_t l = j + 1; l < _ncol; l++) {
 
                                     // if Switch is possible
-                                    if (s->isCheckerBoardUnit(i, j, k, l)) {
+                                    if (s.isCheckerBoardUnit(i, j, k, l)) {
 
-                                        BinaryMatrix s2(*s);
+                                        BinaryMatrix s2(s);
 
                                         // switch the cycle
                                         s2.flipSubmatrix(i, j, k, l);
 
                                         // process state
-                                        process(&s2, p_switch);
+                                        process(s2, p_switch);
                                     } else {
                                         loop += p_switch;
                                     }
@@ -95,40 +90,37 @@ namespace marathon {
                 }
 
                 void simulateFlip(
-                        const BinaryMatrix *s,
-                        const std::function<void(const State *, const Rational &)> &process,
-                        const int *rowsum,
-                        const int *colsum
+                        const BinaryMatrix &s,
+                        const std::function<void(const State &, const Rational &)> &process,
+                        const std::vector<int> &rowsum,
+                        const std::vector<int> &colsum
                 ) const {
-
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
 
                     Rational loop(0);
 
                     // simulate flip operations
-                    const Rational p_flip = p_flip_rat * Rational(1, ncol * nrow);
-                    for (int i = 0; i < nrow; i++) {
-                        for (int j = 0; j < ncol; j++) {
+                    const Rational p_flip = p_flip_rat * Rational(1, _ncol * _nrow);
+                    for (size_t i = 0; i < _nrow; i++) {
+                        for (size_t j = 0; j < _ncol; j++) {
 
                             //Flip 1 -> 0
-                            if (s->get(i, j)) {
+                            if (s.get(i, j)) {
 
                                 // flip is allowed by lower and upper margins?
-                                if (rowsum[i] > inst.rowsum_lower[i] && colsum[j] > inst.colsum_lower[j]) {
-                                    BinaryMatrix s2(*s);
+                                if (rowsum[i] > _inst._rowsum_lower[i] && colsum[j] > _inst._colsum_lower[j]) {
+                                    BinaryMatrix s2(s);
                                     s2.flip(i, j);
-                                    process(&s2, p_flip);
+                                    process(s2, p_flip);
                                 } else {
                                     loop += p_flip;
                                 }
                             } else {   //Flip 0 -> 1
 
                                 // flip is allowed by lower and upper margins?
-                                if (rowsum[i] < inst.rowsum_upper[i] && colsum[j] < inst.colsum_upper[j]) {
-                                    BinaryMatrix s2(*s);
+                                if (rowsum[i] < _inst._rowsum_upper[i] && colsum[j] < _inst._colsum_upper[j]) {
+                                    BinaryMatrix s2(s);
                                     s2.flip(i, j);
-                                    process(&s2, p_flip);
+                                    process(s2, p_flip);
                                 } else {
                                     loop += p_flip;
                                 }
@@ -140,46 +132,43 @@ namespace marathon {
                 }
 
                 void simulateShift(
-                        const BinaryMatrix *s,
-                        const std::function<void(const State *, const Rational &)> &process,
-                        const int *rowsum,
-                        const int *colsum
+                        const BinaryMatrix &s,
+                        const std::function<void(const State &, const Rational &)> &process,
+                        const std::vector<int> &rowsum,
+                        const std::vector<int> &colsum
                 ) const {
-
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
 
                     Rational loop(0);
 
                     // simulate shifts
-                    const Rational p_shift = p_shift_rat * Rational(1, nrow * ncol * (nrow + ncol - 2));
-                    for (int i = 0; i < nrow; i++) {
-                        for (int j = 0; j < ncol; j++) {
+                    const Rational p_shift = p_shift_rat * Rational(1, _nrow * _ncol * (_nrow + _ncol - 2));
+                    for (size_t i = 0; i < _nrow; i++) {
+                        for (size_t j = 0; j < _ncol; j++) {
 
                             // simulate choosing k as row index
-                            for (int k = 0; k < nrow; k++) {
+                            for (size_t k = 0; k < _nrow; k++) {
                                 if (k != i) {
 
                                     // if we can shift a one from (i,j) to (k,j)
-                                    if (s->get(i, j) && !s->get(k, j) &&
-                                        rowsum[i] > inst.rowsum_lower[i] && rowsum[k] < inst.rowsum_upper[k]) {
+                                    if (s.get(i, j) && !s.get(k, j) &&
+                                        rowsum[i] > _inst._rowsum_lower[i] && rowsum[k] < _inst._rowsum_upper[k]) {
 
-                                        BinaryMatrix s2(*s);
+                                        BinaryMatrix s2(s);
 
                                         // shift a one from (i,j) to (k,j)
                                         s2.flip(i, j);
                                         s2.flip(k, j);
-                                        process(&s2, p_shift);
+                                        process(s2, p_shift);
                                     } // if we can shift a one from (k,j) to (i,j)
-                                    else if (!s->get(i, j) && s->get(k, j) &&
-                                             rowsum[k] > inst.rowsum_lower[k] && rowsum[i] < inst.rowsum_upper[i]) {
+                                    else if (!s.get(i, j) && s.get(k, j) &&
+                                             rowsum[k] > _inst._rowsum_lower[k] && rowsum[i] < _inst._rowsum_upper[i]) {
 
-                                        BinaryMatrix s2(*s);
+                                        BinaryMatrix s2(s);
 
                                         // shift a one from (k,j) to (i,j)
                                         s2.flip(i, j);
                                         s2.flip(k, j);
-                                        process(&s2, p_shift);
+                                        process(s2, p_shift);
                                     } else {
                                         loop += p_shift;
                                     }
@@ -187,29 +176,29 @@ namespace marathon {
                             }
 
                             // simulate choosing k as row index
-                            for (int k = 0; k < ncol; k++) {
+                            for (size_t k = 0; k < _ncol; k++) {
                                 if (k != j) {
 
                                     // if we can shift a one from (i,j) to (i,k)
-                                    if (s->get(i, j) && !s->get(i, k) &&
-                                        colsum[j] > inst.colsum_lower[j] && colsum[k] < inst.colsum_upper[k]) {
+                                    if (s.get(i, j) && !s.get(i, k) &&
+                                        colsum[j] > _inst._colsum_lower[j] && colsum[k] < _inst._colsum_upper[k]) {
 
-                                        BinaryMatrix s2(*s);
+                                        BinaryMatrix s2(s);
 
                                         // shift a one from (i,j) to (i,k)
                                         s2.flip(i, j);
                                         s2.flip(i, k);
-                                        process(&s2, p_shift);
+                                        process(s2, p_shift);
                                     } // if we can shift a one from (i,k) to (i,j)
-                                    else if (!s->get(i, j) && s->get(i, k) &&
-                                             colsum[k] > inst.colsum_lower[k] && colsum[j] < inst.colsum_upper[j]) {
+                                    else if (!s.get(i, j) && s.get(i, k) &&
+                                             colsum[k] > _inst._colsum_lower[k] && colsum[j] < _inst._colsum_upper[j]) {
 
-                                        BinaryMatrix s2(*s);
+                                        BinaryMatrix s2(s);
 
                                         // shift a one from (i,k) to (i,j)
                                         s2.flip(i, j);
                                         s2.flip(i, k);
-                                        process(&s2, p_shift);
+                                        process(s2, p_shift);
                                     } else {
                                         loop += p_shift;
                                     }
@@ -224,25 +213,22 @@ namespace marathon {
 
                 inline void applySwitch(BinaryMatrix &s) {
 
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
-
                     /** apply switch operation **/
                     count_switch++;
 
                     // choose two random row indices i < j
-                    int i = rg.nextInt(nrow);
-                    int k = rg.nextInt(nrow);
+                    size_t i = rg.nextInt(_nrow);
+                    size_t k = rg.nextInt(_nrow);
                     while (i == k)
-                        k = rg.nextInt(nrow);
+                        k = rg.nextInt(_nrow);
                     if (i > k)
                         std::swap(i, k);
 
                     // choose two random column indices i < j
-                    int j = rg.nextInt(ncol);
-                    int l = rg.nextInt(ncol);
+                    size_t j = rg.nextInt(_ncol);
+                    size_t l = rg.nextInt(_ncol);
                     while (j == l) {
-                        l = rg.nextInt(ncol);
+                        l = rg.nextInt(_ncol);
                     }
                     if (j > l)
                         std::swap(j, l);
@@ -256,48 +242,45 @@ namespace marathon {
                     }
                 }
 
-                void applyShift(BinaryMatrix& s) {
-
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
+                void applyShift(BinaryMatrix &s) {
 
                     /** apply a shift operation **/
                     count_shift++;
 
                     // select a random row index i
-                    int i = rg.nextInt(nrow);
+                    size_t i = rg.nextInt(_nrow);
 
                     // select a random column index j
-                    int j = rg.nextInt(ncol);
+                    size_t j = rg.nextInt(_ncol);
 
                     // select a random index k (row or column)
-                    int k = rg.nextInt(nrow + ncol);
-                    while (k == i || k - nrow == j)
-                        k = rg.nextInt(nrow + ncol);
+                    size_t k = rg.nextInt(_nrow + _ncol);
+                    while (k == i || k - _nrow == j)
+                        k = rg.nextInt(_nrow + _ncol);
 
-                    if (k < nrow) {      // if k is a row index
+                    if (k < _nrow) {      // if k is a row index
 
                         // if we can shift a one from (i,j) to (k,j)
                         if (s.get(i, j) && !s.get(k, j) &&
-                            current_margin.rowsum[i] > inst.rowsum_lower[i] &&
-                            current_margin.rowsum[k] < inst.rowsum_upper[k]) {
+                            _current_margin._rowsum[i] > _inst._rowsum_lower[i] &&
+                            _current_margin._rowsum[k] < _inst._rowsum_upper[k]) {
 
                             // shift a one from (i,j) to (k,j)
                             s.flip(i, j);
                             s.flip(k, j);
-                            current_margin.rowsum[i]--;
-                            current_margin.rowsum[k]++;
+                            _current_margin._rowsum[i]--;
+                            _current_margin._rowsum[k]++;
                         }
                             // if we can shift a one from (k,j) to (i,j)
                         else if (!s.get(i, j) && s.get(k, j) &&
-                                 current_margin.rowsum[k] > inst.rowsum_lower[k] &&
-                                 current_margin.rowsum[i] < inst.rowsum_upper[i]) {
+                                 _current_margin._rowsum[k] > _inst._rowsum_lower[k] &&
+                                 _current_margin._rowsum[i] < _inst._rowsum_upper[i]) {
 
                             // shift a one from (k,j) to (i,j)
                             s.flip(i, j);
                             s.flip(k, j);
-                            current_margin.rowsum[k]--;
-                            current_margin.rowsum[i]++;
+                            _current_margin._rowsum[k]--;
+                            _current_margin._rowsum[i]++;
                         } else {
                             // loop
                             loop_shift++;
@@ -305,28 +288,28 @@ namespace marathon {
 
                     } else {            // if k is a column index
 
-                        k -= nrow;
+                        k -= _nrow;
 
                         // if we can shift a one from (i,j) to (i,k)
                         if (s.get(i, j) && !s.get(i, k) &&
-                            current_margin.colsum[j] > inst.colsum_lower[j] &&
-                            current_margin.colsum[k] < inst.colsum_upper[k]) {
+                            _current_margin._colsum[j] > _inst._colsum_lower[j] &&
+                            _current_margin._colsum[k] < _inst._colsum_upper[k]) {
 
                             // shift a one from (i,j) to (i,k)
                             s.flip(i, j);
                             s.flip(i, k);
-                            current_margin.colsum[j]--;
-                            current_margin.colsum[k]++;
+                            _current_margin._colsum[j]--;
+                            _current_margin._colsum[k]++;
                         } // if we can shift a one from (i,k) to (i,j)
                         else if (!s.get(i, j) && s.get(i, k) &&
-                                 current_margin.colsum[k] > inst.colsum_lower[k] &&
-                                 current_margin.colsum[j] < inst.colsum_upper[j]) {
+                                 _current_margin._colsum[k] > _inst._colsum_lower[k] &&
+                                 _current_margin._colsum[j] < _inst._colsum_upper[j]) {
 
                             // shift a one from (i,k) to (i,j)
                             s.flip(i, j);
                             s.flip(i, k);
-                            current_margin.colsum[k]--;
-                            current_margin.colsum[j]++;
+                            _current_margin._colsum[k]--;
+                            _current_margin._colsum[j]++;
                         } else {
                             // loop
                             loop_shift++;
@@ -335,28 +318,25 @@ namespace marathon {
                 }
 
 
-                inline void applyFlip(BinaryMatrix& s) {
-
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
+                inline void applyFlip(BinaryMatrix &s) {
 
                     /** apply flip operation **/
 
                     count_flip++;
 
                     // select a random row index i and a random column index j
-                    int i = rg.nextInt(nrow);
-                    int j = rg.nextInt(ncol);
+                    size_t i = rg.nextInt(_nrow);
+                    size_t j = rg.nextInt(_ncol);
 
                     if (s.get(i, j)) {
                         // Flip 1 -> 0
 
                         // flip is allowed by lower and upper margins?
-                        if (current_margin.rowsum[i] > inst.rowsum_lower[i] &&
-                            current_margin.colsum[j] > inst.colsum_lower[j]) {
+                        if (_current_margin._rowsum[i] > _inst._rowsum_lower[i] &&
+                            _current_margin._colsum[j] > _inst._colsum_lower[j]) {
                             s.flip(i, j);
-                            current_margin.rowsum[i]--;
-                            current_margin.colsum[j]--;
+                            _current_margin._rowsum[i]--;
+                            _current_margin._colsum[j]--;
                         } else {
                             // loop
                             loop_flip++;
@@ -365,11 +345,11 @@ namespace marathon {
                         //Flip 0 -> 1
 
                         // flip is allowed by lower and upper margins?
-                        if (current_margin.rowsum[i] < inst.rowsum_upper[i] &&
-                            current_margin.colsum[j] < inst.colsum_upper[j]) {
+                        if (_current_margin._rowsum[i] < _inst._rowsum_upper[i] &&
+                            _current_margin._colsum[j] < _inst._colsum_upper[j]) {
                             s.flip(i, j);
-                            current_margin.rowsum[i]++;
-                            current_margin.colsum[j]++;
+                            _current_margin._rowsum[i]++;
+                            _current_margin._colsum[j]++;
                         } else {
                             // loop
                             loop_flip++;
@@ -398,7 +378,7 @@ namespace marathon {
                  * Create a Markov chain.
                  * @param inst Four-Tuple of integer vectors.
                  */
-                explicit SimpleChain(const Instance &inst) : MarkovChain(inst) {
+                explicit SimpleChain(Instance inst) : MarkovChain(std::move(inst)) {
 
                 }
 
@@ -407,56 +387,8 @@ namespace marathon {
                  * @param inst Four-Tuple of integer vectors.
                  * @param bin Binary Matrix.
                  */
-                SimpleChain(const Instance &inst, const BinaryMatrix &bin)
-                        : MarkovChain(inst, bin) {
-
-                }
-
-                /**
-                 * Create a Markov chain.
-                 * @param inst String-encoded instance.
-                 * Instances for this chain have the form "l1-u1,l2-u2,l3-u3;l4-u4,l5-u5", where li is the ith lower
-                 * bound and ui is the ith upper bound. For convenience, if li = ui, the string 'li-ui' can be replaced
-                 * by 'li'. The semicolon separates the row sums from the column sums.
-                 */
-                explicit SimpleChain(const std::string &inst)
-                        : SimpleChain(Instance(inst)) {
-
-                }
-
-                /**
-				 * Create a Markov chain.
-				 * @param rowsum_lower Sequence of lower bounds for row sums.
-				 * @param rowsum_upper Sequence of upper bounds for row sums.
-				 * @param colsum_lower Sequence of lower bounds for column sums.
-				 * @param colsum_upper Sequence of upper bounds for column sums.
-				 */
-                SimpleChain(
-                        const std::vector<int> &rowsum_lower,
-                        const std::vector<int> &rowsum_upper,
-                        const std::vector<int> &colsum_lower,
-                        const std::vector<int> &colsum_upper
-                ) : MarkovChain(rowsum_lower, rowsum_upper, colsum_lower, colsum_upper) {
-
-                }
-
-                /**
-				 * Create a Markov chain.
-				 * @param rowsum_lower Sequence of lower bounds for row sums.
-				 * @param rowsum_upper Sequence of upper bounds for row sums.
-				 * @param colsum_lower Sequence of lower bounds for column sums.
-				 * @param colsum_upper Sequence of upper bounds for column sums.
-				 * @param nrow Number of rows.
-				 * @param ncol Number of columns.
-				 */
-                SimpleChain(
-                        const int *rowsum_lower,
-                        const int *rowsum_upper,
-                        const int *colsum_lower,
-                        const int *colsum_upper,
-                        const int nrow,
-                        const int ncol
-                ) : MarkovChain(rowsum_lower, rowsum_upper, colsum_lower, colsum_upper, nrow, ncol) {
+                SimpleChain(Instance inst, BinaryMatrix bin)
+                        : MarkovChain(std::move(inst), std::move(bin)) {
 
                 }
 
@@ -468,24 +400,19 @@ namespace marathon {
                  */
                 virtual
                 void adjacentStates(
-                        const State *x,
-                        const std::function<void(const State *, const marathon::Rational &)> &process
-                ) const {
-
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
+                        const State &x,
+                        const std::function<void(const State &, const marathon::Rational &)> &process
+                ) const override {
 
                     // create a copy of x
-                    const BinaryMatrix *s = (const BinaryMatrix *) x;
+                    const BinaryMatrix &s = static_cast<const BinaryMatrix &>(x);
 
                     // create temporary array of row and column sums
-                    int *rowsum = new int[nrow];
-                    int *colsum = new int[ncol];
-                    memset(rowsum, 0, nrow * sizeof(int));
-                    memset(colsum, 0, ncol * sizeof(int));
-                    for (int i = 0; i < nrow; i++) {
-                        for (int j = 0; j < ncol; j++) {
-                            int sij = s->get(i, j);
+                    std::vector<int> rowsum(_nrow);
+                    std::vector<int> colsum(_ncol);
+                    for (size_t i = 0; i < _nrow; i++) {
+                        for (size_t j = 0; j < _ncol; j++) {
+                            bool sij = s.get(i, j);
                             rowsum[i] += sij;
                             colsum[j] += sij;
                         }
@@ -505,11 +432,11 @@ namespace marathon {
                     double p = rg.nextDouble();
 
                     if (p < p_switch)
-                        applySwitch(currentState);
+                        applySwitch(_currentState);
                     else if (p < p_switch + p_shift)
-                        applyShift(currentState);
+                        applyShift(_currentState);
                     else if (p < p_switch + p_shift + p_flip)
-                        applyFlip(currentState);
+                        applyFlip(_currentState);
                     else
                         throw std::runtime_error("Error at SwitchShiftFlipSimple::step()");
                 }
@@ -519,7 +446,7 @@ namespace marathon {
                  * @return
                  */
                 virtual std::unique_ptr<marathon::MarkovChain> copy() const override {
-                    return std::make_unique<SimpleChain>(inst, currentState);
+                    return std::make_unique<SimpleChain>(_inst, _currentState);
                 }
             };
         }

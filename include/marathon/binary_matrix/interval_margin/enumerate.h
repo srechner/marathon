@@ -207,7 +207,7 @@ namespace marathon {
                                 // set matrix entry
                                 _bin.set(rowsum_index[0], colsum_index[j], 1);
 
-                                // restore non-increasing order of colsum_lower
+                                // restore non-increasing order of _colsum_lower
                                 std::swap(colsum_index[last - l], colsum_index[j]);
                             }
 
@@ -339,8 +339,8 @@ namespace marathon {
                     std::vector<A> rows(_nrow);
                     for (int i = 0; i < _nrow; i++) {
                         rows[i].index = i;
-                        rows[i].lower = std::max(_seq.rowsum_lower[i], 0);
-                        rows[i].upper = std::min(_seq.rowsum_upper[i], _ncol);
+                        rows[i].lower = std::max(_seq._rowsum_lower[i], 0);
+                        rows[i].upper = std::min(_seq._rowsum_upper[i], _ncol);
                     }
                     std::sort(rows.begin(), rows.end(), [](const A &a, const A &b) {
                         return a.lower == b.lower ? a.upper > b.upper : a.lower > b.lower;
@@ -356,8 +356,8 @@ namespace marathon {
                     std::vector<A> columns(_ncol);
                     for (int i = 0; i < _ncol; i++) {
                         columns[i].index = i;
-                        columns[i].lower = std::max(_seq.colsum_lower[i], 0);
-                        columns[i].upper = std::min(_seq.colsum_upper[i], _nrow);
+                        columns[i].lower = std::max(_seq._colsum_lower[i], 0);
+                        columns[i].upper = std::min(_seq._colsum_upper[i], _nrow);
                     }
                     std::sort(columns.begin(), columns.end(), [](const A &a, const A &b) {
                         return a.lower == b.lower ? a.upper > b.upper : a.lower > b.lower;

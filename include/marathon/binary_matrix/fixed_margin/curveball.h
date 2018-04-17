@@ -62,7 +62,7 @@ namespace marathon {
                  * @param inst Row and column sums.
                  */
                 explicit Curveball(Instance inst) : MarkovChain(std::move(inst)) {
-                    tmp1.resize(currentState.getNumCols());
+                    tmp1.resize(_currentState.getNumCols());
                 }
 
                 /**
@@ -70,7 +70,7 @@ namespace marathon {
                 * @param m Binary matrix used as initial state
                 */
                 explicit Curveball(BinaryMatrix m) : MarkovChain(std::move(m)) {
-                    tmp1.resize(currentState.getNumCols());
+                    tmp1.resize(_currentState.getNumCols());
                 }
 
                 /**
@@ -81,7 +81,7 @@ namespace marathon {
                  */
                 Curveball(Instance inst, BinaryMatrix bin)
                         : MarkovChain(std::move(inst), std::move(bin)) {
-                    tmp1.resize(currentState.getNumCols());
+                    tmp1.resize(_currentState.getNumCols());
                 }
 
                 /**
@@ -241,8 +241,8 @@ namespace marathon {
                     // for each column position
                     for (int j = 0; j < ncol; j++) {
 
-                        bool A_ij = currentState.get(i, j);
-                        bool A_kj = currentState.get(k, j);
+                        bool A_ij = _currentState.get(i, j);
+                        bool A_kj = _currentState.get(k, j);
 
                         if (A_ij != A_kj) {
 
@@ -261,15 +261,15 @@ namespace marathon {
 
                     for (int l = 0; l < a; l++) {
                         int j = tmp1[l];
-                        currentState.set(i, j, 1);
-                        currentState.set(k, j, 0);
+                        _currentState.set(i, j, 1);
+                        _currentState.set(k, j, 0);
                     }
 
                     // the remaining elements to go row j
                     for (int l = a; l < a + b; l++) {
                         int j = tmp1[l];
-                        currentState.set(i, j, 0);
-                        currentState.set(k, j, 1);
+                        _currentState.set(i, j, 0);
+                        _currentState.set(k, j, 1);
                     }
                 }
 
@@ -278,7 +278,7 @@ namespace marathon {
                  * @return
                  */
                 virtual std::unique_ptr<marathon::MarkovChain> copy() const override {
-                    return std::make_unique<Curveball>(_inst, currentState);
+                    return std::make_unique<Curveball>(_inst, _currentState);
                 }
             };
         }

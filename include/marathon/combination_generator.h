@@ -38,13 +38,13 @@ namespace marathon {
 
     private:
 
-        const int n;            // the number of items
-        const int k;            // the number of items to choose
+        const size_t n;         // the number of items
+        const size_t k;         // the number of items to choose
         const T *src;           // array of n objects
         T *dst;                 // array of k objects (is reordered after each next)
-        int *c;                 // temporary memory
-        int j;                  // smallest index s.t. c[j+1] > j
-        int x;
+        std::vector<size_t> c;  // temporary memory
+        size_t j;               // smallest index s.t. c[j+1] > j
+        size_t x;
 
     public:
 
@@ -56,14 +56,10 @@ namespace marathon {
          * @param k The number of objects to choose.
          * @return
          */
-        CombinationGenerator(const T *src, T *dst, const int n, const int k) :
+        CombinationGenerator(const T *src, T *dst, size_t n, size_t k) :
                 n(n), k(k), src(src), dst(dst) {
-            c = new int[k + 3];
+            c.resize(k+3);
             reset();
-        }
-
-        virtual ~CombinationGenerator() {
-            delete[] c;
         }
 
         /**
@@ -77,7 +73,7 @@ namespace marathon {
             c[k + 2] = 0;
 
             // generate output
-            for (int i = 1; i <= k; i++)
+            for (size_t i = 1; i <= k; i++)
                 dst[i - 1] = src[c[i]];
         }
 
@@ -104,7 +100,7 @@ namespace marathon {
             c[j] = c[j] + 1;
 
             // generate output
-            for (int i = 1; i <= k; i++)
+            for (size_t i = 1; i <= k; i++)
                 dst[i - 1] = src[c[i]];
 
             return true;

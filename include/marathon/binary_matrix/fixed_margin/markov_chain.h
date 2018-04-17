@@ -62,7 +62,7 @@ namespace marathon {
                  */
                 explicit MarkovChain(BinaryMatrix m) :
                         ::marathon::binary_matrix::MarkovChain(std::move(m)),
-                        _inst(Instance(currentState)) {
+                        _inst(Instance(_currentState)) {
 
                 }
 

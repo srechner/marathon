@@ -46,7 +46,7 @@ namespace marathon {
 
         private:
 
-            uint _nrow, _ncol;              // number of rows and columns
+            size_t _nrow, _ncol;            // number of rows and columns
             boost::dynamic_bitset<> _bits;  // the matrix is stored as a single row in a bitset.
 
             /**
@@ -55,7 +55,7 @@ namespace marathon {
              * @param j Column index.
              * @return Internal position of element (i,j).
              */
-            size_t coord_transform(const uint i, const uint j) const {
+            size_t coord_transform(size_t i, size_t j) const {
                 const size_t p = i * _ncol + j;
                 assert(p < _bits.size());
                 /*if (p >= _bits.size()) {
@@ -84,7 +84,7 @@ namespace marathon {
             BinaryMatrix(
                     size_t nrow,
                     size_t ncol
-            ) : _nrow(static_cast<uint>(nrow)), _ncol(static_cast<uint>(ncol)),
+            ) : _nrow(nrow), _ncol(ncol),
                 _bits(boost::dynamic_bitset<>(nrow * ncol)) {
 
             }
@@ -165,7 +165,7 @@ namespace marathon {
              * @param j Column index.
              * @return Value of entry (i,j).
              */
-            bool get(uint i, uint j) const {
+            bool get(size_t i, size_t j) const {
                 const size_t p = coord_transform(i, j);
                 return _bits[p];
             }
@@ -176,7 +176,7 @@ namespace marathon {
              * @param j Column index.
              * @param b Zero or One.
              */
-            void set(uint i, uint j, bool b) {
+            void set(size_t i, size_t j, bool b) {
                 const size_t p = coord_transform(i, j);
                 _bits[p] = b;
             }
@@ -193,7 +193,7 @@ namespace marathon {
              * @param i Row index.
              * @param j Column index.
              */
-            void flip(uint i, uint j) {
+            void flip(size_t i, size_t j) {
                 const size_t p = coord_transform(i, j);
                 _bits[p].flip();
             }

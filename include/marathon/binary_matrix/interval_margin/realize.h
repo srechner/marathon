@@ -44,19 +44,19 @@ namespace marathon {
             inline
             bool isRealizable(const Instance &seq) {
 
-                const int nrow = seq.rowsum_lower.size();
-                const int ncol = seq.colsum_lower.size();
+                const int nrow = seq._rowsum_lower.size();
+                const int ncol = seq._colsum_lower.size();
 
                 // are all row sums in the right range?
                 for (int i = 0; i < nrow; i++) {
-                    if (seq.rowsum_upper[i] < seq.rowsum_lower[i] || seq.rowsum_lower[i] > ncol) {
+                    if (seq._rowsum_upper[i] < seq._rowsum_lower[i] || seq._rowsum_lower[i] > ncol) {
                         return false;
                     }
                 }
 
                 // are all column sums in the right range?
                 for (int j = 0; j < ncol; j++) {
-                    if (seq.colsum_upper[j] < seq.colsum_lower[j] || seq.colsum_lower[j] > nrow) {
+                    if (seq._colsum_upper[j] < seq._colsum_lower[j] || seq._colsum_lower[j] > nrow) {
                         return false;
                     }
                 }
@@ -64,7 +64,7 @@ namespace marathon {
                 // create sorted sequence of lower row sum
                 int *rowsum_lower_sorted = new int[nrow];
                 for (int i = 0; i < nrow; i++)
-                    rowsum_lower_sorted[i] = std::max(seq.rowsum_lower[i], 0);
+                    rowsum_lower_sorted[i] = std::max(seq._rowsum_lower[i], 0);
                 std::sort(rowsum_lower_sorted, rowsum_lower_sorted + nrow, [](const int a, const int b) {
                     return a > b;
                 });
@@ -72,18 +72,18 @@ namespace marathon {
                 // create sorted sequence of lower column sum
                 int *colsum_lower_sorted = new int[ncol];
                 for (int j = 0; j < ncol; j++)
-                    colsum_lower_sorted[j] = std::max(seq.colsum_lower[j], 0);
+                    colsum_lower_sorted[j] = std::max(seq._colsum_lower[j], 0);
                 std::sort(colsum_lower_sorted, colsum_lower_sorted + ncol, [](const int a, const int b) {
                     return a > b;
                 });
 
                 // create conjugates sequence of upper rowsum
                 int *rowsum_upper_conjugated = new int[ncol];
-                conjugate(rowsum_upper_conjugated, &seq.rowsum_upper[0], ncol, nrow);
+                conjugate(rowsum_upper_conjugated, &seq._rowsum_upper[0], ncol, nrow);
 
                 // create conjugates sequence of upper colsum
                 int *colsum_upper_conjugated = new int[nrow];
-                conjugate(colsum_upper_conjugated, &seq.colsum_upper[0], nrow, ncol);
+                conjugate(colsum_upper_conjugated, &seq._colsum_upper[0], nrow, ncol);
 
                 // the sequence tuple is realizable when
                 // a) the conjugated upper row sums dominate the lower column sums
@@ -149,7 +149,7 @@ namespace marathon {
             namespace detail {
 
                 struct A {
-                    int index;
+                    size_t index;
                     int value;
                 };
 
@@ -291,8 +291,8 @@ namespace marathon {
                      * Step Zero: Preparations
                      *************************************************************************/
 
-                    const int nrow = (int) margin.rowsum_lower.size();
-                    const int ncol = (int) margin.colsum_lower.size();
+                    const int nrow = (int) margin._rowsum_lower.size();
+                    const int ncol = (int) margin._colsum_lower.size();
 
                     struct A {
                         int index;
@@ -305,13 +305,13 @@ namespace marathon {
                     A *cols = new A[ncol];
                     for (int i = 0; i < nrow; i++) {
                         rows[i].index = i;
-                        rows[i].lower = std::max(margin.rowsum_lower[i], 0);
-                        rows[i].upper = std::min(margin.rowsum_upper[i], ncol);
+                        rows[i].lower = std::max(margin._rowsum_lower[i], 0);
+                        rows[i].upper = std::min(margin._rowsum_upper[i], ncol);
                     }
                     for (int j = 0; j < ncol; j++) {
                         cols[j].index = j;
-                        cols[j].lower = std::max(margin.colsum_lower[j], 0);
-                        cols[j].upper = std::min(margin.colsum_upper[j], nrow);
+                        cols[j].lower = std::max(margin._colsum_lower[j], 0);
+                        cols[j].upper = std::min(margin._colsum_upper[j], nrow);
                     }
 
                     // sort rows by lower bound
@@ -331,7 +331,7 @@ namespace marathon {
 
                     // create conjugate sequence to lower column sums
                     int *colsum_lower_conj = new int[nrow];
-                    marathon::binary_matrix::conjugate(colsum_lower_conj, &margin.colsum_lower[0], nrow, ncol);
+                    marathon::binary_matrix::conjugate(colsum_lower_conj, &margin._colsum_lower[0], nrow, ncol);
 
                     // first and last occurrence of each value in cols.lower
                     int *colsum_lower_first = new int[nrow + 1];
@@ -391,19 +391,19 @@ namespace marathon {
 
                     // copy final column sums
                     for (int j = 0; j < ncol; j++)
-                        res.colsum[j] = cols[j].lower;
+                        res._colsum[j] = cols[j].lower;
 
                     // create conjugate sequence of column sums
-                    std::vector<int> colsum_conj = conjugate(res.colsum, nrow);
+                    std::vector<int> colsum_conj = conjugate(res._colsum, nrow);
 
                     // create conjugate sequence to upper row sums
-                    std::vector<int> rowsum_upper_conj = conjugate(margin.rowsum_upper, ncol);
+                    std::vector<int> rowsum_upper_conj = conjugate(margin._rowsum_upper, ncol);
 
                     // at this point there is a binary matrix whose column sums are described by colsum
-                    assert(marathon::binary_matrix::isDominating(colsum_conj, margin.rowsum_lower));
-                    assert(marathon::binary_matrix::isDominating(rowsum_upper_conj, res.colsum));
+                    assert(marathon::binary_matrix::isDominating(colsum_conj, margin._rowsum_lower));
+                    assert(marathon::binary_matrix::isDominating(rowsum_upper_conj, res._colsum));
                     assert(marathon::binary_matrix::interval_margin::isRealizable(
-                            &margin.rowsum_lower[0], &margin.rowsum_upper[0], &res.colsum[0], &res.colsum[0], nrow,
+                            &margin._rowsum_lower[0], &margin._rowsum_upper[0], &res._colsum[0], &res._colsum[0], nrow,
                             ncol));
 
                     /**************************************************************************
@@ -411,7 +411,7 @@ namespace marathon {
                      *************************************************************************/
 
                     // determine amount by which rows[].lower must be increased
-                    int delta2 = std::accumulate(res.colsum.begin(), res.colsum.end(), 0) -
+                    int delta2 = std::accumulate(res._colsum.begin(), res._colsum.end(), 0) -
                                  std::accumulate(rows, rows + nrow, 0,
                                                  [](const int res, const A &a) { return res + a.lower; });
                     assert(delta2 >= 0);
@@ -458,12 +458,12 @@ namespace marathon {
 
                     // restore original row and column order
                     for (int i = 0; i < nrow; i++) {
-                        res.rowsum[rows[i].index] = rows[i].lower;
-                        res.rowindex[i] = i;
+                        res._rowsum[rows[i].index] = rows[i].lower;
+                        res._rowindex[i] = i;
                     }
                     for (int j = 0; j < ncol; j++) {
-                        res.colsum[cols[j].index] = cols[j].lower;
-                        res.colindex[j] = j;
+                        res._colsum[cols[j].index] = cols[j].lower;
+                        res._colindex[j] = j;
                     }
 
                     // at this point, rowsum and colsum are realizable
@@ -581,8 +581,8 @@ namespace marathon {
             marathon::binary_matrix::BinaryMatrix
             realize_slow(const Instance &seq) {
 
-                const int nrow = seq.rowsum_upper.size();
-                const int ncol = seq.colsum_lower.size();
+                const int nrow = seq._rowsum_upper.size();
+                const int ncol = seq._colsum_lower.size();
 
                 if (!isRealizable(seq))
                     throw std::runtime_error("Error! Four-tuple of integer vectors is not realizable!");
@@ -601,25 +601,25 @@ namespace marathon {
                 // create non-increasing order of row sums
                 detail::A *row_order = new detail::A[nrow];
                 for (int i = 0; i < nrow; i++)
-                    row_order[i] = {seq.rowindex[i], seq.rowsum_lower[i]};
+                    row_order[i] = {seq._rowindex[i], seq._rowsum_lower[i]};
                 std::sort(row_order, row_order + nrow, [](const detail::A &a, const detail::A &b) {
                     return a.value > b.value;
                 });
                 for (int i = 0; i < nrow; i++) {
-                    my_rowsum_lower[i] = seq.rowsum_lower[row_order[i].index];
-                    my_rowsum_upper[i] = seq.rowsum_upper[row_order[i].index];
+                    my_rowsum_lower[i] = seq._rowsum_lower[row_order[i].index];
+                    my_rowsum_upper[i] = seq._rowsum_upper[row_order[i].index];
                 }
 
                 // create non-increasing order of column sums
                 detail::A *col_order = new detail::A[ncol];
                 for (int j = 0; j < ncol; j++)
-                    col_order[j] = {seq.colindex[j], seq.colsum_lower[j]};
+                    col_order[j] = {seq._colindex[j], seq._colsum_lower[j]};
                 std::sort(col_order, col_order + ncol, [](const detail::A &a, const detail::A &b) {
                     return a.value > b.value;
                 });
                 for (int j = 0; j < ncol; j++) {
-                    my_colsum_lower[j] = seq.colsum_lower[col_order[j].index];
-                    my_colsum_upper[j] = seq.colsum_upper[col_order[j].index];
+                    my_colsum_lower[j] = seq._colsum_lower[col_order[j].index];
+                    my_colsum_upper[j] = seq._colsum_upper[col_order[j].index];
                 }
 
                 // trim row sums to fit bounds

@@ -41,19 +41,17 @@ namespace marathon {
              */
             struct Instance {
 
-                std::vector<int> rowsum_lower;
-                std::vector<int> rowsum_upper;
-                std::vector<int> colsum_lower;
-                std::vector<int> colsum_upper;
-                std::vector<int> rowindex;
-                std::vector<int> colindex;
+                std::vector<int> _rowsum_lower;
+                std::vector<int> _rowsum_upper;
+                std::vector<int> _colsum_lower;
+                std::vector<int> _colsum_upper;
+                std::vector<size_t> _rowindex;
+                std::vector<size_t> _colindex;
 
                 /**
                  * Dummy constructor.
                  */
-                Instance() {
-
-                }
+                Instance() = default;
 
                 /**
                  * Define margins for a matrix of size nrow times ncol.
@@ -62,16 +60,16 @@ namespace marathon {
                  * @return
                  */
                 Instance(size_t nrow, size_t ncol) {
-                    rowsum_lower.resize(nrow);
-                    rowsum_upper.resize(nrow);
-                    colsum_lower.resize(ncol);
-                    colsum_upper.resize(ncol);
-                    rowindex.resize(nrow);
-                    colindex.resize(ncol);
-                    for (int i = 0; i < nrow; i++)
-                        rowindex[i] = i;
-                    for (int j = 0; j < ncol; j++)
-                        colindex[j] = j;
+                    _rowsum_lower.resize(nrow);
+                    _rowsum_upper.resize(nrow);
+                    _colsum_lower.resize(ncol);
+                    _colsum_upper.resize(ncol);
+                    _rowindex.resize(nrow);
+                    _colindex.resize(ncol);
+                    for (size_t i = 0; i < nrow; i++)
+                        _rowindex[i] = i;
+                    for (size_t j = 0; j < ncol; j++)
+                        _colindex[j] = j;
                 }
 
                 /**
@@ -87,21 +85,21 @@ namespace marathon {
                         std::vector<int> rowsum_upper,
                         std::vector<int> colsum_lower,
                         std::vector<int> colsum_upper
-                ) : rowsum_lower(std::move(rowsum_lower)),
-                    rowsum_upper(std::move(rowsum_upper)),
-                    colsum_lower(std::move(colsum_lower)),
-                    colsum_upper(std::move(colsum_upper)) {
+                ) : _rowsum_lower(std::move(rowsum_lower)),
+                    _rowsum_upper(std::move(rowsum_upper)),
+                    _colsum_lower(std::move(colsum_lower)),
+                    _colsum_upper(std::move(colsum_upper)) {
 
-                    const size_t nrow = rowsum_lower.size();
-                    const size_t ncol = colsum_lower.size();
+                    const size_t nrow = _rowsum_lower.size();
+                    const size_t ncol = _colsum_lower.size();
 
-                    rowindex.resize(nrow);
-                    colindex.resize(ncol);
+                    _rowindex.resize(nrow);
+                    _colindex.resize(ncol);
 
                     for (size_t i = 0; i < nrow; i++)
-                        rowindex[i] = (int) i;
+                        _rowindex[i] = (int) i;
                     for (size_t j = 0; j < ncol; j++)
-                        colindex[j] = (int) j;
+                        _colindex[j] = (int) j;
                 }
 
                 /**
@@ -121,18 +119,18 @@ namespace marathon {
                         const int *colsum_upper,
                         size_t nrow,
                         size_t ncol
-                ) : rowsum_lower(rowsum_lower, rowsum_lower + nrow),
-                    rowsum_upper(rowsum_upper, rowsum_upper + nrow),
-                    colsum_lower(colsum_lower, colsum_lower + ncol),
-                    colsum_upper(colsum_upper, colsum_upper + ncol) {
+                ) : _rowsum_lower(rowsum_lower, rowsum_lower + nrow),
+                    _rowsum_upper(rowsum_upper, rowsum_upper + nrow),
+                    _colsum_lower(colsum_lower, colsum_lower + ncol),
+                    _colsum_upper(colsum_upper, colsum_upper + ncol) {
 
-                    rowindex.resize(nrow);
-                    colindex.resize(ncol);
+                    _rowindex.resize(nrow);
+                    _colindex.resize(ncol);
 
-                    for (int i = 0; i < nrow; i++)
-                        rowindex[i] = i;
-                    for (int j = 0; j < ncol; j++)
-                        colindex[j] = j;
+                    for (size_t i = 0; i < nrow; i++)
+                        _rowindex[i] = i;
+                    for (size_t j = 0; j < ncol; j++)
+                        _colindex[j] = j;
                 }
 
                 /**
@@ -161,8 +159,8 @@ namespace marathon {
                     int currentUpper = -1;
                     int *currentNumber = &currentLower;
 
-                    std::vector<int> *current_vec_lower = &rowsum_lower;
-                    std::vector<int> *current_vec_upper = &rowsum_upper;
+                    std::vector<int> *current_vec_lower = &_rowsum_lower;
+                    std::vector<int> *current_vec_upper = &_rowsum_upper;
 
                     // parse string
                     while (str[k] != '\0') {
@@ -198,8 +196,8 @@ namespace marathon {
                                 currentLower = 0;
                                 currentUpper = -1;
                                 currentNumber = &currentLower;
-                                current_vec_lower = &colsum_lower;
-                                current_vec_upper = &colsum_upper;
+                                current_vec_lower = &_colsum_lower;
+                                current_vec_upper = &_colsum_upper;
                                 break;
                             default:
                                 throw std::runtime_error("Error! Malformed instance encoding!");
@@ -210,16 +208,16 @@ namespace marathon {
                     current_vec_lower->push_back(currentLower);
                     current_vec_upper->push_back(currentUpper == -1 ? currentLower : currentUpper);
 
-                    const size_t nrow = rowsum_lower.size();
-                    const size_t ncol = colsum_lower.size();
+                    const size_t nrow = _rowsum_lower.size();
+                    const size_t ncol = _colsum_lower.size();
 
-                    rowindex.resize(nrow);
-                    colindex.resize(ncol);
+                    _rowindex.resize(nrow);
+                    _colindex.resize(ncol);
 
-                    for (int i = 0; i < nrow; i++)
-                        rowindex[i] = i;
-                    for (int j = 0; j < ncol; j++)
-                        colindex[j] = j;
+                    for (size_t i = 0; i < nrow; i++)
+                        _rowindex[i] = i;
+                    for (size_t j = 0; j < ncol; j++)
+                        _colindex[j] = j;
 
                 }
 
@@ -228,7 +226,7 @@ namespace marathon {
                  * @return Number of rows
                  */
                 const size_t getNumRows() const {
-                    return rowsum_lower.size();
+                    return _rowsum_lower.size();
                 }
 
 
@@ -237,7 +235,7 @@ namespace marathon {
                  * @return Number of columns
                  */
                 const size_t getNumCols() const {
-                    return colsum_lower.size();
+                    return _colsum_lower.size();
                 }
 
 
@@ -247,33 +245,33 @@ namespace marathon {
                  */
                 const std::string toString() const {
 
-                    const size_t nrow = rowsum_lower.size();
-                    const size_t ncol = colsum_lower.size();
+                    const size_t nrow = _rowsum_lower.size();
+                    const size_t ncol = _colsum_lower.size();
 
                     std::stringstream ss;
-                    ss << "rowindex              =";
+                    ss << "_rowindex              =";
                     for (int i = 0; i < nrow; i++)
-                        ss << " " << rowindex[i];
+                        ss << " " << _rowindex[i];
                     ss << "\n";
                     ss << "rowsum_lower          =";
                     for (int i = 0; i < nrow; i++)
-                        ss << " " << rowsum_lower[i];
+                        ss << " " << _rowsum_lower[i];
                     ss << "\n";
                     ss << "rowsum_upper          =";
                     for (int i = 0; i < nrow; i++)
-                        ss << " " << rowsum_upper[i];
+                        ss << " " << _rowsum_upper[i];
                     ss << "\n";
-                    ss << "colindex              =";
+                    ss << "_colindex              =";
                     for (int j = 0; j < ncol; j++)
-                        ss << " " << colindex[j];
+                        ss << " " << _colindex[j];
                     ss << "\n";
-                    ss << "colsum_lower          =";
+                    ss << "_colsum_lower          =";
                     for (int j = 0; j < ncol; j++)
-                        ss << " " << colsum_lower[j];
+                        ss << " " << _colsum_lower[j];
                     ss << "\n";
-                    ss << "colsum_upper          =";
+                    ss << "_colsum_upper          =";
                     for (int j = 0; j < ncol; j++)
-                        ss << " " << colsum_lower[j];
+                        ss << " " << _colsum_lower[j];
                     return ss.str();
                 }
 
@@ -285,8 +283,8 @@ namespace marathon {
                  */
                 bool isValid(const BinaryMatrix &bin) const {
 
-                    const int nrow = (int) rowsum_lower.size();
-                    const int ncol = (int) colsum_lower.size();
+                    const int nrow = (int) _rowsum_lower.size();
+                    const int ncol = (int) _colsum_lower.size();
 
                     if (bin.getNumRows() != nrow || bin.getNumCols() != ncol)
                         return false;
@@ -307,7 +305,7 @@ namespace marathon {
 
                     bool valid = true;
                     for (int i = 0; i < nrow; i++) {
-                        if (rowsum[i] < rowsum_lower[i] || rowsum[i] > rowsum_upper[i]) {
+                        if (rowsum[i] < _rowsum_lower[i] || rowsum[i] > _rowsum_upper[i]) {
                             valid = false;
                             break;
                         }
@@ -315,7 +313,7 @@ namespace marathon {
 
                     if (valid) {
                         for (int j = 0; j < ncol; j++) {
-                            if (colsum[j] < colsum_lower[j] || colsum[j] > colsum_upper[j]) {
+                            if (colsum[j] < _colsum_lower[j] || colsum[j] > _colsum_upper[j]) {
                                 valid = false;
                                 break;
                             }

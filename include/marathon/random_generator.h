@@ -39,8 +39,6 @@ namespace marathon {
 
     public:
 
-        virtual ~RandomGenerator() = default;
-
         /**
          * Return a random state.
          * @return Random state.

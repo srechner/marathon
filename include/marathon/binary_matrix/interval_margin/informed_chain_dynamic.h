@@ -211,7 +211,7 @@ namespace marathon {
                  * @return
                  */
                 virtual std::unique_ptr<marathon::MarkovChain> copy() const override {
-                    return std::make_unique<InformedChainDynamic>(inst, currentState);
+                    return std::make_unique<InformedChainDynamic>(_inst, _currentState);
                 }
             };
         }

@@ -36,7 +36,9 @@ namespace marathon {
 
         protected:
 
-            BinaryMatrix currentState;  // current state
+            BinaryMatrix _currentState;  // current state
+            const size_t _nrow;         // number of rows
+            const size_t _ncol;         // number of columns
 
         public:
 
@@ -44,7 +46,10 @@ namespace marathon {
              * Create a Markov chain object with a initial state.
              * @param bin Initial state.
              */
-            MarkovChain(BinaryMatrix bin) : currentState(std::move(bin)) {
+            MarkovChain(BinaryMatrix bin) :
+                    _currentState(std::move(bin)),
+                    _nrow(_currentState.getNumRows()),
+                    _ncol(_currentState.getNumCols()) {
 
             }
 
@@ -59,7 +64,7 @@ namespace marathon {
                 if (m == nullptr)
                     throw std::runtime_error("Error! State is not a binary matrix!");
 
-                currentState = *m;
+                _currentState = *m;
             }
 
             /**
@@ -67,7 +72,7 @@ namespace marathon {
              * @return
              */
             virtual const BinaryMatrix &getCurrentState() const override {
-                return currentState;
+                return _currentState;
             }
 
         };

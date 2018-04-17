@@ -44,8 +44,8 @@ namespace marathon {
 
             protected:
 
-                uint32_t steps_until_next_adjustment;
-                const uint32_t adjustment_rate = 100;
+                size_t steps_until_next_adjustment;
+                const size_t adjustment_rate = 100;
 
             public:
 
@@ -53,7 +53,7 @@ namespace marathon {
                  * Create a Markov chain.
                  * @param m Four-Tuple of lower and upper bounds.
                  */
-                explicit SimpleChainDynamic(const Instance &m) : SimpleChain(m) {
+                explicit SimpleChainDynamic(Instance m) : SimpleChain(std::move(m)) {
                     reset();
                 }
 
@@ -62,62 +62,11 @@ namespace marathon {
                  * @param inst Four-Tuple of integer vectors.
                  * @param bin Binary Matrix.
                  */
-                SimpleChainDynamic(const Instance &inst, const BinaryMatrix &bin)
-                        : SimpleChain(inst, bin) {
+                SimpleChainDynamic(Instance inst, BinaryMatrix bin)
+                        : SimpleChain(std::move(inst), std::move(bin)) {
                     reset();
                 }
 
-
-                /**
-                 * Create a Markov chain.
-                 * @param inst string-encoded instance. Instances for this chain have the
-                 * form "l1-u1,l2-u2,l3-u3;l4-u4,l5-u5", where li is the ith lower
-                 * bound and ui is the ith upper bound. For convenience, if li = ui,
-                 * the string 'li-ui' can be replaced by 'li'.
-                 * The semicolon separates the row sums from the column sums.
-                 */
-                explicit SimpleChainDynamic(const std::string &inst) :
-                        SimpleChainDynamic(Instance(inst)) {
-
-                }
-
-
-                /**
-                 * Create a Markov chain.
-                 * @param rowsum_lower Sequence of lower bounds for row sums.
-                 * @param rowsum_upper Sequence of upper bounds for row sums.
-                 * @param colsum_lower Sequence of lower bounds for column sums.
-                 * @param colsum_upper Sequence of upper bounds for column sums.
-                 */
-                SimpleChainDynamic(
-                        const std::vector<int> &rowsum_lower,
-                        const std::vector<int> &rowsum_upper,
-                        const std::vector<int> &colsum_lower,
-                        const std::vector<int> &colsum_upper
-                ) : SimpleChainDynamic(
-                        Instance(rowsum_lower, rowsum_upper, colsum_lower, colsum_upper)) {
-
-                }
-
-                /**
-                 * Create a Markov chain.
-                 * @param rowsum_lower Sequence of lower bounds for row sums.
-                 * @param rowsum_upper Sequence of upper bounds for row sums.
-                 * @param colsum_lower Sequence of lower bounds for column sums.
-                 * @param colsum_upper Sequence of upper bounds for column sums.
-                 * @param nrow Number of rows.
-                 * @param ncol Number of columns.
-                 */
-                SimpleChainDynamic(
-                        const int *rowsum_lower,
-                        const int *rowsum_upper,
-                        const int *colsum_lower,
-                        const int *colsum_upper,
-                        const int nrow,
-                        const int ncol
-                ) : SimpleChainDynamic(Instance(rowsum_lower, rowsum_upper, colsum_lower, colsum_upper, nrow, ncol)) {
-
-                }
 
                 /**
                  * Reset the probability for selecting on operation to default and the loop count to zero.
@@ -146,8 +95,8 @@ namespace marathon {
                  * @param process
                  */
                 void adjacentStates(
-                        const State *x,
-                        const std::function<void(const State *, const marathon::Rational &)> &process
+                        const State &x,
+                        const std::function<void(const State &, const marathon::Rational &)> &process
                 ) const override {
                     throw std::runtime_error("Error! Method adjacentStates is not reasonable for time-inhomogeneous Markov chains.");
                 }
@@ -206,7 +155,7 @@ namespace marathon {
                  * @return
                  */
                 virtual std::unique_ptr<marathon::MarkovChain> copy() const override {
-                    return std::make_unique<SimpleChainDynamic>(inst, currentState);
+                    return std::make_unique<SimpleChainDynamic>(_inst, _currentState);
                 }
             };
         }

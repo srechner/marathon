@@ -194,8 +194,8 @@ namespace marathon {
                         l = rg.nextInt(ncol);
 
                     // if i,j,k,l makes a switchable cycle
-                    if (currentState.isCheckerBoardUnit(i, j, k, l)) {
-                        currentState.flipSubmatrix(i, j, k, l);      // switch the cycle
+                    if (_currentState.isCheckerBoardUnit(i, j, k, l)) {
+                        _currentState.flipSubmatrix(i, j, k, l);      // switch the cycle
                     }
                 }
 
@@ -204,7 +204,7 @@ namespace marathon {
                  * @return
                  */
                 virtual std::unique_ptr<marathon::MarkovChain> copy() const override {
-                    return std::make_unique<SwitchChain>(_inst, currentState);
+                    return std::make_unique<SwitchChain>(_inst, _currentState);
                 }
             };
         }

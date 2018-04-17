@@ -43,9 +43,8 @@ namespace marathon {
 
             protected:
 
-                const interval_margin::Instance inst;          // lower and upper matrix margins
-                fixed_margin::Instance current_margin;         // row and column sums of current state
-
+                const interval_margin::Instance _inst;          // lower and upper matrix margins
+                fixed_margin::Instance _current_margin;         // row and column sums of current state
 
             public:
 
@@ -55,8 +54,8 @@ namespace marathon {
                  */
                 MarkovChain(Instance inst) :
                         ::marathon::binary_matrix::MarkovChain(realize_fast(inst)),
-                        inst(std::move(inst)),
-                        current_margin(fixed_margin::Instance(currentState)) {
+                        _inst(std::move(inst)),
+                        _current_margin(fixed_margin::Instance(_currentState)) {
                 }
 
                 /**
@@ -67,8 +66,8 @@ namespace marathon {
                  */
                 MarkovChain(Instance inst, BinaryMatrix m) :
                         ::marathon::binary_matrix::MarkovChain(std::move(m)),
-                        inst(std::move(inst)),
-                        current_margin(fixed_margin::Instance(currentState)) {
+                        _inst(std::move(inst)),
+                        _current_margin(fixed_margin::Instance(_currentState)) {
 
                 }
 
@@ -126,12 +125,12 @@ namespace marathon {
                  * Set the current state.
                  * @param s Binary matrix.
                  */
-                virtual void setCurrentState(const State& s) override {
+                virtual void setCurrentState(const State &s) override {
                     auto m = dynamic_cast<const BinaryMatrix *>(&s);
                     if (m == nullptr)
                         throw std::runtime_error("Error! State is not a binary matrix!");
-                    currentState = *m;
-                    current_margin = fixed_margin::Instance(currentState);
+                    _currentState = *m;
+                    _current_margin = fixed_margin::Instance(_currentState);
                 }
             };
         }

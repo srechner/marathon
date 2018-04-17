@@ -52,16 +52,16 @@ namespace marathon {
 
                 // are all row sums in the right range?
                 for (int i = 0; i < m.getNumRows(); i++) {
-                    sum_rowsum += m.rowsum[i];
-                    if (m.rowsum[i] < 0 || m.rowsum[i] > m.getNumCols()) {
+                    sum_rowsum += m._rowsum[i];
+                    if (m._rowsum[i] < 0 || m._rowsum[i] > m.getNumCols()) {
                         return false;
                     }
                 }
 
                 // are all column sums in the right range?
                 for (int j = 0; j < m.getNumCols(); j++) {
-                    sum_colsum += m.colsum[j];
-                    if (m.colsum[j] < 0 || m.colsum[j] > m.getNumRows()) {
+                    sum_colsum += m._colsum[j];
+                    if (m._colsum[j] < 0 || m._colsum[j] > m.getNumRows()) {
                         return false;
                     }
                 }
@@ -71,10 +71,10 @@ namespace marathon {
                     return false;
 
                 // compute conjugated row sums
-                std::vector<int> rowsum_conjugated = conjugate(m.rowsum, m.getNumCols());
+                std::vector<int> rowsum_conjugated = conjugate(m._rowsum, m.getNumCols());
 
                 // sort column sums descendingly
-                std::vector<int> colsum_sorted(m.colsum);
+                std::vector<int> colsum_sorted(m._colsum);
                 std::sort(colsum_sorted.begin(), colsum_sorted.end(), [](int a, int b) { return a > b; });
 
                 // the degree sequence is realizable when the conjugated rowsum dominate the colsum
@@ -148,14 +148,14 @@ namespace marathon {
                  *************************************************************/
 
                 struct A {
-                    int index;
+                    size_t index;
                     int degree;
                 };
 
                 // sorted vector of index-degree-pairs
                 std::vector<A> column(ncol);
-                for (int j = 0; j < ncol; j++) {
-                    column[j] = {seq.colindex[j], seq.colsum[j]};
+                for (size_t j = 0; j < ncol; j++) {
+                    column[j] = {seq._colindex[j], seq._colsum[j]};
                 }
 
                 // sort column pairs descendingly by degree
@@ -164,7 +164,7 @@ namespace marathon {
                 });
 
                 // create conjugate sequence of row sums
-                std::vector<int> rowsum_conjugated = conjugate(seq.rowsum, ncol);
+                std::vector<int> rowsum_conjugated = conjugate(seq._rowsum, ncol);
 
                 int rowsum_conjugated_sum = 0;
                 int colsum_sum = 0;
@@ -195,8 +195,8 @@ namespace marathon {
                 for (int x = 0; x < nrow; x++) {
 
                     // index of current row
-                    const int i = seq.rowindex[x];
-                    const int di = seq.rowsum[x];
+                    const int i = seq._rowindex[x];
+                    const int di = seq._rowsum[x];
 
                     // distribute di ones in row i
                     for (int k = di - 1; k >= 0; k--) {
@@ -289,18 +289,18 @@ namespace marathon {
                  *************************************************************/
 
                 struct A {
-                    int index;
+                    size_t index;
                     int degree;
                 };
 
                 // sorted vector of index-degree-pairs
                 std::vector<A> cols(ncol);
                 for (int j = 0; j < ncol; j++)
-                    cols[j] = {m.colindex[j], m.colsum[j]};
+                    cols[j] = {m._colindex[j], m._colsum[j]};
 
                 std::vector<A> rows(nrow);
                 for (int i = 0; i < nrow; i++)
-                    rows[i] = {m.rowindex[i], m.rowsum[i]};
+                    rows[i] = {m._rowindex[i], m._rowsum[i]};
 
                 // sort columns descendingly by degree
                 std::sort(cols.begin(), cols.end(), [](const A &a, const A &b) {
@@ -319,7 +319,7 @@ namespace marathon {
                 }
 
                 // create conjugate sequence of row sums
-                std::vector<int> rowsum_conjugated = conjugate(m.rowsum, ncol);
+                std::vector<int> rowsum_conjugated = conjugate(m._rowsum, ncol);
 
                 int rowsum_conjugated_sum = 0;
                 int colsum_sum = 0;

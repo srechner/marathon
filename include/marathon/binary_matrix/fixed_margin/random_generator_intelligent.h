@@ -76,13 +76,13 @@ namespace marathon {
                                   Instance copy(seq);
 
                                   // if there are more ones than zeroes in the table
-                                  const int total = std::accumulate(copy.rowsum, copy.rowsum + copy.getNumRows, 0);
+                                  const int total = std::accumulate(copy._rowsum, copy._rowsum + copy.getNumRows, 0);
                                   if (2 * total > copy.getNumRows * copy.getNumCols) {
                                       // inverse the sequence
                                       for (int i = 0; i < copy.getNumRows; i++)
-                                          copy.rowsum[i] = copy.getNumCols - copy.rowsum[i];
+                                          copy._rowsum[i] = copy.getNumCols - copy._rowsum[i];
                                       for (int j = 0; j < copy.getNumCols; j++)
-                                          copy.colsum[j] = copy.getNumRows - copy.colsum[j];
+                                          copy._colsum[j] = copy.getNumRows - copy._colsum[j];
                                       inverse.push_back(true);
                                   } else {
                                       inverse.push_back(false);
@@ -106,7 +106,7 @@ namespace marathon {
                                   } else {
                                       // use approximate sampling
                                       rg = new RandomGeneratorMCMC(
-                                              copy.rowsum, copy.colsum, copy.getNumRows, copy.getNumCols);
+                                              copy._rowsum, copy._colsum, copy.getNumRows, copy.getNumCols);
                                   }
 
                                   // add random generator
@@ -162,9 +162,9 @@ namespace marathon {
 
                         // translate submatrix into final matrix
                         for (int i = 0; i < seq.getNumRows; i++) {
-                            const int ii = seq.rowindex[i];
+                            const int ii = seq._rowindex[i];
                             for (int j = 0; j < seq.getNumCols; j++) {
-                                const int jj = seq.colindex[j];
+                                const int jj = seq._colindex[j];
                                 bool b = sub->get(i, j);
                                 bin->set(ii, jj, b ^ inverse[l]);
                             }

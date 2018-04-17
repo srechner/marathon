@@ -45,10 +45,7 @@ namespace marathon {
 
             protected:
 
-                // temporary memory
-                int *tmp1;
-                int *tmp2;
-                int *tmp3;
+                std::vector<size_t> tmp1, tmp2, tmp3;    // auxiliary arrays
 
                 // probability of selecting a horizontal operation
                 const double q_horizontal;
@@ -67,24 +64,21 @@ namespace marathon {
                 inline
                 void applyTradeHorizontal(BinaryMatrix &s) {
 
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
-
                     /* apply horizontal trade */
                     count_trade++;
 
                     // randomly select two row indices
-                    int i = rg.nextInt(nrow);
-                    int j = rg.nextInt(nrow);
+                    size_t i = rg.nextInt(_nrow);
+                    size_t j = rg.nextInt(_nrow);
                     while (i == j)
-                        j = rg.nextInt(nrow);
+                        j = rg.nextInt(_nrow);
 
                     // select the indices that occur in on the s_i and s_j, but not in both
-                    int a = 0;
-                    int b = 0;
+                    size_t a = 0;
+                    size_t b = 0;
 
                     // for each column position
-                    for (int k = 0; k < ncol; k++) {
+                    for (size_t k = 0; k < _ncol; k++) {
 
                         bool s_ik = s.get(i, k);
                         bool s_jk = s.get(j, k);
@@ -108,11 +102,11 @@ namespace marathon {
                     }
 
                     // randomly select a out of (a+b) elements to row i
-                    rg.shuffle<int>(tmp1, a + b);
+                    rg.shuffle<size_t>(&tmp1[0], a + b);
 
                     // does the selection of a elements produce a loop?
                     bool allsame = true;
-                    for (int k = 0; k < a; k++) {
+                    for (size_t k = 0; k < a; k++) {
                         if (!s.get(i, tmp1[k])) {
                             allsame = false;
                             break;
@@ -124,13 +118,13 @@ namespace marathon {
                         return;
                     }
 
-                    for (int k = 0; k < a; k++) {
+                    for (size_t k = 0; k < a; k++) {
                         s.set(i, tmp1[k], true);
                         s.set(j, tmp1[k], false);
                     }
 
                     // the remaining elements to go row j
-                    for (int k = a; k < a + b; k++) {
+                    for (size_t k = a; k < a + b; k++) {
                         s.set(i, tmp1[k], false);
                         s.set(j, tmp1[k], true);
                     }
@@ -142,28 +136,25 @@ namespace marathon {
                  */
                 inline void applyMultiShiftHorizontal(BinaryMatrix &s) {
 
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
-
                     /* apply horizontal multi-shift */
                     count_multishift++;
 
                     // randomly select a row index
-                    int i = rg.nextInt(nrow);
+                    size_t i = rg.nextInt(_nrow);
 
                     // select the positions k of a) the entries s_ik=1 that can be switched to zero
                     // and b) the entries s_ik=0 that can be switched to one
-                    int a = 0;
-                    int b = 0;
+                    size_t a = 0;
+                    size_t b = 0;
 
                     // for each column position
-                    for (int k = 0; k < ncol; k++) {
+                    for (size_t k = 0; k < _ncol; k++) {
                         bool s_ik = s.get(i, k);
 
-                        if (s_ik && current_margin.colsum[k] > inst.colsum_lower[k]) {
+                        if (s_ik && _current_margin._colsum[k] > _inst._colsum_lower[k]) {
                             tmp1[a + b] = k;
                             a++;
-                        } else if (!s_ik && current_margin.colsum[k] < inst.colsum_upper[k]) {
+                        } else if (!s_ik && _current_margin._colsum[k] < _inst._colsum_upper[k]) {
                             tmp1[a + b] = k;
                             b++;
                         }
@@ -176,11 +167,11 @@ namespace marathon {
                     }
 
                     // select a out of (a+b) positions
-                    rg.shuffle<int>(tmp1, a + b);
+                    rg.shuffle<size_t>(&tmp1[0], a + b);
 
                     // does the selection of a elements produce a loop?
                     bool allsame = true;
-                    for (int k = 0; k < a; k++) {
+                    for (size_t k = 0; k < a; k++) {
                         if (!s.get(i, tmp1[k])) {
                             allsame = false;
                             break;
@@ -193,41 +184,38 @@ namespace marathon {
                     }
 
                     // set positive entries
-                    for (int k = 0; k < a; k++) {
-                        int j = tmp1[k];
-                        current_margin.colsum[j] += s.get(i, j) ? 0 : 1;
+                    for (size_t k = 0; k < a; k++) {
+                        size_t j = tmp1[k];
+                        _current_margin._colsum[j] += s.get(i, j) ? 0 : 1;
                         s.set(i, j, true);
                     }
 
                     // set negative entries
-                    for (int k = a; k < a + b; k++) {
-                        int j = tmp1[k];
-                        current_margin.colsum[j] += s.get(i, j) ? -1 : 0;
+                    for (size_t k = a; k < a + b; k++) {
+                        size_t j = tmp1[k];
+                        _current_margin._colsum[j] += s.get(i, j) ? -1 : 0;
                         s.set(i, tmp1[k], false);
                     }
                 }
 
                 inline void applyTradeVertical(BinaryMatrix &s) {
 
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
-
                     /* apply vertical trade */
 
                     count_trade++;
 
                     // randomly select two column indices
-                    int i = rg.nextInt(ncol);
-                    int j = rg.nextInt(ncol);
+                    size_t i = rg.nextInt(_ncol);
+                    size_t j = rg.nextInt(_ncol);
                     while (i == j)
-                        j = rg.nextInt(ncol);
+                        j = rg.nextInt(_ncol);
 
                     // select the indices that occur in on the s_i and s_j, but not in both
-                    int a = 0;
-                    int b = 0;
+                    size_t a = 0;
+                    size_t b = 0;
 
                     // for each row position
-                    for (int k = 0; k < nrow; k++) {
+                    for (size_t k = 0; k < _nrow; k++) {
 
                         bool s_ki = s.get(k, i);
                         bool s_kj = s.get(k, j);
@@ -251,11 +239,11 @@ namespace marathon {
                     }
 
                     // randomly select a out of (a+b) positions
-                    rg.shuffle<int>(tmp1, a + b);
+                    rg.shuffle<size_t>(&tmp1[0], a + b);
 
                     // does the selection of a elements produce a loop?
                     bool allsame = true;
-                    for (int k = 0; k < a; k++) {
+                    for (size_t k = 0; k < a; k++) {
                         if (!s.get(tmp1[k], i)) {
                             allsame = false;
                             break;
@@ -267,14 +255,13 @@ namespace marathon {
                         return;
                     }
 
-
-                    for (int k = 0; k < a; k++) {
+                    for (size_t k = 0; k < a; k++) {
                         s.set(tmp1[k], i, true);
                         s.set(tmp1[k], j, false);
                     }
 
                     // the remaining elements to go column j
-                    for (int k = a; k < a + b; k++) {
+                    for (size_t k = a; k < a + b; k++) {
                         s.set(tmp1[k], i, false);
                         s.set(tmp1[k], j, true);
                     }
@@ -286,29 +273,26 @@ namespace marathon {
                  */
                 inline void applyMultiShiftVertical(BinaryMatrix &s) {
 
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
-
                     /* apply vertical multi-shift */
 
                     count_multishift++;
 
                     // randomly select a column index
-                    int j = rg.nextInt(ncol);
+                    size_t j = rg.nextInt(_ncol);
 
                     // select the positions i of a) the entries sij=1 that can be switched to zero
                     // and b) the entries sij=0 that can be switched to one
-                    int a = 0;
-                    int b = 0;
+                    size_t a = 0;
+                    size_t b = 0;
 
                     // for each row position
-                    for (int i = 0; i < nrow; i++) {
+                    for (size_t i = 0; i < _nrow; i++) {
                         bool sij = s.get(i, j);
 
-                        if (sij && current_margin.rowsum[i] > inst.rowsum_lower[i]) {
+                        if (sij && _current_margin._rowsum[i] > _inst._rowsum_lower[i]) {
                             tmp1[a + b] = i;
                             a++;
-                        } else if (!sij && current_margin.rowsum[i] < inst.rowsum_upper[i]) {
+                        } else if (!sij && _current_margin._rowsum[i] < _inst._rowsum_upper[i]) {
                             tmp1[a + b] = i;
                             b++;
                         }
@@ -321,12 +305,12 @@ namespace marathon {
                     }
 
                     // select a out of (a+b) positions
-                    rg.shuffle<int>(tmp1, a + b);
+                    rg.shuffle<size_t>(&tmp1[0], a + b);
 
                     // does the selection of a elements produce a loop?
                     bool allsame = true;
-                    for (int k = 0; k < a; k++) {
-                        int i = tmp1[k];
+                    for (size_t k = 0; k < a; k++) {
+                        size_t i = tmp1[k];
                         if (!s.get(i, j)) {
                             allsame = false;
                             break;
@@ -339,16 +323,16 @@ namespace marathon {
                     }
 
                     // set positive entries
-                    for (int k = 0; k < a; k++) {
-                        int i = tmp1[k];
-                        current_margin.rowsum[i] += s.get(i, j) ? 0 : 1;
+                    for (size_t k = 0; k < a; k++) {
+                        size_t i = tmp1[k];
+                        _current_margin._rowsum[i] += s.get(i, j) ? 0 : 1;
                         s.set(i, j, true);
                     }
 
                     // set negative entries
-                    for (int k = a; k < a + b; k++) {
-                        int i = tmp1[k];
-                        current_margin.rowsum[i] += s.get(i, j) ? -1 : 0;
+                    for (size_t k = a; k < a + b; k++) {
+                        size_t i = tmp1[k];
+                        _current_margin._rowsum[i] += s.get(i, j) ? -1 : 0;
                         s.set(i, j, false);
                     }
                 }
@@ -360,36 +344,33 @@ namespace marathon {
                  */
                 inline void applyMultiFlipHorizontal(BinaryMatrix &s) {
 
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
-
                     /* apply horizontal multi-flip */
 
                     count_multiflip++;
 
                     // randomly select a row index
-                    int i = rg.nextInt(nrow);
+                    size_t i = rg.nextInt(_nrow);
 
                     // select the positions j of a) the entries sij=1 that can be switched to zero
                     // and b) the entries sij=0 that can be switched to one
-                    int a = 0;
-                    int b = 0;
+                    size_t a = 0;
+                    size_t b = 0;
 
                     // for each column position
-                    for (int j = 0; j < ncol; j++) {
+                    for (size_t j = 0; j < _ncol; j++) {
                         bool sij = s.get(i, j);
-                        if (sij && current_margin.colsum[j] > inst.colsum_lower[j]) {
+                        if (sij && _current_margin._colsum[j] > _inst._colsum_lower[j]) {
                             tmp1[a + b] = j;
                             a++;
-                        } else if (!sij && current_margin.colsum[j] < inst.colsum_upper[j]) {
+                        } else if (!sij && _current_margin._colsum[j] < _inst._colsum_upper[j]) {
                             tmp1[a + b] = j;
                             b++;
                         }
                     }
 
                     // determine maximal number of positions to flip
-                    int range = inst.rowsum_upper[i] - inst.rowsum_lower[i];
-                    int t = std::min(range, a + b);
+                    int range = _inst._rowsum_upper[i] - _inst._rowsum_lower[i];
+                    int t = std::min(range, (int) (a + b));
 
                     // if there is nothing to choose from
                     if (t == 0) {
@@ -399,10 +380,10 @@ namespace marathon {
                     }
 
                     // choose a random subset from tmp1 of size t
-                    rg.select<int>(tmp2, tmp1, a + b, t);
+                    rg.select<size_t>(&tmp2[0], &tmp1[0], a + b, t);
 
                     // choose a subset of tmp2 uniformly at random
-                    int k = rg.subset<int>(tmp3, tmp2, t);
+                    size_t k = rg.subset<size_t>(&tmp3[0], &tmp2[0], t);
 
                     // if nothing to flip
                     if (k == 0) {
@@ -413,20 +394,20 @@ namespace marathon {
 
                     // determine by how much rowsum[i] would be changed by a flip of the k selected entries
                     int diff = 0;
-                    for (int l = 0; l < k; l++)
+                    for (size_t l = 0; l < k; l++)
                         diff += s.get(i, tmp3[l]) ? -1 : 1;
 
                     // if entries can be flipped without violating the lower and upper bounds
-                    if (inst.rowsum_lower[i] <= current_margin.rowsum[i] + diff &&
-                        current_margin.rowsum[i] + diff <= inst.rowsum_upper[i]) {
+                    if (_inst._rowsum_lower[i] <= _current_margin._rowsum[i] + diff &&
+                        _current_margin._rowsum[i] + diff <= _inst._rowsum_upper[i]) {
 
                         // flip selected entries
-                        for (int l = 0; l < k; l++) {
-                            int j = tmp3[l];
-                            current_margin.colsum[j] += s.get(i, j) ? -1 : 1;
+                        for (size_t l = 0; l < k; l++) {
+                            size_t j = tmp3[l];
+                            _current_margin._colsum[j] += s.get(i, j) ? -1 : 1;
                             s.flip(i, j);
                         }
-                        current_margin.rowsum[i] += diff;
+                        _current_margin._rowsum[i] += diff;
                     } else {
                         loop_multiflip++;
                         //printf("typeC (k=%2i, diff=%2i, range=%2i, a=%2i, b=%2i)\n", k, diff, range, a, b);
@@ -441,36 +422,33 @@ namespace marathon {
                  */
                 inline void applyMultiFlipVertical(BinaryMatrix &s) {
 
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
-
                     /* apply vertical multi-flip */
 
                     count_multiflip++;
 
                     // randomly select a column index
-                    int j = rg.nextInt(ncol);
+                    size_t j = rg.nextInt(_ncol);
 
                     // select the positions i of a) the entries sij=1 that can be switched to zero
                     // and b) the entries sij=0 that can be switched to one
-                    int a = 0;
-                    int b = 0;
+                    size_t a = 0;
+                    size_t b = 0;
 
                     // for each column position
-                    for (int i = 0; i < nrow; i++) {
+                    for (size_t i = 0; i < _nrow; i++) {
                         bool sij = s.get(i, j);
-                        if (sij && current_margin.rowsum[i] > inst.rowsum_lower[i]) {
+                        if (sij && _current_margin._rowsum[i] > _inst._rowsum_lower[i]) {
                             tmp1[a + b] = i;
                             a++;
-                        } else if (!sij && current_margin.rowsum[i] < inst.rowsum_upper[i]) {
+                        } else if (!sij && _current_margin._rowsum[i] < _inst._rowsum_upper[i]) {
                             tmp1[a + b] = i;
                             b++;
                         }
                     }
 
                     // determine maximal number of positions to flip
-                    int range = inst.colsum_upper[j] - inst.colsum_lower[j];
-                    int t = std::min(range, a + b);
+                    int range = _inst._colsum_upper[j] - _inst._colsum_lower[j];
+                    int t = std::min(range, (int) (a + b));
 
                     // if there is nothing to choose from
                     if (t == 0) {
@@ -480,10 +458,10 @@ namespace marathon {
                     }
 
                     // choose a random subset from tmp1 of size t
-                    rg.select<int>(tmp2, tmp1, a + b, t);
+                    rg.select<size_t>(&tmp2[0], &tmp1[0], a + b, t);
 
                     // choose a subset of tmp2 uniformly at random
-                    int k = rg.subset<int>(tmp3, tmp2, t);
+                    size_t k = rg.subset<size_t>(&tmp3[0], &tmp2[0], t);
 
                     if (k == 0) {
                         loop_multiflip++;
@@ -497,16 +475,16 @@ namespace marathon {
                         diff += s.get(tmp3[l], j) ? -1 : 1;
 
                     // if entries can be flipped without violating the lower and upper bounds
-                    if (inst.colsum_lower[j] <= current_margin.colsum[j] + diff &&
-                        current_margin.colsum[j] + diff <= inst.colsum_upper[j]) {
+                    if (_inst._colsum_lower[j] <= _current_margin._colsum[j] + diff &&
+                        _current_margin._colsum[j] + diff <= _inst._colsum_upper[j]) {
 
                         // flip selected entries
-                        for (int l = 0; l < k; l++) {
-                            int i = tmp3[l];
-                            current_margin.rowsum[i] += s.get(i, j) ? -1 : 1;
+                        for (size_t l = 0; l < k; l++) {
+                            size_t i = tmp3[l];
+                            _current_margin._rowsum[i] += s.get(i, j) ? -1 : 1;
                             s.flip(i, j);
                         }
-                        current_margin.colsum[j] += diff;
+                        _current_margin._colsum[j] += diff;
                     } else {
                         loop_multiflip++;
                         //printf("typeC (k=%2i, diff=%2i, range=%2i, a=%2i, b=%2i)\n", k, diff, range, a, b);
@@ -524,27 +502,29 @@ namespace marathon {
                 void simulateTradeHorizontal(
                         const BinaryMatrix &s,
                         const std::function<void(const State &, const Rational &)> &process,
-                        const int *rowsum,
-                        const int *colsum
+                        const std::vector<int> &rowsum,
+                        const std::vector<int> &colsum
                 ) const {
-
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
-
-                    Rational loop(0);
 
                     /* simulate horizontal trade */
 
+                    Rational loop(0);   // loop probability
+
+                    // temporary memory
+                    std::vector<size_t> tmp1(std::max(_nrow, _ncol));
+                    std::vector<size_t> tmp2(std::max(_nrow, _ncol));
+                    std::vector<size_t> tmp3(std::max(_nrow, _ncol));
+
                     // randomly select two row indices
-                    for (int i = 0; i < nrow; i++) {
-                        for (int j = i + 1; j < nrow; j++) {
+                    for (size_t i = 0; i < _nrow; i++) {
+                        for (size_t j = i + 1; j < _nrow; j++) {
 
                             // select the indices that occur in on the s_i and s_j, but not in both
-                            int a = 0;
-                            int b = 0;
+                            size_t a = 0;
+                            size_t b = 0;
 
                             // for each column position
-                            for (int k = 0; k < ncol; k++) {
+                            for (size_t k = 0; k < _ncol; k++) {
 
                                 bool s_ik = s.get(i, k);
                                 bool s_jk = s.get(j, k);
@@ -564,17 +544,17 @@ namespace marathon {
                             // if there is nothing to choose from
                             if (a + b == 0) {
                                 loop += q_horizontal_rat * p_trade_rat *
-                                        Rational(2, nrow * (nrow - 1));
+                                        Rational(2, _nrow * (_nrow - 1));
                                 continue;
                             }
 
                             // simulate randomly select a out of (a+b) elements
-                            CombinationGenerator<int> cg(tmp1, tmp2, a + b, a);
+                            CombinationGenerator<size_t> cg(&tmp1[0], &tmp2[0], a + b, a);
 
                             // the probability for each choice of the loop
                             const Rational p =
                                     (q_horizontal_rat * p_trade_rat *
-                                     Rational(2, nrow * (nrow - 1))) / binom(a + b, a);
+                                     Rational(2, _nrow * (_nrow - 1))) / binom(a + b, a);
                             do {
 
                                 // create copy of s
@@ -610,33 +590,35 @@ namespace marathon {
                 void simulateMultiShiftHorizontal(
                         const BinaryMatrix &s,
                         const std::function<void(const State &, const Rational &)> &process,
-                        const int *rowsum,
-                        const int *colsum
+                        const std::vector<int> &rowsum,
+                        const std::vector<int> &colsum
                 ) const {
-
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
-
-                    Rational loop(0);
 
                     /* simulate horizontal multi-shift */
 
+                    Rational loop(0);   // loop probability
+
+                    // temporary memory
+                    std::vector<size_t> tmp1(std::max(_nrow, _ncol));
+                    std::vector<size_t> tmp2(std::max(_nrow, _ncol));
+                    std::vector<size_t> tmp3(std::max(_nrow, _ncol));
+
                     // randomly select a row index
-                    for (int i = 0; i < nrow; i++) {
+                    for (size_t i = 0; i < _nrow; i++) {
 
                         // select the positions k of a) the entries s_ik=1 that can be switched to zero
                         // and b) the entries s_ik=0 that can be switched to one
-                        int a = 0;
-                        int b = 0;
+                        size_t a = 0;
+                        size_t b = 0;
 
                         // for each column position
-                        for (int k = 0; k < ncol; k++) {
+                        for (size_t k = 0; k < _ncol; k++) {
                             bool s_ik = s.get(i, k);
 
-                            if (s_ik && colsum[k] > inst.colsum_lower[k]) {
+                            if (s_ik && colsum[k] > _inst._colsum_lower[k]) {
                                 tmp1[a + b] = k;
                                 a++;
-                            } else if (!s_ik && colsum[k] < inst.colsum_upper[k]) {
+                            } else if (!s_ik && colsum[k] < _inst._colsum_upper[k]) {
                                 tmp1[a + b] = k;
                                 b++;
                             }
@@ -644,25 +626,25 @@ namespace marathon {
 
                         // if there is nothing to choose from
                         if (a + b == 0) {
-                            loop += q_horizontal_rat * p_multishift_rat * Rational(1, nrow);
+                            loop += q_horizontal_rat * p_multishift_rat * Rational(1, _nrow);
                             continue;
                         }
 
                         // simulate randomly select a out of (a+b) elements
-                        CombinationGenerator<int> cg(tmp1, tmp2, a + b, a);
+                        CombinationGenerator<size_t> cg(&tmp1[0], &tmp2[0], a + b, a);
 
                         // the probability for each choice of the loop
-                        const Rational p = q_horizontal_rat * p_multishift_rat * Rational(1, nrow) /
+                        const Rational p = q_horizontal_rat * p_multishift_rat * Rational(1, _nrow) /
                                            binom(a + b, a);
 
                         do {
                             // create copy of s
                             BinaryMatrix s2(s);
 
-                            for (int k = 0; k < a + b; k++)
+                            for (size_t k = 0; k < a + b; k++)
                                 s2.set(i, tmp1[k], false);
 
-                            for (int k = 0; k < a; k++)
+                            for (size_t k = 0; k < a; k++)
                                 s2.set(i, tmp2[k], true);
 
                             process(s2, p);
@@ -684,27 +666,29 @@ namespace marathon {
                 void simulateTradeVertical(
                         const BinaryMatrix &s,
                         const std::function<void(const State &, const Rational &)> &process,
-                        const int *rowsum,
-                        const int *colsum
+                        const std::vector<int> &rowsum,
+                        const std::vector<int> &colsum
                 ) const {
-
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
-
-                    Rational loop(0);
 
                     /* simulate vertical trade */
 
+                    Rational loop(0);   // loop probability
+
+                    // temporary memory
+                    std::vector<size_t> tmp1(std::max(_nrow, _ncol));
+                    std::vector<size_t> tmp2(std::max(_nrow, _ncol));
+                    std::vector<size_t> tmp3(std::max(_nrow, _ncol));
+
                     // randomly select two column indices
-                    for (int i = 0; i < ncol; i++) {
-                        for (int j = i + 1; j < ncol; j++) {
+                    for (size_t i = 0; i < _ncol; i++) {
+                        for (size_t j = i + 1; j < _ncol; j++) {
 
                             // select the indices that occur in on the s_i and s_j, but not in both
-                            int a = 0;
-                            int b = 0;
+                            size_t a = 0;
+                            size_t b = 0;
 
                             // for each row position
-                            for (int k = 0; k < nrow; k++) {
+                            for (size_t k = 0; k < _nrow; k++) {
 
                                 bool s_ki = s.get(k, i);
                                 bool s_kj = s.get(k, j);
@@ -723,27 +707,27 @@ namespace marathon {
 
                             // if there is nothing to choose from
                             if (a + b == 0) {
-                                loop += q_vertical_rat * p_trade_rat * Rational(2, ncol * (ncol - 1));
+                                loop += q_vertical_rat * p_trade_rat * Rational(2, _ncol * (_ncol - 1));
                                 continue;
                             }
 
                             // simulate randomly select a out of (a+b) elements
-                            CombinationGenerator<int> cg(tmp1, tmp2, a + b, a);
+                            CombinationGenerator<size_t> cg(&tmp1[0], &tmp2[0], a + b, a);
 
                             // the probability for each choice of the loop
                             const Rational p =
-                                    q_vertical_rat * p_trade_rat * Rational(2, ncol * (ncol - 1)) /
+                                    q_vertical_rat * p_trade_rat * Rational(2, _ncol * (_ncol - 1)) /
                                     binom(a + b, a);
                             do {
                                 // create copy of s
                                 BinaryMatrix s2(s);
 
-                                for (int k = 0; k < a + b; k++) {
+                                for (size_t k = 0; k < a + b; k++) {
                                     s2.set(tmp1[k], i, false);
                                     s2.set(tmp1[k], j, true);
                                 }
 
-                                for (int k = 0; k < a; k++) {
+                                for (size_t k = 0; k < a; k++) {
                                     s2.set(tmp2[k], i, true);
                                     s2.set(tmp2[k], j, false);
                                 }
@@ -767,33 +751,35 @@ namespace marathon {
                 void simulateMultiShiftVertical(
                         const BinaryMatrix &s,
                         const std::function<void(const State &, const Rational &)> &process,
-                        const int *rowsum,
-                        const int *colsum
+                        const std::vector<int> &rowsum,
+                        const std::vector<int> &colsum
                 ) const {
-
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
-
-                    Rational loop(0);
 
                     /* simulate vertical multi-shift */
 
+                    Rational loop(0);   // loop probability
+
+                    // temporary memory
+                    std::vector<size_t> tmp1(std::max(_nrow, _ncol));
+                    std::vector<size_t> tmp2(std::max(_nrow, _ncol));
+                    std::vector<size_t> tmp3(std::max(_nrow, _ncol));
+
                     // randomly select a column index
-                    for (int j = 0; j < ncol; j++) {
+                    for (size_t j = 0; j < _ncol; j++) {
 
                         // select the positions i of a) the entries s_ij=1 that can be switched to zero
                         // and b) the entries s_ij=0 that can be switched to one
-                        int a = 0;
-                        int b = 0;
+                        size_t a = 0;
+                        size_t b = 0;
 
                         // for each row position
-                        for (int i = 0; i < nrow; i++) {
+                        for (size_t i = 0; i < _nrow; i++) {
                             bool sij = s.get(i, j);
 
-                            if (sij && rowsum[i] > inst.rowsum_lower[i]) {
+                            if (sij && rowsum[i] > _inst._rowsum_lower[i]) {
                                 tmp1[a + b] = i;
                                 a++;
-                            } else if (!sij && rowsum[i] < inst.rowsum_upper[i]) {
+                            } else if (!sij && rowsum[i] < _inst._rowsum_upper[i]) {
                                 tmp1[a + b] = i;
                                 b++;
                             }
@@ -801,23 +787,23 @@ namespace marathon {
 
                         // if there is nothing to choose from
                         if (a + b == 0) {
-                            loop += q_vertical_rat * p_multishift_rat * Rational(1, ncol);
+                            loop += q_vertical_rat * p_multishift_rat * Rational(1, _ncol);
                             continue;
                         }
 
                         // simulate randomly select a out of (a+b) elements
-                        CombinationGenerator<int> cg(tmp1, tmp2, a + b, a);
+                        CombinationGenerator<size_t> cg(&tmp1[0], &tmp2[0], a + b, a);
 
                         // the probability for each choice of the loop
-                        const Rational p = q_vertical_rat * p_multishift_rat * Rational(1, ncol) / binom(a + b, a);
+                        const Rational p = q_vertical_rat * p_multishift_rat * Rational(1, _ncol) / binom(a + b, a);
                         do {
                             // create copy of s
                             BinaryMatrix s2(s);
 
-                            for (int k = 0; k < a + b; k++)
+                            for (size_t k = 0; k < a + b; k++)
                                 s2.set(tmp1[k], j, false);
 
-                            for (int k = 0; k < a; k++)
+                            for (size_t k = 0; k < a; k++)
                                 s2.set(tmp2[k], j, true);
 
                             process(s2, p);
@@ -839,80 +825,82 @@ namespace marathon {
                 void simulateMultiFlipHorizontal(
                         const BinaryMatrix &s,
                         const std::function<void(const State &, const Rational &)> &process,
-                        const int *rowsum,
-                        const int *colsum
+                        const std::vector<int> &rowsum,
+                        const std::vector<int> &colsum
                 ) const {
-
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
-
-                    Rational loop(0);
 
                     /* simulate horizontal multi-flip */
 
+                    Rational loop(0);   // loop probability
+
+                    // temporary memory
+                    std::vector<size_t> tmp1(std::max(_nrow, _ncol));
+                    std::vector<size_t> tmp2(std::max(_nrow, _ncol));
+                    std::vector<size_t> tmp3(std::max(_nrow, _ncol));
+
                     // randomly select a row index
-                    for (int i = 0; i < nrow; i++) {
+                    for (size_t i = 0; i < _nrow; i++) {
 
                         // select the positions j of a) the entries sij=1 that can be switched to zero
                         // and b) the entries sij=0 that can be switched to one
-                        int a = 0;
-                        int b = 0;
+                        size_t a = 0;
+                        size_t b = 0;
 
                         // for each column position
-                        for (int j = 0; j < ncol; j++) {
+                        for (size_t j = 0; j < _ncol; j++) {
                             bool sij = s.get(i, j);
-                            if (sij && colsum[j] > inst.colsum_lower[j]) {
+                            if (sij && colsum[j] > _inst._colsum_lower[j]) {
                                 tmp1[a + b] = j;
                                 a++;
-                            } else if (!sij && colsum[j] < inst.colsum_upper[j]) {
+                            } else if (!sij && colsum[j] < _inst._colsum_upper[j]) {
                                 tmp1[a + b] = j;
                                 b++;
                             }
                         }
 
                         // determine maximal number of positions to flip
-                        int range = inst.rowsum_upper[i] - inst.rowsum_lower[i];
-                        int t = std::min(range, a + b);
+                        int range = _inst._rowsum_upper[i] - _inst._rowsum_lower[i];
+                        int t = std::min(range, (int) (a + b));
 
                         // if there is nothing to choose from
                         if (t == 0) {
-                            loop += q_horizontal_rat * p_multiflip_rat * Rational(1, nrow);
+                            loop += q_horizontal_rat * p_multiflip_rat * Rational(1, _nrow);
                             continue;
                         }
 
                         // simulate randomly selecting t out of (a+b) elements
-                        CombinationGenerator<int> cg(tmp1, tmp2, a + b, t);
+                        CombinationGenerator<size_t> cg(&tmp1[0], &tmp2[0], a + b, t);
                         do {
 
                             // simulate selecting random subsets from tmp2
 
                             // each of the 2^t subsets has the same probability p of being selected
                             const Rational p =
-                                    q_horizontal_rat * p_multiflip_rat * Rational(1, nrow) /
+                                    q_horizontal_rat * p_multiflip_rat * Rational(1, _nrow) /
                                     (binom(a + b, t) * pow(2, t));
 
                             // simulate selecting subset of size k
-                            for (int k = 0; k <= t; k++) {
+                            for (size_t k = 0; k <= t; k++) {
 
                                 // simulate selecting k objects out of t
-                                CombinationGenerator<int> cg_sub(tmp2, tmp3, t, k);
+                                CombinationGenerator<size_t> cg_sub(&tmp2[0], &tmp3[0], t, k);
                                 do {
 
                                     // determine by how much rowsum[i] would be changed by a flip of the k selected entries
                                     int diff = 0;
-                                    for (int l = 0; l < k; l++)
+                                    for (size_t l = 0; l < k; l++)
                                         diff += s.get(i, tmp3[l]) ? -1 : 1;
 
                                     // if entries can be flipped without violating the lower and upper bounds
-                                    if (inst.rowsum_lower[i] <= rowsum[i] + diff &&
-                                        rowsum[i] + diff <= inst.rowsum_upper[i]) {
+                                    if (_inst._rowsum_lower[i] <= rowsum[i] + diff &&
+                                        rowsum[i] + diff <= _inst._rowsum_upper[i]) {
 
                                         // create copy of s
                                         BinaryMatrix s2(s);
 
                                         // flip selected entries
-                                        for (int l = 0; l < k; l++) {
-                                            int j = tmp3[l];
+                                        for (size_t l = 0; l < k; l++) {
+                                            size_t j = tmp3[l];
                                             s2.flip(i, j);
                                         }
 
@@ -941,82 +929,84 @@ namespace marathon {
                 void simulateMultiFlipVertical(
                         const BinaryMatrix &s,
                         const std::function<void(const State &, const Rational &)> &process,
-                        const int *rowsum,
-                        const int *colsum
+                        const std::vector<int> &rowsum,
+                        const std::vector<int> &colsum
                 ) const {
-
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
-
-                    Rational loop(0);
 
                     /* simulate vertical multi-fliop */
 
+                    Rational loop(0);   // loop probability
+
+                    // temporary memory
+                    std::vector<size_t> tmp1(std::max(_nrow, _ncol));
+                    std::vector<size_t> tmp2(std::max(_nrow, _ncol));
+                    std::vector<size_t> tmp3(std::max(_nrow, _ncol));
+
                     // randomly select a column index
-                    for (int j = 0; j < ncol; j++) {
+                    for (size_t j = 0; j < _ncol; j++) {
 
                         // select the positions i of a) the entries sij=1 that can be switched to zero
                         // and b) the entries sij=0 that can be switched to one
-                        int a = 0;
-                        int b = 0;
+                        size_t a = 0;
+                        size_t b = 0;
 
                         // for each row position
-                        for (int i = 0; i < nrow; i++) {
+                        for (size_t i = 0; i < _nrow; i++) {
                             bool sij = s.get(i, j);
-                            if (sij && rowsum[i] > inst.rowsum_lower[i]) {
+                            if (sij && rowsum[i] > _inst._rowsum_lower[i]) {
                                 tmp1[a + b] = i;
                                 a++;
-                            } else if (!sij && rowsum[i] < inst.rowsum_upper[i]) {
+                            } else if (!sij && rowsum[i] < _inst._rowsum_upper[i]) {
                                 tmp1[a + b] = i;
                                 b++;
                             }
                         }
 
                         // determine maximal number of positions to flip
-                        int range = inst.colsum_upper[j] - inst.colsum_lower[j];
-                        int t = std::min(range, a + b);
+                        int range = _inst._colsum_upper[j] - _inst._colsum_lower[j];
+                        int t = std::min(range, (int) (a + b));
 
                         // if there is nothing to choose from
                         if (t == 0) {
-                            loop += q_vertical_rat * p_multiflip_rat * Rational(1, ncol);
+                            loop += q_vertical_rat * p_multiflip_rat * Rational(1, _ncol);
                             continue;
                         }
 
                         // simulate randomly selecting t out of (a+b) elements
-                        CombinationGenerator<int> cg(tmp1, tmp2, a + b, t);
+                        CombinationGenerator<size_t> cg(&tmp1[0], &tmp2[0], a + b, t);
                         do {
 
                             // simulate selecting random subsets from tmp2
 
                             // each of the 2^t subsets has the same probability p of being selected
                             const Rational p =
-                                    q_vertical_rat * p_multiflip_rat * Rational(1, ncol) /
+                                    q_vertical_rat * p_multiflip_rat * Rational(1, _ncol) /
                                     (binom(a + b, t) * pow(2, t));
 
                             // simulate selecting subset of size k
-                            for (int k = 0; k <= t; k++) {
+                            for (size_t k = 0; k <= t; k++) {
 
                                 // simulate selecting k objects out of t
-                                CombinationGenerator<int> cg_sub(tmp2, tmp3, t, k);
+                                CombinationGenerator<size_t> cg_sub(&tmp2[0], &tmp3[0], t, k);
                                 do {
 
                                     // determine by how much colsum[j] would be changed by a flip of the k selected entries
                                     int diff = 0;
-                                    for (int l = 0; l < k; l++) {
-                                        int i = tmp3[l];
+                                    for (size_t l = 0; l < k; l++) {
+                                        size_t i = tmp3[l];
                                         diff += s.get(i, j) ? -1 : 1;
                                     }
 
                                     // if entries can be flipped without violating the lower and upper bounds
-                                    if (inst.colsum_lower[j] <= colsum[j] + diff &&
-                                        colsum[j] + diff <= inst.colsum_upper[j]) {
+                                    if (_inst._colsum_lower[j] <= colsum[j] + diff &&
+                                        colsum[j] + diff <= _inst._colsum_upper[j]) {
 
                                         // create copy of s
                                         BinaryMatrix s2(s);
 
                                         // flip selected entries
-                                        for (int l = 0; l < k; l++) {
-                                            int i = tmp3[l];
+                                        for (size_t l = 0; l < k; l++) {
+                                            size_t i = tmp3[l];
                                             s2.flip(i, j);
                                         }
 
@@ -1036,12 +1026,9 @@ namespace marathon {
                 }
 
                 void init() {
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
-                    tmp1 = new int[std::max(nrow, ncol)];
-                    tmp2 = new int[std::max(nrow, ncol)];
-                    tmp3 = new int[std::max(nrow, ncol)];
-
+                    tmp1.resize(std::max(_nrow, _ncol));
+                    tmp2.resize(std::max(_nrow, _ncol));
+                    tmp3.resize(std::max(_nrow, _ncol));
                     p_trade = p_trade_rat.convert_to<double>();
                     p_multishift = p_multishift_rat.convert_to<double>();
                     p_multiflip = p_multiflip_rat.convert_to<double>();
@@ -1068,12 +1055,12 @@ namespace marathon {
                  * Create a Markov chain.
                  * @param inst Lower and upper bounds on the row and column sums.
                  */
-                explicit InformedChain(const Instance &inst) :
-                        MarkovChain(inst),
-                        q_horizontal(inst.getNumCols() / (double) (inst.getNumRows() + inst.getNumCols())),
-                        q_vertical(inst.getNumRows() / (double) (inst.getNumRows() + inst.getNumCols())),
-                        q_horizontal_rat(Rational(inst.getNumCols(), inst.getNumRows() + inst.getNumCols())),
-                        q_vertical_rat(Rational(inst.getNumRows(), inst.getNumRows() + inst.getNumCols())) {
+                explicit InformedChain(Instance inst) :
+                        MarkovChain(std::move(inst)),
+                        q_horizontal(_ncol / (double) (_nrow + _ncol)),
+                        q_vertical(_nrow / (double) (_nrow + _ncol)),
+                        q_horizontal_rat(Rational(_ncol, _nrow + _ncol)),
+                        q_vertical_rat(Rational(_nrow, _nrow + _ncol)) {
                     init();
                 }
 
@@ -1082,70 +1069,13 @@ namespace marathon {
                  * @param inst Lower and upper bounds on the row and column sums.
                  * @param bin Binary matrix.
                  */
-                InformedChain(const Instance &inst, const BinaryMatrix &bin)
-                        : MarkovChain(inst, bin),
-                          q_horizontal(inst.getNumCols() / (double) (inst.getNumRows() + inst.getNumCols())),
-                          q_vertical(inst.getNumRows() / (double) (inst.getNumRows() + inst.getNumCols())),
-                          q_horizontal_rat(Rational(inst.getNumCols(), inst.getNumRows() + inst.getNumCols())),
-                          q_vertical_rat(Rational(inst.getNumRows(), inst.getNumRows() + inst.getNumCols())) {
+                InformedChain(Instance inst, BinaryMatrix bin)
+                        : MarkovChain(std::move(inst), std::move(bin)),
+                          q_horizontal(_ncol / (double) (_nrow + _ncol)),
+                          q_vertical(_nrow / (double) (_nrow + _ncol)),
+                          q_horizontal_rat(Rational(_ncol, _nrow + _ncol)),
+                          q_vertical_rat(Rational(_nrow, _nrow + _ncol)) {
                     init();
-                }
-
-
-                /**
-                 * Create a Markov chain.
-                 * @param inst String-encoded instance of lower and upper bounds on the row and column sums.
-                 * Instances for this chain have the form "l1-u1,l2-u2,l3-u3;l4-u4,l5-u5", where li is the ith lower
-                 * bound and ui is the ith upper bound. For convenience, if li = ui, the string 'li-ui' can be replaced
-                 * by 'li'. The semicolon separates the row sums from the column sums.
-                 */
-                explicit InformedChain(const std::string &inst)
-                        : InformedChain(Instance(inst)) {
-
-                }
-
-
-                /**
-                 * Create a Markov chain.
-                 * @param rowsum_lower Sequence of lower bounds for row sums.
-                 * @param rowsum_upper Sequence of upper bounds for row sums.
-                 * @param colsum_lower Sequence of lower bounds for column sums.
-                 * @param colsum_upper Sequence of upper bounds for column sums.
-                 */
-                InformedChain(
-                        const std::vector<int> &rowsum_lower,
-                        const std::vector<int> &rowsum_upper,
-                        const std::vector<int> &colsum_lower,
-                        const std::vector<int> &colsum_upper
-                ) : InformedChain(Instance(rowsum_lower, rowsum_upper, colsum_lower, colsum_upper)) {
-
-                }
-
-                /**
-                 * Create a Markov chain.
-                 * @param rowsum_lower Sequence of lower bounds for row sums.
-                 * @param rowsum_upper Sequence of upper bounds for row sums.
-                 * @param colsum_lower Sequence of lower bounds for column sums.
-                 * @param colsum_upper Sequence of upper bounds for column sums.
-                 * @param nrow Number of rows.
-                 * @param ncol Number of columns.
-                 */
-                InformedChain(
-                        const int *rowsum_lower,
-                        const int *rowsum_upper,
-                        const int *colsum_lower,
-                        const int *colsum_upper,
-                        const int nrow,
-                        const int ncol
-                ) : InformedChain(
-                        Instance(rowsum_lower, rowsum_upper, colsum_lower, colsum_upper, nrow, ncol)) {
-
-                }
-
-                virtual ~InformedChain() {
-                    delete[] tmp1;
-                    delete[] tmp2;
-                    delete[] tmp3;
                 }
 
                 /**
@@ -1159,19 +1089,14 @@ namespace marathon {
                         const std::function<void(const State &, const marathon::Rational &)> &process
                 ) const override {
 
-                    const int nrow = (int) inst.getNumRows();
-                    const int ncol = (int) inst.getNumCols();
-
                     // create a copy of x
                     BinaryMatrix s(static_cast<const BinaryMatrix &>(x));
 
                     // create temporary array of row and column sums
-                    int *rowsum = new int[nrow];
-                    int *colsum = new int[ncol];
-                    memset(rowsum, 0, nrow * sizeof(int));
-                    memset(colsum, 0, ncol * sizeof(int));
-                    for (int i = 0; i < nrow; i++) {
-                        for (int j = 0; j < ncol; j++) {
+                    std::vector<int> rowsum(_nrow);
+                    std::vector<int> colsum(_ncol);
+                    for (size_t i = 0; i < _nrow; i++) {
+                        for (size_t j = 0; j < _ncol; j++) {
                             if (s.get(i, j)) {
                                 rowsum[i]++;
                                 colsum[j]++;
@@ -1185,10 +1110,6 @@ namespace marathon {
                     simulateMultiShiftVertical(s, process, rowsum, colsum);
                     simulateMultiFlipHorizontal(s, process, rowsum, colsum);
                     simulateMultiFlipVertical(s, process, rowsum, colsum);
-
-                    /* clean up */
-                    delete[] rowsum;
-                    delete[] colsum;
                 }
 
                 /**
@@ -1197,16 +1118,16 @@ namespace marathon {
                 virtual void step() override {
 
                     // select two random numbers from [0,1)
-                    double p = rg.nextDouble();
-                    double q = rg.nextDouble();
+                    const double p = rg.nextDouble();
+                    const double q = rg.nextDouble();
 
                     // which operation will be applied?
                     if (p < p_trade) {                                   // apply trade
 
                         if (q < q_horizontal) {
-                            applyTradeHorizontal(currentState);
+                            applyTradeHorizontal(_currentState);
                         } else if (q < q_horizontal + q_vertical) {
-                            applyTradeVertical(currentState);
+                            applyTradeVertical(_currentState);
                         } else {
                             throw std::runtime_error("Error while applying trade.");
                         }
@@ -1214,9 +1135,9 @@ namespace marathon {
                     } else if (p < p_trade + p_multishift) {      // apply multi-shift
 
                         if (q < q_horizontal) {
-                            applyMultiShiftHorizontal(currentState);
+                            applyMultiShiftHorizontal(_currentState);
                         } else if (q < q_horizontal + q_vertical) {
-                            applyMultiShiftVertical(currentState);
+                            applyMultiShiftVertical(_currentState);
                         } else {
                             throw std::runtime_error("Error while applying multi-shift.");
                         }
@@ -1225,9 +1146,9 @@ namespace marathon {
                                    p_multiflip) {                                                       // apply multi-flip
 
                         if (q < q_horizontal) {
-                            applyMultiFlipHorizontal(currentState);
+                            applyMultiFlipHorizontal(_currentState);
                         } else if (q < q_horizontal + q_vertical) {
-                            applyMultiFlipVertical(currentState);
+                            applyMultiFlipVertical(_currentState);
                         } else {
                             throw std::runtime_error("Error while applying multi-flip.");
                         }
@@ -1241,7 +1162,7 @@ namespace marathon {
                  * @return
                  */
                 virtual std::unique_ptr<marathon::MarkovChain> copy() const override {
-                    return std::make_unique<InformedChain>(inst, currentState);
+                    return std::make_unique<InformedChain>(_inst, _currentState);
                 }
 
             };

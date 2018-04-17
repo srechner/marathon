@@ -220,11 +220,11 @@ namespace marathon {
                     printf("%sgroup_id                     = %i\n", S, group_id);
                     printf("%scolumns_lower                =", S);
                     for (int i = 0; i < ncol; i++)
-                        printf(" %i", colsum_lower[i]);
+                        printf(" %i", _colsum_lower[i]);
                     printf("\n");
                     printf("%scolumns_upper                =", S);
                     for (int i = 0; i < ncol; i++)
-                        printf(" %i", colsum_upper[i]);
+                        printf(" %i", _colsum_upper[i]);
                     printf("\n");
                     printf("%scolumn_groups                = ", S);
                     for (int i = 0; i < column_groups.size(); i++)
@@ -417,8 +417,8 @@ namespace marathon {
 				 */
                 Counter(Instance seq) :
                         _seq(std::move(seq)),
-                        _nrow((int) _seq.rowsum_upper.size()),
-                        _ncol((int) _seq.colsum_lower.size()) {
+                        _nrow((int) _seq._rowsum_upper.size()),
+                        _ncol((int) _seq._colsum_lower.size()) {
 
                 }
 
@@ -454,11 +454,11 @@ namespace marathon {
 
                     ia >> _seq.rowsum_lower;
                     ia >> _seq.rowsum_upper;
-                    ia >> _seq.colsum_lower;
-                    ia >> _seq.colsum_upper;
+                    ia >> _seq._colsum_lower;
+                    ia >> _seq._colsum_upper;
 
                     _nrow = (int) _seq.rowsum_lower.size();
-                    _ncol = (int) _seq.colsum_lower.size();
+                    _ncol = (int) _seq._colsum_lower.size();
 
                     ia >> _tmp;
                 }
@@ -482,8 +482,8 @@ namespace marathon {
                     std::vector<A> rows(_nrow);
                     for (int i = 0; i < _nrow; i++) {
                         rows[i].index = i;
-                        rows[i].lower = std::max(_seq.rowsum_lower[i], 0);
-                        rows[i].upper = std::min(_seq.rowsum_upper[i], _ncol);
+                        rows[i].lower = std::max(_seq._rowsum_lower[i], 0);
+                        rows[i].upper = std::min(_seq._rowsum_upper[i], _ncol);
                     }
                     std::sort(rows.begin(), rows.end(), [](const A &a, const A &b) {
                         return a.lower == b.lower ? a.upper > b.upper : a.lower > b.lower;
@@ -499,8 +499,8 @@ namespace marathon {
                     std::vector<A> columns(_ncol);
                     for (int i = 0; i < _ncol; i++) {
                         columns[i].index = i;
-                        columns[i].lower = std::max(_seq.colsum_lower[i], 0);
-                        columns[i].upper = std::min(_seq.colsum_upper[i], _nrow);
+                        columns[i].lower = std::max(_seq._colsum_lower[i], 0);
+                        columns[i].upper = std::min(_seq._colsum_upper[i], _nrow);
                     }
                     std::sort(columns.begin(), columns.end(), [](const A &a, const A &b) {
                         return a.lower == b.lower ? a.upper > b.upper : a.lower > b.lower;
@@ -574,8 +574,8 @@ namespace marathon {
                     // dump attributes
                     oa << _seq.rowsum_lower;
                     oa << _seq.rowsum_upper;
-                    oa << _seq.colsum_lower;
-                    oa << _seq.colsum_upper;
+                    oa << _seq._colsum_lower;
+                    oa << _seq._colsum_upper;
 
                     // dump hash table
                     oa << _tmp;

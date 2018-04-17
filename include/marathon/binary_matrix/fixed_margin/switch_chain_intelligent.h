@@ -188,8 +188,8 @@ namespace marathon {
                     int x = 0;
                     int y = 0;
                     for (int j = 0; j < ncol; j++) {
-                        bool Aij = currentState.get(i, j);
-                        bool Akj = currentState.get(k, j);
+                        bool Aij = _currentState.get(i, j);
+                        bool Akj = _currentState.get(k, j);
                         if (Aij != Akj) {
                             if (Aij) {
                                 X[x] = j;
@@ -206,7 +206,7 @@ namespace marathon {
                     const int n = rg.nextInt(y);
 
                     // switch entries
-                    currentState.flipSubmatrix(i, X[m], k, Y[n]);
+                    _currentState.flipSubmatrix(i, X[m], k, Y[n]);
                 }
 
                 /**

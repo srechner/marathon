@@ -38,7 +38,7 @@ namespace marathon {
          * Abstract base class designed for the parallel construction
          * of large numbers of binary matrices.
          */
-        class SamplingEngine {
+        class "SamplingEngine {
 
         private:
 
@@ -52,11 +52,11 @@ namespace marathon {
              */
             SamplingEngine(const marathon::binary_matrix::RandomGenerator &rg) {
 
-                int T = std::max(1u, std::thread::hardware_concurrency());
+                size_t T = std::max(1u, std::thread::hardware_concurrency());
 
                 // create T random generators
                 vec.reserve(T);
-                for (int i = 0; i < T; i++) {
+                for (size_t i = 0; i < T; i++) {
                     auto x = static_cast<marathon::binary_matrix::RandomGenerator *>(rg.copy().release());
                     vec.push_back(std::unique_ptr<marathon::binary_matrix::RandomGenerator>(x));
                 }
@@ -72,8 +72,8 @@ namespace marathon {
             template<class T>
             std::vector<T>
             sample(
-                    const int number,
-                    const std::function<T(const BinaryMatrix &)> fun
+                    size_t number,
+                    const std::function<T(const BinaryMatrix &)> &fun
             ) {
 
                 std::vector<T> samples(number);
@@ -81,18 +81,19 @@ namespace marathon {
                 // vector container stores threads
                 std::vector<std::thread> workers;
 
-                const int t = (int) vec.size();
+                const size_t t = vec.size();
 
                 // launch threads
-                for (int i = 0; i < t; i++) {
-                    workers.push_back(std::thread([this, t, number, &fun, &samples, i]() {
+                for (size_t i = 0; i < t; i++) {
 
-                        // divide work into chunks of approximately equal size
-                        const int begin = i * ((number + t - 1) / t);
-                        const int end = std::min(number, (i + 1) * ((number + t - 1) / t));
+                    workers.emplace_back(std::thread([this, t, number, &fun, &samples, i]() {
+
+                        // divide work into chunks of approximately same size
+                        const size_t begin = i * ((number + t - 1) / t);
+                        const size_t end = std::min(number, (i + 1) * ((number + t - 1) / t));
 
                         // create random samples
-                        for (int j = begin; j < end; j++) {
+                        for (size_t j = begin; j < end; j++) {
                             samples[j] = fun(vec[i]->next());
                         }
 
@@ -100,7 +101,7 @@ namespace marathon {
                 }
 
                 // wait for threads to finish
-                for (int i = 0; i < t; i++)
+                for (size_t i = 0; i < t; i++)
                     workers[i].join();
 
                 return samples;
@@ -113,10 +114,9 @@ namespace marathon {
              */
             virtual
             std::vector<BinaryMatrix>
-            sample(const int number) {
+            sample(size_t number) {
                 return sample<BinaryMatrix>(number, [](const BinaryMatrix &m) {
-                    // return the identity of m
-                    return m;
+                    return m;   // return the identity of m
                 });
             }
         };

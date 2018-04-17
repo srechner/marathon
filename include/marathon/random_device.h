@@ -165,7 +165,7 @@ namespace marathon {
          * @param k The number of objects to choose.
          */
         template<class T>
-        void select(T *dst, const T *src, const int n, const int k) {
+        void select(T *dst, const T *src, size_t n, size_t k) {
 
             /**************************************************************************
              * Generate Random Combination of k out of n numbers.
@@ -193,12 +193,27 @@ namespace marathon {
         }
 
         /**
+         * Select a subset of the set { v[0], v[1], ..., v[n-1] } of size k uniformly at random.
+         * Each subset has a probability of 1/(binom(n,k)).
+         * @tparam T Type of objects.
+         * @param v Vector of length n.
+         * @param k Non-negative integer k <= n;
+         * @return Random subset of size k.
+         */
+        template<class T>
+        std::vector<T> select(const std::vector<T>& v, size_t k) {
+            std::vector<T> w(k);
+            select(&w[0], &v[0], v.size(), k);
+            return w;
+        }
+
+        /**
          * Shuffle the array, i.e. create a random permutation.
          */
         template<class T>
-        void shuffle(T *data, int size) {
-            for (int i = size; i > 1; i--) {
-                int r = nextInt(i);
+        void shuffle(T *data, size_t size) {
+            for (size_t i = size; i > 1; i--) {
+                size_t r = nextInt(i);
                 std::swap(data[i - 1], data[r]);
             }
         }
@@ -213,24 +228,24 @@ namespace marathon {
          * @return Size of the random subset.
          */
         template<class T>
-        int subset(T *dst, const T *src, const int n) {
+        size_t subset(T *dst, const T *src, size_t n) {
 
-            int sz = 0;        // size of the subset
-            int i = 0;         // index of the current element
+            size_t sz = 0;        // size of the subset
+            size_t i = 0;         // index of the current element
 
-            const int k = 30;     // k random bits are generated in one step
+            const size_t k = 30;     // k random bits are generated in one step
 
             // for each element of src
             while (i < n) {
 
                 // the number of bits generated in each step
-                int e = std::min(k, n - i);
+                size_t e = std::min(k, n - i);
 
                 // create a random integer with e bits
-                int x = nextInt(1 << e);      // 0 <= x < 2^e
+                size_t x = nextInt(1ul << e);      // 0 <= x < 2^e
 
                 // for each bit
-                for (int l = 0; l < e; l++) {
+                for (size_t l = 0; l < e; l++) {
 
                     // if x mod 2 == 1
                     if (x & 1) {
